@@ -161,6 +161,8 @@ async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
     const ctx = await WebGPUContext.create(canvas);
     renderer = new Renderer(ctx);
     renderer.resize(canvas.width, canvas.height);
+    renderer.setFractalType(fractal.fractalType);
+    renderer.setColorMode(fractal.colorMode);
     startTime = performance.now();
 
     // Start with preview rendering for title screen
