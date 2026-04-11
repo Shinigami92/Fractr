@@ -11,6 +11,14 @@ export function useInput() {
     pressedKeys.delete(e.code);
   }
 
+  function onMouseDown(e: MouseEvent): void {
+    pressedKeys.add(`Mouse${e.button}`);
+  }
+
+  function onMouseUp(e: MouseEvent): void {
+    pressedKeys.delete(`Mouse${e.button}`);
+  }
+
   function onBlur(): void {
     pressedKeys.clear();
   }
@@ -22,12 +30,16 @@ export function useInput() {
   onMounted(() => {
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mouseup', onMouseUp);
     window.addEventListener('blur', onBlur);
   });
 
   onUnmounted(() => {
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('keyup', onKeyUp);
+    window.removeEventListener('mousedown', onMouseDown);
+    window.removeEventListener('mouseup', onMouseUp);
     window.removeEventListener('blur', onBlur);
     pressedKeys.clear();
   });

@@ -146,14 +146,16 @@ const gameLoop = useGameLoop({
       isPressed(bindings.moveLeft) ||
       isPressed(bindings.moveUp) ||
       isPressed(bindings.moveDown) ||
+      isPressed('Mouse0') ||
+      isPressed('Mouse2') ||
       Math.abs(dx) > 1 ||
       Math.abs(dy) > 1;
 
     // Adaptive quality
     adaptQuality(dt, gameLoop.fps.value, moving);
 
-    if (isPressed(bindings.moveForward)) camera.moveForward(speed);
-    if (isPressed(bindings.moveBackward)) camera.moveForward(-speed);
+    if (isPressed(bindings.moveForward) || isPressed('Mouse0')) camera.moveForward(speed);
+    if (isPressed(bindings.moveBackward) || isPressed('Mouse2')) camera.moveForward(-speed);
     if (isPressed(bindings.moveRight)) camera.moveRight(speed);
     if (isPressed(bindings.moveLeft)) camera.moveRight(-speed);
     if (isPressed(bindings.moveUp)) camera.moveUp(speed);
@@ -352,12 +354,20 @@ function onCanvasClick(): void {
   }
 }
 
+function onContextMenu(e: MouseEvent): void {
+  if (appState.mode === 'playing') {
+    e.preventDefault();
+  }
+}
+
 onMounted(() => {
   window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('contextmenu', onContextMenu);
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('contextmenu', onContextMenu);
   gameLoop.stop();
   previewLoop.stop();
   pointerLock.unmount();
