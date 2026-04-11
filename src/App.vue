@@ -23,10 +23,23 @@ const graphics = useGraphicsSettings();
 const controls = useControlSettings();
 const hudSettings = useHudSettings();
 
+// Always start with Mandelbulb on page load
+fractal.setFractalType('mandelbulb');
+
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const gpuError = ref<string | null>(null);
 
 const camera = new FPSCamera(0, 0, 3);
+const cameraPos = ref({ x: 0, y: 0, z: 3 });
+
+function resetCamera(): void {
+  camera.position[0] = 0;
+  camera.position[1] = 0;
+  camera.position[2] = 3;
+  camera.yaw = -Math.PI / 2;
+  camera.pitch = 0;
+}
+
 let renderer: Renderer | null = null;
 let startTime = 0;
 let displayWidth = 1;
@@ -125,6 +138,9 @@ const gameLoop = useGameLoop({
     if (isPressed(bindings.moveUp)) camera.moveUp(speed);
     if (isPressed(bindings.moveDown)) camera.moveUp(-speed);
 
+    // Update reactive camera position for HUD
+    cameraPos.value = { x: camera.position[0]!, y: camera.position[1]!, z: camera.position[2]! };
+
     // Update renderer uniforms
     renderer?.updateUniforms(
       camera,
@@ -210,7 +226,10 @@ function onResize(width: number, height: number): void {
 // Watch for fractal/color mode changes
 watch(
   () => fractal.fractalType,
-  (type) => renderer?.setFractalType(type),
+  (type) => {
+    renderer?.setFractalType(type);
+    resetCamera();
+  },
 );
 watch(
   () => fractal.colorMode,
@@ -222,13 +241,8 @@ watch(
   () => appState.mode,
   (mode, oldMode) => {
     if (mode === 'playing') {
-      // Reset camera to a good starting position when starting from title
       if (oldMode === 'loading') {
-        camera.position[0] = 0;
-        camera.position[1] = 0;
-        camera.position[2] = 3;
-        camera.yaw = -Math.PI / 2;
-        camera.pitch = 0;
+        resetCamera();
       }
       adaptiveScale = 1.0;
       appliedScale = 1.0;
@@ -287,6 +301,10 @@ function onKeyDown(e: KeyboardEvent): void {
     if (e.code === controls.keybindings.cycleColorMode) {
       fractal.cycleColorMode();
     }
+    if (e.code === controls.keybindings.cycleFractalType) {
+      fractal.cycleFractalType();
+      resetCamera();
+    }
   }
 }
 
@@ -332,9 +350,9 @@ onUnmounted(() => {
       <GameHud
         v-if="appState.mode === 'playing'"
         :fps="gameLoop.fps.value"
-        :camera-x="camera.position[0]!"
-        :camera-y="camera.position[1]!"
-        :camera-z="camera.position[2]!"
+        :camera-x="cameraPos.x"
+        :camera-y="cameraPos.y"
+        :camera-z="cameraPos.z"
       />
     </template>
   </div>

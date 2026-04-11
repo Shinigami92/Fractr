@@ -11,6 +11,7 @@ export interface KeybindingMap {
   toggleHud: string;
   toggleCrosshair: string;
   cycleColorMode: string;
+  cycleFractalType: string;
 }
 
 const DEFAULT_KEYBINDINGS: KeybindingMap = {
@@ -23,6 +24,7 @@ const DEFAULT_KEYBINDINGS: KeybindingMap = {
   toggleHud: 'F3',
   toggleCrosshair: 'KeyH',
   cycleColorMode: 'KeyC',
+  cycleFractalType: 'KeyV',
 };
 
 export const useControlSettings = defineStore('controlSettings', () => {

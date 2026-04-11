@@ -6,12 +6,16 @@ import raySrc from '../../shaders/common/ray.wgsl?raw';
 import uniformsSrc from '../../shaders/common/uniforms.wgsl?raw';
 import fullscreenSrc from '../../shaders/fullscreen.wgsl?raw';
 import raymarcherSrc from '../../shaders/raymarcher.wgsl?raw';
+import mandelboxSrc from '../../shaders/sdf/mandelbox.wgsl?raw';
 import mandelbulbSrc from '../../shaders/sdf/mandelbulb.wgsl?raw';
+import mengerSrc from '../../shaders/sdf/menger.wgsl?raw';
 import type { ColorMode, FractalType } from '../../stores/fractalParams';
 import type { WebGPUContext } from './WebGPUContext';
 
 const SDF_SOURCES: Record<FractalType, string> = {
   mandelbulb: mandelbulbSrc,
+  mandelbox: mandelboxSrc,
+  menger: mengerSrc,
 };
 
 const COLOR_SOURCES: Record<ColorMode, string> = {

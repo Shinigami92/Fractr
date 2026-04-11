@@ -58,12 +58,26 @@ function resetAll(): void {
       <!-- Fractal Tab -->
       <div v-if="activeTab === 'fractal'" class="flex flex-col gap-4">
         <label class="flex flex-col gap-1">
-          <span class="text-xs text-white/50">Power</span>
+          <span class="text-xs text-white/50">Fractal Type</span>
+          <select
+            :value="fractal.fractalType"
+            class="border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white"
+            @change="fractal.setFractalType(($event.target as HTMLSelectElement).value as 'mandelbulb' | 'mandelbox' | 'menger')"
+          >
+            <option value="mandelbulb">Mandelbulb</option>
+            <option value="mandelbox">Mandelbox</option>
+            <option value="menger">Menger Sponge</option>
+          </select>
+        </label>
+        <label v-if="fractal.fractalType !== 'menger'" class="flex flex-col gap-1">
+          <span class="text-xs text-white/50">{{
+            fractal.fractalType === 'mandelbox' ? 'Scale' : 'Power'
+          }}</span>
           <input
             v-model.number="fractal.power"
             type="range"
-            min="2"
-            max="16"
+            :min="fractal.fractalType === 'mandelbox' ? -3 : 2"
+            :max="fractal.fractalType === 'mandelbox' ? 3 : 16"
             step="0.1"
             class="accent-accent"
           />
@@ -208,6 +222,7 @@ function resetAll(): void {
           <p>F3 — Toggle HUD</p>
           <p>H — Toggle Crosshair</p>
           <p>C — Cycle Color Mode</p>
+          <p>V — Cycle Fractal Type</p>
         </div>
       </div>
 
