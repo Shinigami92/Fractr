@@ -250,6 +250,12 @@ function onKeyDown(e: KeyboardEvent): void {
   }
 }
 
+function onCanvasClick(): void {
+  if (appState.mode === 'playing' && !pointerLock.isLocked.value) {
+    pointerLock.requestLock();
+  }
+}
+
 onMounted(() => {
   window.addEventListener('keydown', onKeyDown);
 });
@@ -277,6 +283,7 @@ onUnmounted(() => {
         :class="{ 'blur-sm': appState.mode !== 'playing' }"
         @ready="onCanvasReady"
         @resize="onResize"
+        @click="onCanvasClick"
       />
 
       <TitleScreen v-if="appState.mode === 'title'" />
