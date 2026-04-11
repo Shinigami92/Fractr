@@ -29,6 +29,20 @@ const gpuError = ref<string | null>(null);
 const camera = new FPSCamera(0, 0, 3);
 let renderer: Renderer | null = null;
 let startTime = 0;
+let displayWidth = 1;
+let displayHeight = 1;
+
+const PREVIEW_SCALE = 0.25;
+
+function applyCanvasResolution(scale: number): void {
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  const w = Math.floor(displayWidth * scale);
+  const h = Math.floor(displayHeight * scale);
+  canvas.width = w;
+  canvas.height = h;
+  renderer?.resize(w, h);
+}
 
 const COLOR_MODE_MAP: Record<ColorMode, number> = {
   distance: 0,
@@ -126,7 +140,10 @@ async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
 }
 
 function onResize(width: number, height: number): void {
-  renderer?.resize(width, height);
+  displayWidth = width;
+  displayHeight = height;
+  const scale = appState.mode === 'playing' ? 1 : PREVIEW_SCALE;
+  applyCanvasResolution(scale);
 }
 
 // Watch for fractal/color mode changes
@@ -152,6 +169,7 @@ watch(
         camera.yaw = -Math.PI / 2;
         camera.pitch = 0;
       }
+      applyCanvasResolution(1);
       previewLoop.stop();
       gameLoop.start();
       pointerLock.requestLock();
@@ -160,6 +178,7 @@ watch(
     } else {
       gameLoop.stop();
       if (mode === 'title' || mode === 'paused' || mode === 'settings') {
+        applyCanvasResolution(PREVIEW_SCALE);
         previewLoop.start();
       }
     }
@@ -221,7 +240,7 @@ onUnmounted(() => {
 
     <template v-else>
       <WebGPUCanvas
-        :class="{ 'blur-sm': appState.mode === 'title' }"
+        :class="{ 'blur-sm': appState.mode !== 'playing' }"
         @ready="onCanvasReady"
         @resize="onResize"
       />
