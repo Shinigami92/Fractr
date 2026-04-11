@@ -4,6 +4,9 @@ import App from './App.vue';
 import { piniaPersistPlugin } from './plugins/piniaPersist';
 import './style.css';
 
+declare const __COMMIT_SHA__: string;
+console.log(`Fractr ${__COMMIT_SHA__}`);
+
 const pinia = createPinia();
 pinia.use(piniaPersistPlugin);
 
