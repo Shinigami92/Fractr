@@ -31,7 +31,7 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 const gpuError = ref<string | null>(null);
 
 const camera = new FPSCamera(0, 0, 3);
-const cameraPos = ref({ x: 0, y: 0, z: 3 });
+const cameraPos = ref({ x: 0, y: 0, z: 3, yaw: 0, pitch: 0 });
 
 function resetCamera(): void {
   camera.position[0] = 0;
@@ -149,7 +149,13 @@ const gameLoop = useGameLoop({
     if (isPressed(bindings.moveDown)) camera.moveUp(-speed);
 
     // Update reactive camera position for HUD
-    cameraPos.value = { x: camera.position[0]!, y: camera.position[1]!, z: camera.position[2]! };
+    cameraPos.value = {
+      x: camera.position[0]!,
+      y: camera.position[1]!,
+      z: camera.position[2]!,
+      yaw: camera.yaw,
+      pitch: camera.pitch,
+    };
 
     // Update renderer uniforms
     renderer?.updateUniforms(
@@ -358,13 +364,7 @@ onUnmounted(() => {
       <TitleScreen v-if="appState.mode === 'title'" />
       <PauseMenu v-if="appState.mode === 'paused'" />
       <SettingsMenu v-if="appState.mode === 'settings'" />
-      <GameHud
-        v-if="appState.mode === 'playing'"
-        :fps="gameLoop.fps.value"
-        :camera-x="cameraPos.x"
-        :camera-y="cameraPos.y"
-        :camera-z="cameraPos.z"
-      />
+      <GameHud v-if="appState.mode === 'playing'" :fps="gameLoop.fps.value" :camera="cameraPos" />
     </template>
   </div>
 </template>
