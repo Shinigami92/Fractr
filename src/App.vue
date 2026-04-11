@@ -147,26 +147,31 @@ const gameLoop = useGameLoop({
 // Handle title screen preview rendering
 const previewLoop = useGameLoop({
   update() {
-    if (appState.mode !== 'title' && appState.mode !== 'settings' && appState.mode !== 'paused')
-      return;
+    // Only auto-orbit on title screen (and settings opened from title)
+    const shouldOrbit =
+      appState.mode === 'title' ||
+      (appState.mode === 'settings' && appState.settingsSource === 'title');
 
-    // Slowly orbit camera for background effect
-    const t = performance.now() / 5000;
-    camera.position[0] = Math.cos(t) * 3;
-    camera.position[1] = Math.sin(t * 0.3) * 0.5;
-    camera.position[2] = Math.sin(t) * 3;
-    camera.yaw = t + Math.PI;
-    camera.pitch = -Math.sin(t * 0.3) * 0.15;
+    if (shouldOrbit) {
+      const t = performance.now() / 5000;
+      camera.position[0] = Math.cos(t) * 3;
+      camera.position[1] = Math.sin(t * 0.3) * 0.5;
+      camera.position[2] = Math.sin(t) * 3;
+      camera.yaw = t + Math.PI;
+      camera.pitch = -Math.sin(t * 0.3) * 0.15;
+    }
+    // Paused / settings-from-pause: keep current camera position (frozen frame)
 
+    const lowQuality = shouldOrbit;
     renderer?.updateUniforms(
       camera,
       {
         power: fractal.power,
-        maxIterations: 8,
+        maxIterations: lowQuality ? 8 : fractal.maxIterations,
         bailout: fractal.bailout,
         colorMode: COLOR_MODE_MAP[fractal.colorMode],
-        maxRaySteps: 64,
-        resolutionScale: 0.25,
+        maxRaySteps: lowQuality ? 64 : graphics.maxRaySteps,
+        resolutionScale: graphics.resolutionScale,
       },
       (performance.now() - startTime) / 1000,
     );
@@ -236,8 +241,15 @@ watch(
       appState.onLoaded();
     } else {
       gameLoop.stop();
-      if (mode === 'title' || mode === 'paused' || mode === 'settings') {
+      if (mode === 'title') {
         applyCanvasResolution(PREVIEW_SCALE);
+        previewLoop.start();
+      } else if (mode === 'paused' || mode === 'settings') {
+        // Keep current resolution when pausing from gameplay
+        const fromGame = oldMode === 'playing' || oldMode === 'paused';
+        if (!fromGame) {
+          applyCanvasResolution(PREVIEW_SCALE);
+        }
         previewLoop.start();
       }
     }
