@@ -178,7 +178,8 @@ const previewLoop = useGameLoop({
     }
     // Paused / settings-from-pause: keep current camera position (frozen frame)
 
-    const lowQuality = shouldOrbit;
+    // Use low quality only on title screen, not in settings (so changes are visible)
+    const lowQuality = appState.mode === 'title';
     renderer?.updateUniforms(
       camera,
       {

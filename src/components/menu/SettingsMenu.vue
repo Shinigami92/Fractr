@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useAppState } from '../../stores/appState';
 import { useControlSettings } from '../../stores/controlSettings';
-import { useFractalParams } from '../../stores/fractalParams';
+import { FRACTAL_CONFIGS, type FractalType, useFractalParams } from '../../stores/fractalParams';
 import { useGraphicsSettings } from '../../stores/graphicsSettings';
 import { useHudSettings } from '../../stores/hudSettings';
 
@@ -56,29 +56,29 @@ function resetAll(): void {
       </div>
 
       <!-- Fractal Tab -->
-      <div v-if="activeTab === 'fractal'" class="flex flex-col gap-4">
+      <div v-if="activeTab === 'fractal'" :key="fractal.fractalType" class="flex flex-col gap-4">
         <label class="flex flex-col gap-1">
           <span class="text-xs text-white/50">Fractal Type</span>
           <select
             :value="fractal.fractalType"
             class="border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white"
-            @change="fractal.setFractalType(($event.target as HTMLSelectElement).value as 'mandelbulb' | 'mandelbox' | 'menger')"
+            @change="
+              fractal.setFractalType(($event.target as HTMLSelectElement).value as FractalType)
+            "
           >
-            <option value="mandelbulb">Mandelbulb</option>
-            <option value="mandelbox">Mandelbox</option>
-            <option value="menger">Menger Sponge</option>
+            <option v-for="(cfg, key) in FRACTAL_CONFIGS" :key="key" :value="key">
+              {{ cfg.label }}
+            </option>
           </select>
         </label>
-        <label v-if="fractal.fractalType !== 'menger'" class="flex flex-col gap-1">
-          <span class="text-xs text-white/50">{{
-            fractal.fractalType === 'mandelbox' ? 'Scale' : 'Power'
-          }}</span>
+        <label v-if="fractal.config.power" class="flex flex-col gap-1">
+          <span class="text-xs text-white/50">{{ fractal.config.power.label }}</span>
           <input
             v-model.number="fractal.power"
             type="range"
-            :min="fractal.fractalType === 'mandelbox' ? -3 : 2"
-            :max="fractal.fractalType === 'mandelbox' ? 3 : 16"
-            step="0.1"
+            :min="fractal.config.power.min"
+            :max="fractal.config.power.max"
+            :step="fractal.config.power.step"
             class="accent-accent"
           />
           <span class="text-right font-mono text-xs text-white/70">{{
@@ -86,27 +86,27 @@ function resetAll(): void {
           }}</span>
         </label>
         <label class="flex flex-col gap-1">
-          <span class="text-xs text-white/50">Max Iterations</span>
+          <span class="text-xs text-white/50">{{ fractal.config.maxIterations.label }}</span>
           <input
             v-model.number="fractal.maxIterations"
             type="range"
-            min="4"
-            max="64"
-            step="1"
+            :min="fractal.config.maxIterations.min"
+            :max="fractal.config.maxIterations.max"
+            :step="fractal.config.maxIterations.step"
             class="accent-accent"
           />
           <span class="text-right font-mono text-xs text-white/70">{{
             fractal.maxIterations
           }}</span>
         </label>
-        <label class="flex flex-col gap-1">
-          <span class="text-xs text-white/50">Bailout Radius</span>
+        <label v-if="fractal.config.bailout" class="flex flex-col gap-1">
+          <span class="text-xs text-white/50">{{ fractal.config.bailout.label }}</span>
           <input
             v-model.number="fractal.bailout"
             type="range"
-            min="1"
-            max="10"
-            step="0.1"
+            :min="fractal.config.bailout.min"
+            :max="fractal.config.bailout.max"
+            :step="fractal.config.bailout.step"
             class="accent-accent"
           />
           <span class="text-right font-mono text-xs text-white/70">{{
