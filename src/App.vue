@@ -115,6 +115,7 @@ async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
   try {
     const ctx = await WebGPUContext.create(canvas);
     renderer = new Renderer(ctx);
+    renderer.resize(canvas.width, canvas.height);
     startTime = performance.now();
 
     // Start with preview rendering for title screen
