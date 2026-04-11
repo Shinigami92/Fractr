@@ -1,0 +1,67 @@
+{
+  "name": "fractr",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ultra-performant 3D fractal explorer powered by WebGPU",
+  "keywords": [
+    "3d",
+    "fractal",
+    "mandelbulb",
+    "ray-marching",
+    "webgpu"
+  ],
+  "bugs": "https://github.com/Shinigami92/Fractr/issues",
+  "license": "MIT",
+  "author": {
+    "name": "Christopher Quadflieg",
+    "email": "chrissi92@hotmail.de",
+    "url": "https://github.com/Shinigami92"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shinigami92/Fractr.git"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/Shinigami92"
+    },
+    {
+      "type": "paypal",
+      "url": "https://www.paypal.com/donate?hosted_button_id=L7GY729FBKTZY"
+    }
+  ],
+  "type": "module",
+  "scripts": {
+    "clean": "git clean -fdx --exclude .claude",
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint",
+    "ts-check": "vue-tsc --noEmit",
+    "preflight": "pnpm install && run-s format lint ts-check build"
+  },
+  "dependencies": {
+    "pinia": "3.0.4",
+    "vue": "3.5.32"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.2.2",
+    "@types/node": "25.6.0",
+    "@vitejs/plugin-vue": "6.0.5",
+    "@webgpu/types": "0.1.69",
+    "npm-run-all2": "8.0.4",
+    "oxfmt": "0.44.0",
+    "oxlint": "1.59.0",
+    "tailwindcss": "4.2.2",
+    "typescript": "6.0.2",
+    "vite": "8.0.8",
+    "vue-tsc": "3.2.6"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@10.33.0"
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "ignorePatterns": ["*.json5"],
+  "sortImports": {
+    "groups": [
+      ["builtin", "external", "internal"],
+      { "newlinesBetween": false },
+      ["parent", "sibling", "index"]
+    ],
+    "newlinesBetween": false,
+    "order": "asc",
+    "ignoreCase": true
+  }
+}

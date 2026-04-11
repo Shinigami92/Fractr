@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Fractr</title>
+    <meta name="description" content="Ultra-performant 3D fractal explorer powered by WebGPU" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <style>
+      /* Prevent white flash on load */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0a0a0a;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

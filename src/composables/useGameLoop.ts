@@ -1,0 +1,48 @@
+import { ref } from 'vue';
+
+export function useGameLoop(callbacks: { update: (dt: number) => void; render: () => void }) {
+  const fps = ref(0);
+  const isRunning = ref(false);
+
+  let rafId = 0;
+  let lastTime = 0;
+  let fpsAccumulator = 0;
+  let frameCount = 0;
+
+  function loop(now: number): void {
+    if (!isRunning.value) return;
+
+    const dt = Math.min((now - lastTime) / 1000, 0.1); // Cap at 100ms
+    lastTime = now;
+
+    // FPS calculation
+    fpsAccumulator += dt;
+    frameCount++;
+    if (fpsAccumulator >= 0.5) {
+      fps.value = Math.round(frameCount / fpsAccumulator);
+      fpsAccumulator = 0;
+      frameCount = 0;
+    }
+
+    callbacks.update(dt);
+    callbacks.render();
+
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function start(): void {
+    if (isRunning.value) return;
+    isRunning.value = true;
+    lastTime = performance.now();
+    fpsAccumulator = 0;
+    frameCount = 0;
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function stop(): void {
+    isRunning.value = false;
+    cancelAnimationFrame(rafId);
+  }
+
+  return { fps, isRunning, start, stop };
+}
