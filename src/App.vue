@@ -9,6 +9,7 @@ import { useGameLoop } from './composables/useGameLoop';
 import { useInput } from './composables/useInput';
 import { usePointerLock } from './composables/usePointerLock';
 import { FPSCamera } from './engine/camera/FPSCamera';
+import { evaluateSDF } from './engine/fractals/sdf';
 import { WebGPUContext } from './engine/gpu/WebGPUContext';
 import { Renderer } from './engine/Renderer';
 import { useAppState } from './stores/appState';
@@ -115,8 +116,17 @@ const gameLoop = useGameLoop({
     const { dx, dy } = pointerLock.consumeMovement();
     camera.rotate(dx * controls.mouseSensitivity, -dy * controls.mouseSensitivity);
 
-    // Camera movement from keyboard
-    const speed = controls.cameraSpeed * dt;
+    // Distance-based camera speed: slow near surfaces, fast in open space
+    const dist = evaluateSDF(
+      fractal.fractalType,
+      camera.position[0]!,
+      camera.position[1]!,
+      camera.position[2]!,
+      { power: fractal.power, maxIterations: fractal.maxIterations, bailout: fractal.bailout },
+    );
+    const speedScale = Math.max(0.001, Math.min(1, Math.abs(dist)));
+    const speed = controls.cameraSpeed * speedScale * dt;
+
     const bindings = controls.keybindings;
     const moving =
       isPressed(bindings.moveForward) ||

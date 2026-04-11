@@ -34,7 +34,7 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
   },
   menger: {
     label: 'Menger Sponge',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 8, step: 1, default: 6 },
+    maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 6 },
   },
 };
 
