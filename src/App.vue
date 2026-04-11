@@ -53,9 +53,27 @@ const COLOR_MODE_MAP: Record<ColorMode, number> = {
 const { isPressed } = useInput();
 const pointerLock = usePointerLock(canvasRef);
 
+let adaptiveScale = 1.0;
+
+function adaptQuality(currentFps: number): void {
+  if (!graphics.adaptiveQuality) return;
+
+  const target = graphics.targetFps;
+  if (currentFps < target * 0.85 && adaptiveScale > 0.3) {
+    adaptiveScale = Math.max(0.3, adaptiveScale - 0.02);
+    applyCanvasResolution(adaptiveScale);
+  } else if (currentFps > target * 0.95 && adaptiveScale < 1.0) {
+    adaptiveScale = Math.min(1.0, adaptiveScale + 0.005);
+    applyCanvasResolution(adaptiveScale);
+  }
+}
+
 const gameLoop = useGameLoop({
   update(dt) {
     if (appState.mode !== 'playing') return;
+
+    // Adaptive quality
+    adaptQuality(gameLoop.fps.value);
 
     // Camera rotation from mouse
     const { dx, dy } = pointerLock.consumeMovement();
@@ -169,6 +187,7 @@ watch(
         camera.yaw = -Math.PI / 2;
         camera.pitch = 0;
       }
+      adaptiveScale = 1.0;
       applyCanvasResolution(1);
       previewLoop.stop();
       gameLoop.start();

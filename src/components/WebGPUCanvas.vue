@@ -16,9 +16,10 @@ onMounted(() => {
   observer = new ResizeObserver((entries) => {
     for (const entry of entries) {
       const { width, height } = entry.contentRect;
-      const dpr = window.devicePixelRatio || 1;
-      const w = Math.floor(width * dpr);
-      const h = Math.floor(height * dpr);
+      // No DPR scaling — ray marched content doesn't benefit from high
+      // pixel density and DPR 2.0 means 4x the fragment shader work.
+      const w = Math.floor(width);
+      const h = Math.floor(height);
       canvas.width = w;
       canvas.height = h;
       emit('resize', w, h);

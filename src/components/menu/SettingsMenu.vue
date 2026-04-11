@@ -141,6 +141,22 @@ function resetAll(): void {
           <span class="text-right font-mono text-xs text-white/70">{{ graphics.maxRaySteps }}</span>
         </label>
         <label class="flex items-center gap-2">
+          <input v-model="graphics.adaptiveQuality" type="checkbox" class="accent-accent" />
+          <span class="text-xs text-white/50">Adaptive Quality (auto-adjust for target FPS)</span>
+        </label>
+        <label v-if="graphics.adaptiveQuality" class="flex flex-col gap-1">
+          <span class="text-xs text-white/50">Target FPS</span>
+          <input
+            v-model.number="graphics.targetFps"
+            type="range"
+            min="30"
+            max="144"
+            step="1"
+            class="accent-accent"
+          />
+          <span class="text-right font-mono text-xs text-white/70">{{ graphics.targetFps }}</span>
+        </label>
+        <label class="flex items-center gap-2">
           <input v-model="hud.showFps" type="checkbox" class="accent-accent" />
           <span class="text-xs text-white/50">Show FPS</span>
         </label>
