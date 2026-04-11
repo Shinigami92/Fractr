@@ -13,6 +13,8 @@ export interface KeybindingMap {
   cycleColorMode: string;
   cycleFractalType: string;
   toggleDynamicIterations: string;
+  increaseIterations: string;
+  decreaseIterations: string;
 }
 
 const DEFAULT_KEYBINDINGS: KeybindingMap = {
@@ -27,6 +29,8 @@ const DEFAULT_KEYBINDINGS: KeybindingMap = {
   cycleColorMode: 'KeyC',
   cycleFractalType: 'KeyV',
   toggleDynamicIterations: 'KeyI',
+  increaseIterations: 'Period',
+  decreaseIterations: 'Comma',
 };
 
 export const useControlSettings = defineStore('controlSettings', () => {

@@ -228,6 +228,7 @@ function resetAll(): void {
           <p>C — Cycle Color Mode</p>
           <p>V — Cycle Fractal Type</p>
           <p>I — Toggle Dynamic Iterations</p>
+          <p>. / , — Increase/Decrease Max Iterations</p>
         </div>
       </div>
 

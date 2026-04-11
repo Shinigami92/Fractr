@@ -74,6 +74,11 @@ export const useFractalParams = defineStore('fractalParams', () => {
     bailout.value = cfg.bailout?.default ?? 0;
   }
 
+  function adjustIterations(delta: number): void {
+    const cfg = FRACTAL_CONFIGS[fractalType.value].maxIterations;
+    maxIterations.value = Math.max(cfg.min, Math.min(cfg.max, maxIterations.value + delta));
+  }
+
   return {
     fractalType,
     power,
@@ -85,5 +90,6 @@ export const useFractalParams = defineStore('fractalParams', () => {
     cycleColorMode,
     cycleFractalType,
     setFractalType,
+    adjustIterations,
   };
 });

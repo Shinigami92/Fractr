@@ -337,6 +337,12 @@ function onKeyDown(e: KeyboardEvent): void {
     if (e.code === controls.keybindings.toggleDynamicIterations) {
       graphics.dynamicIterations = !graphics.dynamicIterations;
     }
+    if (e.code === controls.keybindings.increaseIterations) {
+      fractal.adjustIterations(1);
+    }
+    if (e.code === controls.keybindings.decreaseIterations) {
+      fractal.adjustIterations(-1);
+    }
   }
 }
 
