@@ -360,14 +360,22 @@ function onContextMenu(e: MouseEvent): void {
   }
 }
 
+function onWheel(e: WheelEvent): void {
+  if (appState.mode !== 'playing') return;
+  e.preventDefault();
+  fractal.adjustIterations(e.deltaY < 0 ? 1 : -1);
+}
+
 onMounted(() => {
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('contextmenu', onContextMenu);
+  window.addEventListener('wheel', onWheel, { passive: false });
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown);
   window.removeEventListener('contextmenu', onContextMenu);
+  window.removeEventListener('wheel', onWheel);
   gameLoop.stop();
   previewLoop.stop();
   pointerLock.unmount();
