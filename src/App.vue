@@ -56,21 +56,34 @@ const pointerLock = usePointerLock(canvasRef);
 let adaptiveScale = 1.0;
 let appliedScale = 1.0;
 let adaptTimer = 0;
-const ADAPT_INTERVAL = 0.5; // Only evaluate every 500ms
-const SCALE_STEP = 0.05; // Quantize to 5% steps
+let isMoving = false;
+const SCALE_STEP = 0.05;
+const DROP_INTERVAL = 0.2; // React fast when FPS drops
+const RISE_INTERVAL = 0.8; // Recover slowly to avoid oscillation
 
-function adaptQuality(dt: number, currentFps: number): void {
+function adaptQuality(dt: number, currentFps: number, moving: boolean): void {
   if (!graphics.adaptiveQuality) return;
 
+  isMoving = moving;
   adaptTimer += dt;
-  if (adaptTimer < ADAPT_INTERVAL) return;
-  adaptTimer = 0;
 
   const target = graphics.targetFps;
-  if (currentFps < target * 0.85 && adaptiveScale > 0.3) {
-    adaptiveScale = Math.max(0.3, adaptiveScale - SCALE_STEP);
-  } else if (currentFps > target * 0.95 && adaptiveScale < 1.0) {
-    adaptiveScale = Math.min(1.0, adaptiveScale + SCALE_STEP);
+  const belowTarget = currentFps < target * 0.85;
+  const interval = belowTarget ? DROP_INTERVAL : RISE_INTERVAL;
+
+  if (adaptTimer < interval) return;
+  adaptTimer = 0;
+
+  // Movement penalty: reduce target scale while moving for smoother experience
+  const movementPenalty = isMoving ? 0.1 : 0;
+  const maxScale = 1.0 - movementPenalty;
+
+  if (belowTarget && adaptiveScale > 0.3) {
+    // Drop faster when far below target
+    const urgency = currentFps < target * 0.5 ? 3 : 1;
+    adaptiveScale = Math.max(0.3, adaptiveScale - SCALE_STEP * urgency);
+  } else if (currentFps > target * 0.95 && adaptiveScale < maxScale) {
+    adaptiveScale = Math.min(maxScale, adaptiveScale + SCALE_STEP);
   }
 
   // Only resize when quantized scale actually changed
@@ -85,9 +98,6 @@ const gameLoop = useGameLoop({
   update(dt) {
     if (appState.mode !== 'playing') return;
 
-    // Adaptive quality
-    adaptQuality(dt, gameLoop.fps.value);
-
     // Camera rotation from mouse
     const { dx, dy } = pointerLock.consumeMovement();
     camera.rotate(dx * controls.mouseSensitivity, -dy * controls.mouseSensitivity);
@@ -95,6 +105,19 @@ const gameLoop = useGameLoop({
     // Camera movement from keyboard
     const speed = controls.cameraSpeed * dt;
     const bindings = controls.keybindings;
+    const moving =
+      isPressed(bindings.moveForward) ||
+      isPressed(bindings.moveBackward) ||
+      isPressed(bindings.moveRight) ||
+      isPressed(bindings.moveLeft) ||
+      isPressed(bindings.moveUp) ||
+      isPressed(bindings.moveDown) ||
+      Math.abs(dx) > 1 ||
+      Math.abs(dy) > 1;
+
+    // Adaptive quality
+    adaptQuality(dt, gameLoop.fps.value, moving);
+
     if (isPressed(bindings.moveForward)) camera.moveForward(speed);
     if (isPressed(bindings.moveBackward)) camera.moveForward(-speed);
     if (isPressed(bindings.moveRight)) camera.moveRight(speed);
