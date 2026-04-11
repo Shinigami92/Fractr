@@ -54,17 +54,30 @@ const { isPressed } = useInput();
 const pointerLock = usePointerLock(canvasRef);
 
 let adaptiveScale = 1.0;
+let appliedScale = 1.0;
+let adaptTimer = 0;
+const ADAPT_INTERVAL = 0.5; // Only evaluate every 500ms
+const SCALE_STEP = 0.05; // Quantize to 5% steps
 
-function adaptQuality(currentFps: number): void {
+function adaptQuality(dt: number, currentFps: number): void {
   if (!graphics.adaptiveQuality) return;
+
+  adaptTimer += dt;
+  if (adaptTimer < ADAPT_INTERVAL) return;
+  adaptTimer = 0;
 
   const target = graphics.targetFps;
   if (currentFps < target * 0.85 && adaptiveScale > 0.3) {
-    adaptiveScale = Math.max(0.3, adaptiveScale - 0.02);
-    applyCanvasResolution(adaptiveScale);
+    adaptiveScale = Math.max(0.3, adaptiveScale - SCALE_STEP);
   } else if (currentFps > target * 0.95 && adaptiveScale < 1.0) {
-    adaptiveScale = Math.min(1.0, adaptiveScale + 0.005);
-    applyCanvasResolution(adaptiveScale);
+    adaptiveScale = Math.min(1.0, adaptiveScale + SCALE_STEP);
+  }
+
+  // Only resize when quantized scale actually changed
+  const quantized = Math.round(adaptiveScale / SCALE_STEP) * SCALE_STEP;
+  if (Math.abs(quantized - appliedScale) >= SCALE_STEP) {
+    appliedScale = quantized;
+    applyCanvasResolution(quantized);
   }
 }
 
@@ -73,7 +86,7 @@ const gameLoop = useGameLoop({
     if (appState.mode !== 'playing') return;
 
     // Adaptive quality
-    adaptQuality(gameLoop.fps.value);
+    adaptQuality(dt, gameLoop.fps.value);
 
     // Camera rotation from mouse
     const { dx, dy } = pointerLock.consumeMovement();
@@ -188,6 +201,8 @@ watch(
         camera.pitch = 0;
       }
       adaptiveScale = 1.0;
+      appliedScale = 1.0;
+      adaptTimer = 0;
       applyCanvasResolution(1);
       previewLoop.stop();
       gameLoop.start();
