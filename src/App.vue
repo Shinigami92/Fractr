@@ -147,7 +147,8 @@ const gameLoop = useGameLoop({
     );
     const absDist = Math.abs(dist);
     const speedScale = Math.max(0.001, Math.min(1, absDist));
-    const speed = controls.cameraSpeed * speedScale * dt;
+    const sprint = isPressed('ShiftLeft') || isPressed('ShiftRight') ? 2 : 1;
+    const speed = controls.cameraSpeed * speedScale * sprint * dt;
 
     // Dynamic iterations: more detail when close, fewer when far
     let effectiveIterations = fractal.maxIterations;
