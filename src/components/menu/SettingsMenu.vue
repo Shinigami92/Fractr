@@ -171,6 +171,10 @@ function resetAll(): void {
           <span class="text-right font-mono text-xs text-white/70">{{ graphics.targetFps }}</span>
         </label>
         <label class="flex items-center gap-2">
+          <input v-model="graphics.dynamicIterations" type="checkbox" class="accent-accent" />
+          <span class="text-xs text-white/50">Dynamic Iterations (more detail when close)</span>
+        </label>
+        <label class="flex items-center gap-2">
           <input v-model="hud.showFps" type="checkbox" class="accent-accent" />
           <span class="text-xs text-white/50">Show FPS</span>
         </label>
@@ -223,6 +227,7 @@ function resetAll(): void {
           <p>H — Toggle Crosshair</p>
           <p>C — Cycle Color Mode</p>
           <p>V — Cycle Fractal Type</p>
+          <p>I — Toggle Dynamic Iterations</p>
         </div>
       </div>
 

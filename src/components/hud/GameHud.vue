@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { FRACTAL_CONFIGS, useFractalParams } from '../../stores/fractalParams';
+import { useGraphicsSettings } from '../../stores/graphicsSettings';
 import { useHudSettings } from '../../stores/hudSettings';
 import Crosshair from './Crosshair.vue';
 
 const props = defineProps<{
   fps: number;
   camera: { x: number; y: number; z: number; yaw: number; pitch: number };
+  effectiveIterations: number;
 }>();
 
 const hud = useHudSettings();
 const fractal = useFractalParams();
+const graphics = useGraphicsSettings();
 
 function toDeg(rad: number): string {
   return ((rad * 180) / Math.PI).toFixed(1);
@@ -37,7 +40,9 @@ function toDeg(rad: number): string {
           <template v-if="fractal.config.power">
             {{ fractal.config.power.label }}: {{ fractal.power.toFixed(1) }}
           </template>
-          Iter: {{ fractal.maxIterations }}
+          Iter: {{ props.effectiveIterations }}/{{ fractal.maxIterations }}
+          <span v-if="graphics.dynamicIterations" class="text-cyan/60">[dyn]</span>
+          <span v-else class="text-white/20">[fixed]</span>
           <template v-if="fractal.config.bailout">
             Bail: {{ fractal.bailout.toFixed(1) }}
           </template>

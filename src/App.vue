@@ -32,6 +32,7 @@ const gpuError = ref<string | null>(null);
 
 const camera = new FPSCamera(0, 0, 3);
 const cameraPos = ref({ x: 0, y: 0, z: 3, yaw: 0, pitch: 0 });
+const currentIterations = ref(0);
 
 function resetCamera(): void {
   camera.position[0] = 0;
@@ -124,8 +125,18 @@ const gameLoop = useGameLoop({
       camera.position[2]!,
       { power: fractal.power, maxIterations: fractal.maxIterations, bailout: fractal.bailout },
     );
-    const speedScale = Math.max(0.001, Math.min(1, Math.abs(dist)));
+    const absDist = Math.abs(dist);
+    const speedScale = Math.max(0.001, Math.min(1, absDist));
     const speed = controls.cameraSpeed * speedScale * dt;
+
+    // Dynamic iterations: more detail when close, fewer when far
+    let effectiveIterations = fractal.maxIterations;
+    if (graphics.dynamicIterations) {
+      const iterScale = Math.max(0, Math.min(1, -Math.log10(Math.max(absDist, 0.0001)) / 4));
+      const minIter = Math.max(4, Math.ceil(fractal.maxIterations * 0.3));
+      effectiveIterations = Math.ceil(minIter + (fractal.maxIterations - minIter) * iterScale);
+    }
+    currentIterations.value = effectiveIterations;
 
     const bindings = controls.keybindings;
     const moving =
@@ -162,7 +173,7 @@ const gameLoop = useGameLoop({
       camera,
       {
         power: fractal.power,
-        maxIterations: fractal.maxIterations,
+        maxIterations: effectiveIterations,
         bailout: fractal.bailout,
         colorMode: COLOR_MODE_MAP[fractal.colorMode],
         maxRaySteps: graphics.maxRaySteps,
@@ -246,6 +257,7 @@ watch(
   (type) => {
     renderer?.setFractalType(type);
     resetCamera();
+    graphics.dynamicIterations = true;
   },
 );
 watch(
@@ -322,6 +334,9 @@ function onKeyDown(e: KeyboardEvent): void {
       fractal.cycleFractalType();
       resetCamera();
     }
+    if (e.code === controls.keybindings.toggleDynamicIterations) {
+      graphics.dynamicIterations = !graphics.dynamicIterations;
+    }
   }
 }
 
@@ -364,7 +379,12 @@ onUnmounted(() => {
       <TitleScreen v-if="appState.mode === 'title'" />
       <PauseMenu v-if="appState.mode === 'paused'" />
       <SettingsMenu v-if="appState.mode === 'settings'" />
-      <GameHud v-if="appState.mode === 'playing'" :fps="gameLoop.fps.value" :camera="cameraPos" />
+      <GameHud
+        v-if="appState.mode === 'playing'"
+        :fps="gameLoop.fps.value"
+        :camera="cameraPos"
+        :effective-iterations="currentIterations"
+      />
     </template>
   </div>
 </template>
