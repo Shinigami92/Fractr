@@ -207,6 +207,7 @@ function resetAll(): void {
           <p>Escape — Pause</p>
           <p>F3 — Toggle HUD</p>
           <p>H — Toggle Crosshair</p>
+          <p>C — Cycle Color Mode</p>
         </div>
       </div>
 

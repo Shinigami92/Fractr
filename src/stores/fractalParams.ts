@@ -19,5 +19,12 @@ export const useFractalParams = defineStore('fractalParams', () => {
     colorMode.value = 'distance';
   }
 
-  return { fractalType, power, maxIterations, bailout, colorMode, reset };
+  const COLOR_MODES: ColorMode[] = ['distance', 'orbit_trap', 'iteration'];
+
+  function cycleColorMode(): void {
+    const idx = COLOR_MODES.indexOf(colorMode.value);
+    colorMode.value = COLOR_MODES[(idx + 1) % COLOR_MODES.length]!;
+  }
+
+  return { fractalType, power, maxIterations, bailout, colorMode, reset, cycleColorMode };
 });
