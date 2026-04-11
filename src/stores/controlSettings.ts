@@ -15,6 +15,7 @@ export interface KeybindingMap {
   toggleDynamicIterations: string;
   increaseIterations: string;
   decreaseIterations: string;
+  copyShareURL: string;
 }
 
 const DEFAULT_KEYBINDINGS: KeybindingMap = {
@@ -31,6 +32,7 @@ const DEFAULT_KEYBINDINGS: KeybindingMap = {
   toggleDynamicIterations: 'KeyI',
   increaseIterations: 'Period',
   decreaseIterations: 'Comma',
+  copyShareURL: 'KeyP',
 };
 
 export const useControlSettings = defineStore('controlSettings', () => {

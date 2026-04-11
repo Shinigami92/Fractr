@@ -17,6 +17,7 @@ import { useControlSettings } from './stores/controlSettings';
 import { type ColorMode, useFractalParams } from './stores/fractalParams';
 import { useGraphicsSettings } from './stores/graphicsSettings';
 import { useHudSettings } from './stores/hudSettings';
+import { buildShareURL, readStateFromURL } from './utils/urlState';
 
 const appState = useAppState();
 const fractal = useFractalParams();
@@ -24,15 +25,34 @@ const graphics = useGraphicsSettings();
 const controls = useControlSettings();
 const hudSettings = useHudSettings();
 
-// Always start with Mandelbulb on page load
-fractal.setFractalType('mandelbulb');
-
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const gpuError = ref<string | null>(null);
+const shareNotification = ref(false);
 
 const camera = new FPSCamera(0, 0, 3);
 const cameraPos = ref({ x: 0, y: 0, z: 3, yaw: 0, pitch: 0 });
 const currentIterations = ref(0);
+
+// Restore state from URL or default to Mandelbulb
+const urlState = readStateFromURL();
+let startFromURL = false;
+if (urlState) {
+  fractal.fractalType = urlState.fractalType;
+  fractal.power = urlState.power;
+  fractal.maxIterations = urlState.maxIterations;
+  fractal.bailout = urlState.bailout;
+  fractal.colorMode = urlState.colorMode;
+  camera.position[0] = urlState.x;
+  camera.position[1] = urlState.y;
+  camera.position[2] = urlState.z;
+  camera.yaw = urlState.yaw;
+  camera.pitch = urlState.pitch;
+  startFromURL = true;
+  // Clean the URL so refresh goes back to default
+  window.history.replaceState({}, '', window.location.pathname);
+} else {
+  fractal.setFractalType('mandelbulb');
+}
 
 function resetCamera(): void {
   camera.position[0] = 0;
@@ -239,8 +259,12 @@ async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
     renderer.setColorMode(fractal.colorMode);
     startTime = performance.now();
 
-    // Start with preview rendering for title screen
-    previewLoop.start();
+    if (startFromURL) {
+      // Jump directly into 3D view from shared URL
+      appState.startGame();
+    } else {
+      previewLoop.start();
+    }
   } catch (e) {
     gpuError.value = e instanceof Error ? e.message : 'Unknown WebGPU error';
   }
@@ -272,9 +296,10 @@ watch(
   () => appState.mode,
   (mode, oldMode) => {
     if (mode === 'playing') {
-      if (oldMode === 'loading') {
+      if (oldMode === 'loading' && !startFromURL) {
         resetCamera();
       }
+      startFromURL = false;
       adaptiveScale = 1.0;
       appliedScale = 1.0;
       adaptTimer = 0;
@@ -345,6 +370,25 @@ function onKeyDown(e: KeyboardEvent): void {
     if (e.code === controls.keybindings.decreaseIterations) {
       fractal.adjustIterations(-1);
     }
+    if (e.code === controls.keybindings.copyShareURL) {
+      const url = buildShareURL({
+        fractalType: fractal.fractalType,
+        power: fractal.power,
+        maxIterations: fractal.maxIterations,
+        bailout: fractal.bailout,
+        colorMode: fractal.colorMode,
+        x: camera.position[0]!,
+        y: camera.position[1]!,
+        z: camera.position[2]!,
+        yaw: camera.yaw,
+        pitch: camera.pitch,
+      });
+      navigator.clipboard.writeText(url);
+      shareNotification.value = true;
+      setTimeout(() => {
+        shareNotification.value = false;
+      }, 2000);
+    }
   }
 }
 
@@ -409,6 +453,26 @@ onUnmounted(() => {
         :camera="cameraPos"
         :effective-iterations="currentIterations"
       />
+
+      <Transition name="fade">
+        <div
+          v-if="shareNotification"
+          class="pointer-events-none fixed bottom-8 left-1/2 z-30 -translate-x-1/2 border border-white/10 bg-surface-dim/90 px-4 py-2 font-mono text-sm text-accent-bright"
+        >
+          Share URL copied to clipboard
+        </div>
+      </Transition>
     </template>
   </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
