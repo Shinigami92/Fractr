@@ -160,24 +160,28 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
 };
 
 const FRACTAL_TYPES: FractalType[] = [
+  // Organic bulbs
   'mandelbulb',
-  'mandelbox',
-  'menger',
-  'sierpinski',
-  'quatjulia',
-  'kleinian',
-  'koch3d',
-  'apollonian',
-  'juliabulb',
-  'octahedron',
-  'cantordust',
   'burningship',
   'tricorn',
+  'xenodreambuie',
+  'juliabulb',
   'cospower2',
+  'bristorbrot',
+  'quatjulia',
+  // Architectural boxes
+  'mandelbox',
   'kaleidobox',
   'spudsville',
-  'bristorbrot',
-  'xenodreambuie',
+  // Geometric IFS
+  'menger',
+  'sierpinski',
+  'koch3d',
+  'octahedron',
+  'cantordust',
+  'apollonian',
+  // Exotic
+  'kleinian',
   'gyroid',
 ];
 const COLOR_MODES: ColorMode[] = [
