@@ -20,9 +20,9 @@ const FRACTALS = [
     power: -1.5,
     iter: 15,
     bail: 100,
-    x: 2.0,
-    y: 1.0,
-    z: 2.0,
+    x: 4.0,
+    y: 2.5,
+    z: 4.0,
     yaw: -2.35,
     pitch: -0.3,
   },
@@ -49,7 +49,7 @@ const FRACTALS = [
     yaw: -2.35,
     pitch: -0.35,
   },
-  { type: 'kleinian', power: 0, iter: 12, bail: 100, x: 0, y: 0, z: 4, yaw: -1.57, pitch: 0 },
+  { type: 'kleinian', power: 0, iter: 6, bail: 100, x: 2, y: 1, z: 3, yaw: -2.0, pitch: -0.2 },
   {
     type: 'koch3d',
     power: 0,
@@ -143,9 +143,9 @@ const FRACTALS = [
     power: -1.5,
     iter: 15,
     bail: 100,
-    x: 2.0,
-    y: 1.0,
-    z: 2.0,
+    x: 4.0,
+    y: 2.5,
+    z: 4.0,
     yaw: -2.35,
     pitch: -0.3,
   },
@@ -185,8 +185,8 @@ const FRACTALS = [
   { type: 'gyroid', power: 5, iter: 2, bail: 100, x: 0, y: 0, z: 1.5, yaw: -1.57, pitch: 0 },
 ];
 
-const WIDTH = 640;
-const HEIGHT = 360;
+const WIDTH = 960;
+const HEIGHT = 540;
 const OUTPUT_DIR = resolve(import.meta.dirname, '../public/previews');
 const PORT = 4173;
 
@@ -247,7 +247,7 @@ async function main() {
         p: String(fractal.power),
         i: String(fractal.iter),
         b: String(fractal.bail),
-        c: 'distance',
+        c: 'glow',
         x: String(fractal.x),
         y: String(fractal.y),
         z: String(fractal.z),
