@@ -15,6 +15,8 @@ export interface KeybindingMap {
   toggleDynamicIterations: string;
   increaseIterations: string;
   decreaseIterations: string;
+  increaseBailout: string;
+  decreaseBailout: string;
   copyShareURL: string;
   cycleRenderMode: string;
 }
@@ -33,6 +35,8 @@ const DEFAULT_KEYBINDINGS: KeybindingMap = {
   toggleDynamicIterations: 'KeyI',
   increaseIterations: 'Period',
   decreaseIterations: 'Comma',
+  increaseBailout: 'KeyK',
+  decreaseBailout: 'KeyJ',
   copyShareURL: 'KeyP',
   cycleRenderMode: 'KeyR',
 };

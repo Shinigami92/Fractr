@@ -246,6 +246,7 @@ function resetAll(): void {
           <p>V — Cycle Fractal Type</p>
           <p>I — Toggle Dynamic Iterations</p>
           <p>. / , — Increase/Decrease Max Iterations</p>
+          <p>K / J — Increase/Decrease Bailout</p>
           <p>R — Cycle Render Mode</p>
           <p>P — Copy Share URL</p>
         </div>

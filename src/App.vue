@@ -558,6 +558,12 @@ function onKeyDown(e: KeyboardEvent): void {
     if (e.code === controls.keybindings.decreaseIterations) {
       fractal.adjustIterations(-1);
     }
+    if (e.code === controls.keybindings.increaseBailout) {
+      fractal.adjustBailout(1);
+    }
+    if (e.code === controls.keybindings.decreaseBailout) {
+      fractal.adjustBailout(-1);
+    }
     if (e.code === controls.keybindings.copyShareURL) {
       const url = buildShareURL({
         fractalType: fractal.fractalType,
