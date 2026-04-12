@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import GameHud from './components/hud/GameHud.vue';
+import RadialMenu from './components/hud/RadialMenu.vue';
 import FractalSelectScreen from './components/menu/FractalSelectScreen.vue';
 import PauseMenu from './components/menu/PauseMenu.vue';
 import SettingsMenu from './components/menu/SettingsMenu.vue';
@@ -15,7 +16,15 @@ import { WebGPUContext } from './engine/gpu/WebGPUContext';
 import { Renderer } from './engine/Renderer';
 import { useAppState } from './stores/appState';
 import { useControlSettings } from './stores/controlSettings';
-import { type ColorMode, useFractalParams } from './stores/fractalParams';
+import {
+  COLOR_MODE_OPTIONS,
+  type ColorMode,
+  FRACTAL_CONFIGS,
+  type FractalType,
+  RENDER_MODE_OPTIONS,
+  type RenderMode,
+  useFractalParams,
+} from './stores/fractalParams';
 import { useGraphicsSettings } from './stores/graphicsSettings';
 import { useHudSettings } from './stores/hudSettings';
 import { buildShareURL, readStateFromURL } from './utils/urlState';
@@ -29,6 +38,87 @@ const hudSettings = useHudSettings();
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const gpuError = ref<string | null>(null);
 const shareNotification = ref(false);
+
+// Radial menu state
+type RadialMenuType = 'color' | 'render' | 'fractal' | null;
+const radialMenuType = ref<RadialMenuType>(null);
+const radialCursorX = ref(0);
+const radialCursorY = ref(0);
+let radialHoldTimer: ReturnType<typeof setTimeout> | null = null;
+let radialKeyCode: string | null = null;
+const HOLD_DELAY = 200;
+
+const fractalOptions = computed(() =>
+  Object.entries(FRACTAL_CONFIGS).map(([key, cfg]) => ({ value: key, label: cfg.label })),
+);
+
+const radialMenuOptions = computed(() => {
+  switch (radialMenuType.value) {
+    case 'color':
+      return COLOR_MODE_OPTIONS;
+    case 'render':
+      return RENDER_MODE_OPTIONS;
+    case 'fractal':
+      return fractalOptions.value;
+    default:
+      return [];
+  }
+});
+
+const radialSelectedIndex = computed(() => {
+  const cx = radialCursorX.value;
+  const cy = radialCursorY.value;
+  const dist = Math.sqrt(cx * cx + cy * cy);
+  if (dist < 15 || !radialMenuType.value) return -1;
+
+  const count = radialMenuOptions.value.length;
+  const TAU = Math.PI * 2;
+  let angle = Math.atan2(cy, cx) + Math.PI / 2; // offset so 0 = top
+  if (angle < 0) angle += TAU;
+  // Add half-sector offset so boundaries fall between tiles, not at them
+  const halfStep = TAU / count / 2;
+  return Math.floor((((angle + halfStep) % TAU) / TAU) * count) % count;
+});
+
+function openRadialMenu(type: RadialMenuType): void {
+  radialMenuType.value = type;
+  radialCursorX.value = 0;
+  radialCursorY.value = 0;
+}
+
+function closeRadialMenu(apply: boolean, shiftKey: boolean): void {
+  if (apply && radialMenuType.value && radialSelectedIndex.value >= 0) {
+    const selected = radialMenuOptions.value[radialSelectedIndex.value]!;
+    switch (radialMenuType.value) {
+      case 'color':
+        fractal.colorMode = selected.value as ColorMode;
+        break;
+      case 'render':
+        fractal.renderMode = selected.value as RenderMode;
+        break;
+      case 'fractal':
+        fractal.setFractalType(selected.value as FractalType);
+        resetCamera();
+        break;
+    }
+  } else if (!apply && radialMenuType.value === null) {
+    // Quick tap — no menu was shown, cycle
+    if (radialKeyCode === controls.keybindings.cycleColorMode) {
+      fractal.cycleColorMode(shiftKey);
+    } else if (radialKeyCode === controls.keybindings.cycleFractalType) {
+      fractal.cycleFractalType(shiftKey);
+      resetCamera();
+    } else if (radialKeyCode === controls.keybindings.cycleRenderMode) {
+      fractal.cycleRenderMode(shiftKey);
+    }
+  }
+  radialMenuType.value = null;
+  radialKeyCode = null;
+  if (radialHoldTimer) {
+    clearTimeout(radialHoldTimer);
+    radialHoldTimer = null;
+  }
+}
 
 const camera = new FPSCamera(0, 0, 3);
 const cameraPos = ref({ x: 0, y: 0, z: 3, yaw: 0, pitch: 0 });
@@ -149,9 +239,11 @@ const gameLoop = useGameLoop({
   update(dt) {
     if (appState.mode !== 'playing') return;
 
-    // Camera rotation from mouse
+    // Camera rotation from mouse (disabled while radial menu is open)
     const { dx, dy } = pointerLock.consumeMovement();
-    camera.rotate(dx * controls.mouseSensitivity, -dy * controls.mouseSensitivity);
+    if (!radialMenuType.value) {
+      camera.rotate(dx * controls.mouseSensitivity, -dy * controls.mouseSensitivity);
+    }
 
     // Distance-based camera speed: slow near surfaces, fast in open space
     const dist = evaluateSDF(
@@ -442,6 +534,21 @@ function onKeyDown(e: KeyboardEvent): void {
         shareNotification.value = false;
       }, 2000);
     }
+
+    // Radial menu hold detection for cycle keys
+    const radialMap: Record<string, RadialMenuType> = {
+      [controls.keybindings.cycleColorMode]: 'color',
+      [controls.keybindings.cycleRenderMode]: 'render',
+      [controls.keybindings.cycleFractalType]: 'fractal',
+    };
+    const menuType = radialMap[e.code];
+    if (menuType && !e.repeat && !radialHoldTimer && !radialMenuType.value) {
+      radialKeyCode = e.code;
+      radialHoldTimer = setTimeout(() => {
+        radialHoldTimer = null;
+        openRadialMenu(menuType);
+      }, HOLD_DELAY);
+    }
   }
 }
 
@@ -452,19 +559,21 @@ function onCanvasClick(): void {
   }
 }
 
-// Cycle actions on key up — fires once per press, no repeat when held
+// Key up: close radial menu (apply selection) or quick-tap cycle
 function onKeyUp(e: KeyboardEvent): void {
   if (appState.mode !== 'playing' || e.ctrlKey || e.metaKey || e.altKey) return;
 
-  if (e.code === controls.keybindings.cycleColorMode) {
-    fractal.cycleColorMode(e.shiftKey);
+  if (e.code === radialKeyCode) {
+    const menuWasOpen = radialMenuType.value !== null;
+    closeRadialMenu(menuWasOpen, e.shiftKey);
   }
-  if (e.code === controls.keybindings.cycleFractalType) {
-    fractal.cycleFractalType(e.shiftKey);
-    resetCamera();
-  }
-  if (e.code === controls.keybindings.cycleRenderMode) {
-    fractal.cycleRenderMode(e.shiftKey);
+}
+
+// Track mouse movement for radial menu while it's open
+function onRadialMouseMove(e: MouseEvent): void {
+  if (radialMenuType.value) {
+    radialCursorX.value += e.movementX;
+    radialCursorY.value += e.movementY;
   }
 }
 
@@ -493,6 +602,7 @@ onMounted(() => {
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('mousedown', onMouseDown);
+  window.addEventListener('mousemove', onRadialMouseMove);
   window.addEventListener('contextmenu', onContextMenu);
   window.addEventListener('wheel', onWheel, { passive: false });
 });
@@ -501,6 +611,7 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown);
   window.removeEventListener('keyup', onKeyUp);
   window.removeEventListener('mousedown', onMouseDown);
+  window.removeEventListener('mousemove', onRadialMouseMove);
   window.removeEventListener('contextmenu', onContextMenu);
   window.removeEventListener('wheel', onWheel);
   gameLoop.stop();
@@ -537,6 +648,14 @@ onUnmounted(() => {
         :camera="cameraPos"
         :effective-iterations="currentIterations"
         :sample-count="sampleCount"
+      />
+
+      <RadialMenu
+        v-if="radialMenuType"
+        :options="radialMenuOptions"
+        :selected-index="radialSelectedIndex"
+        :cursor-x="radialCursorX"
+        :cursor-y="radialCursorY"
       />
 
       <Transition name="fade">
