@@ -35,12 +35,14 @@
   "scripts": {
     "clean": "git clean -fdx --exclude .claude",
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "lint": "oxlint",
-    "ts-check": "vue-tsc --noEmit",
+    "ts-check": "run-s ts-check:app ts-check:node",
+    "ts-check:app": "vue-tsc --noEmit -p tsconfig.app.json",
+    "ts-check:node": "tsc --noEmit -p tsconfig.node.json",
     "generate-previews": "tsx scripts/generate-previews.ts",
     "preflight": "pnpm install && run-s format lint ts-check build"
   },
