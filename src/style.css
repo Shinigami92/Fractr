@@ -12,6 +12,11 @@
   --color-cyan-bright: #67e8f9;
 }
 
+select option {
+  background: #141414;
+  color: white;
+}
+
 html,
 body,
 #app {
