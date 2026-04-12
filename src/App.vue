@@ -431,8 +431,8 @@ function onCanvasClick(): void {
 
 function onMouseDown(e: MouseEvent): void {
   if (appState.mode !== 'playing') return;
-  // Mouse button 4 (browser forward) = toggle dynamic iterations
-  if (e.button === 3) {
+  // Mouse button 5 (browser forward, e.button=4) = toggle dynamic iterations
+  if (e.button === 4) {
     e.preventDefault();
     graphics.dynamicIterations = !graphics.dynamicIterations;
   }
