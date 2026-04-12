@@ -34,6 +34,11 @@ const COLOR_MODES = new Set([
   'curvature',
   'glow',
   'stripe',
+  'fresnel',
+  'depth',
+  'triplanar',
+  'temperature',
+  'chromatic',
 ]);
 
 export function readStateFromURL(): SharedState | null {

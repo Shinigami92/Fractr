@@ -91,6 +91,11 @@ const COLOR_MODE_MAP: Record<ColorMode, number> = {
   curvature: 5,
   glow: 6,
   stripe: 7,
+  fresnel: 8,
+  depth: 9,
+  triplanar: 10,
+  temperature: 11,
+  chromatic: 12,
 };
 
 const { isPressed } = useInput();
@@ -407,6 +412,7 @@ function onKeyDown(e: KeyboardEvent): void {
         z: camera.position[2]!,
         yaw: camera.yaw,
         pitch: camera.pitch,
+        preview: false,
       });
       navigator.clipboard.writeText(url);
       shareNotification.value = true;

@@ -27,7 +27,12 @@ export type ColorMode =
   | 'normal'
   | 'curvature'
   | 'glow'
-  | 'stripe';
+  | 'stripe'
+  | 'fresnel'
+  | 'depth'
+  | 'triplanar'
+  | 'temperature'
+  | 'chromatic';
 
 export interface ParamSliderConfig {
   label: string;
@@ -111,6 +116,11 @@ const COLOR_MODES: ColorMode[] = [
   'curvature',
   'glow',
   'stripe',
+  'fresnel',
+  'depth',
+  'triplanar',
+  'temperature',
+  'chromatic',
 ];
 
 const RENDER_MODES: RenderMode[] = [

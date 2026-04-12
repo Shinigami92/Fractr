@@ -127,6 +127,11 @@ function resetAll(): void {
             <option value="curvature">Curvature</option>
             <option value="glow">Glow</option>
             <option value="stripe">Stripe</option>
+            <option value="fresnel">Fresnel</option>
+            <option value="depth">Depth</option>
+            <option value="triplanar">Triplanar</option>
+            <option value="temperature">Temperature</option>
+            <option value="chromatic">Chromatic</option>
           </select>
         </label>
       </div>

@@ -1,12 +1,17 @@
 // WGSL source imports
 import colorAoSrc from '../../shaders/coloring/ao.wgsl?raw';
+import colorChromaticSrc from '../../shaders/coloring/chromatic.wgsl?raw';
 import colorCurvatureSrc from '../../shaders/coloring/curvature.wgsl?raw';
+import colorDepthSrc from '../../shaders/coloring/depth.wgsl?raw';
 import colorDistanceSrc from '../../shaders/coloring/distance.wgsl?raw';
+import colorFresnelSrc from '../../shaders/coloring/fresnel.wgsl?raw';
 import colorGlowSrc from '../../shaders/coloring/glow.wgsl?raw';
 import colorIterationSrc from '../../shaders/coloring/iteration.wgsl?raw';
 import colorNormalSrc from '../../shaders/coloring/normal.wgsl?raw';
 import colorOrbitTrapSrc from '../../shaders/coloring/orbit_trap.wgsl?raw';
 import colorStripeSrc from '../../shaders/coloring/stripe.wgsl?raw';
+import colorTemperatureSrc from '../../shaders/coloring/temperature.wgsl?raw';
+import colorTriplanarSrc from '../../shaders/coloring/triplanar.wgsl?raw';
 import raySrc from '../../shaders/common/ray.wgsl?raw';
 import uniformsSrc from '../../shaders/common/uniforms.wgsl?raw';
 import conemarcherSrc from '../../shaders/conemarcher.wgsl?raw';
@@ -60,6 +65,11 @@ const COLOR_SOURCES: Record<ColorMode, string> = {
   curvature: colorCurvatureSrc,
   glow: colorGlowSrc,
   stripe: colorStripeSrc,
+  fresnel: colorFresnelSrc,
+  depth: colorDepthSrc,
+  triplanar: colorTriplanarSrc,
+  temperature: colorTemperatureSrc,
+  chromatic: colorChromaticSrc,
 };
 
 export class PipelineManager {
