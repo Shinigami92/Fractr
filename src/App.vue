@@ -361,7 +361,7 @@ function onKeyDown(e: KeyboardEvent): void {
       hudSettings.toggleCrosshair();
     }
     if (e.code === controls.keybindings.cycleColorMode) {
-      fractal.cycleColorMode();
+      fractal.cycleColorMode(e.shiftKey);
     }
     if (e.code === controls.keybindings.cycleFractalType) {
       fractal.cycleFractalType();

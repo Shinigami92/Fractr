@@ -72,9 +72,10 @@ export const useFractalParams = defineStore('fractalParams', () => {
     colorMode.value = 'distance';
   }
 
-  function cycleColorMode(): void {
+  function cycleColorMode(reverse = false): void {
     const idx = COLOR_MODES.indexOf(colorMode.value);
-    colorMode.value = COLOR_MODES[(idx + 1) % COLOR_MODES.length]!;
+    const delta = reverse ? COLOR_MODES.length - 1 : 1;
+    colorMode.value = COLOR_MODES[(idx + delta) % COLOR_MODES.length]!;
   }
 
   function cycleFractalType(): void {
