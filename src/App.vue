@@ -138,7 +138,7 @@ function closeRadialMenu(apply: boolean, shiftKey: boolean): void {
 }
 
 const camera = new FPSCamera(0, 0, 3);
-const cameraPos = ref({ x: 0, y: 0, z: 3, yaw: 0, pitch: 0 });
+const cameraPos = ref({ x: 0, y: 0, z: 3, yaw: 0, pitch: 0, roll: 0 });
 const currentIterations = ref(0);
 const sampleCount = ref(0);
 
@@ -170,6 +170,7 @@ function resetCamera(): void {
   camera.position[2] = cam?.z ?? 3;
   camera.yaw = cam?.yaw ?? -Math.PI / 2;
   camera.pitch = cam?.pitch ?? 0;
+  camera.roll = 0;
 }
 
 let wasMoving = false;
@@ -305,13 +306,14 @@ const gameLoop = useGameLoop({
     currentIterations.value = effectiveIterations;
 
     const bindings = controls.keybindings;
+    const rollSpeed = 1.5 * dt;
     const moving =
       isPressed(bindings.moveForward) ||
       isPressed(bindings.moveBackward) ||
       isPressed(bindings.moveRight) ||
       isPressed(bindings.moveLeft) ||
-      isPressed(bindings.moveUp) ||
-      isPressed(bindings.moveDown) ||
+      isPressed(bindings.rollLeft) ||
+      isPressed(bindings.rollRight) ||
       isPressed('Mouse0') ||
       isPressed('Mouse2') ||
       Math.abs(dx) > 1 ||
@@ -324,8 +326,21 @@ const gameLoop = useGameLoop({
     if (isPressed(bindings.moveBackward) || isPressed('Mouse2')) camera.moveForward(-speed);
     if (isPressed(bindings.moveRight)) camera.moveRight(speed);
     if (isPressed(bindings.moveLeft)) camera.moveRight(-speed);
-    if (isPressed(bindings.moveUp)) camera.moveUp(speed);
-    if (isPressed(bindings.moveDown)) camera.moveUp(-speed);
+    const shifting = isPressed('ShiftLeft') || isPressed('ShiftRight');
+    if (isPressed(bindings.rollLeft)) {
+      if (shifting) {
+        camera.moveUp(-speed);
+      } else {
+        camera.rollCamera(-rollSpeed);
+      }
+    }
+    if (isPressed(bindings.rollRight)) {
+      if (shifting) {
+        camera.moveUp(speed);
+      } else {
+        camera.rollCamera(rollSpeed);
+      }
+    }
 
     // Track movement for render path selection
     isMovingThisFrame = moving;
@@ -343,6 +358,7 @@ const gameLoop = useGameLoop({
       z: camera.position[2]!,
       yaw: camera.yaw,
       pitch: camera.pitch,
+      roll: camera.roll,
     };
 
     // Update renderer uniforms

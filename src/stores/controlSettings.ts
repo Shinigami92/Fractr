@@ -6,8 +6,8 @@ export interface KeybindingMap {
   moveBackward: string;
   moveLeft: string;
   moveRight: string;
-  moveUp: string;
-  moveDown: string;
+  rollLeft: string;
+  rollRight: string;
   toggleHud: string;
   toggleCrosshair: string;
   cycleColorMode: string;
@@ -27,8 +27,8 @@ const DEFAULT_KEYBINDINGS: KeybindingMap = {
   moveBackward: 'KeyS',
   moveLeft: 'KeyA',
   moveRight: 'KeyD',
-  moveUp: 'KeyE',
-  moveDown: 'KeyQ',
+  rollLeft: 'KeyQ',
+  rollRight: 'KeyE',
   toggleHud: 'F3',
   toggleCrosshair: 'KeyH',
   cycleColorMode: 'KeyC',

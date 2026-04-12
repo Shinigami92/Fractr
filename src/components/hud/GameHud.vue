@@ -30,7 +30,7 @@ const RENDER_MODE_LABELS: Record<RenderMode, string> = {
 
 const props = defineProps<{
   fps: number;
-  camera: { x: number; y: number; z: number; yaw: number; pitch: number };
+  camera: { x: number; y: number; z: number; yaw: number; pitch: number; roll: number };
   effectiveIterations: number;
   sampleCount: number;
 }>();
@@ -56,7 +56,10 @@ function toDeg(rad: number): string {
           X: {{ props.camera.x.toFixed(3) }} Y: {{ props.camera.y.toFixed(3) }} Z:
           {{ props.camera.z.toFixed(3) }}
         </div>
-        <div>Yaw: {{ toDeg(props.camera.yaw) }}° Pitch: {{ toDeg(props.camera.pitch) }}°</div>
+        <div>
+          Yaw: {{ toDeg(props.camera.yaw) }}° Pitch: {{ toDeg(props.camera.pitch) }}° Roll:
+          {{ toDeg(props.camera.roll) }}°
+        </div>
         <div class="mt-1 text-white/40">
           {{ FRACTAL_CONFIGS[fractal.fractalType].label }}
           · {{ COLOR_MODE_OPTIONS.find((o) => o.value === fractal.colorMode)?.label }}

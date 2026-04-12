@@ -39,7 +39,8 @@ Ultra-performant 3D fractal explorer powered by WebGPU. Fly through infinite mat
 | Key            | Action                           |
 | -------------- | -------------------------------- |
 | W/A/S/D        | Move                             |
-| E/Q            | Up/Down                          |
+| Q/E            | Roll                             |
+| Shift+Q/E      | Up/Down                          |
 | Mouse          | Look                             |
 | Left click     | Move forward                     |
 | Right click    | Move backward                    |

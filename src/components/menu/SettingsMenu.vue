@@ -241,7 +241,8 @@ function resetAll(): void {
         </label>
         <div class="mt-2 text-xs text-white/30">
           <p>W/A/S/D — Move</p>
-          <p>E/Q — Up/Down</p>
+          <p>Q/E — Roll</p>
+          <p>Shift+Q/E — Up/Down</p>
           <p>Mouse — Look</p>
           <p>Escape — Pause</p>
           <p>F3 — Toggle HUD</p>
