@@ -6,7 +6,8 @@ struct SDFResult {
 }
 
 fn sceneSDF(pos: vec3f) -> SDFResult {
-  // Power-2 Mandelbulb using cosine formula
+  // Power-2 Mandelbulb: spherical squaring with power=2
+  // Uses the standard Mandelbulb formula at low power for smooth organic shapes
   var z = pos;
   var dr = 1.0;
   var r = length(z);
@@ -19,15 +20,23 @@ fn sceneSDF(pos: vec3f) -> SDFResult {
     if (r > bailout) { break; }
     iterations = i + 1u;
 
-    // Power-2 using cosine: z = z^2 + c with spherical squaring
-    let r2 = r * r;
+    // Spherical coordinates
+    let theta = acos(clamp(z.z / r, -1.0, 1.0));
+    let phi = atan2(z.y, z.x);
+
+    // Power-2 transform
+    let rp = r * r;
     dr = 2.0 * r * dr + 1.0;
 
-    let newX = z.x * z.x - z.y * z.y - z.z * z.z;
-    let newY = 2.0 * z.x * z.y * cos(z.z * 0.5);
-    let newZ = 2.0 * z.x * z.z * sin(z.y * 0.5);
+    let newTheta = theta * 2.0;
+    let newPhi = phi * 2.0;
 
-    z = vec3f(newX, newY, newZ) + pos;
+    z = rp * vec3f(
+      sin(newTheta) * cos(newPhi),
+      sin(newTheta) * sin(newPhi),
+      cos(newTheta),
+    ) + pos;
+
     r = length(z);
     minDist = min(minDist, r);
   }

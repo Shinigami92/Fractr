@@ -411,13 +411,15 @@ function cospower2SDF(x: number, y: number, z: number, params: SDFParams): numbe
   let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
   for (let i = 0; i < params.maxIterations; i++) {
     if (r > params.bailout) break;
+    const theta = Math.acos(Math.max(-1, Math.min(1, zz / r)));
+    const phi = Math.atan2(zy, zx);
+    const rp = r * r;
     dr = 2 * r * dr + 1;
-    const nx = zx * zx - zy * zy - zz * zz;
-    const ny = 2 * zx * zy * Math.cos(zz * 0.5);
-    const nz = 2 * zx * zz * Math.sin(zy * 0.5);
-    zx = nx + x;
-    zy = ny + y;
-    zz = nz + z;
+    const nt = theta * 2;
+    const np = phi * 2;
+    zx = rp * Math.sin(nt) * Math.cos(np) + x;
+    zy = rp * Math.sin(nt) * Math.sin(np) + y;
+    zz = rp * Math.cos(nt) + z;
     r = Math.sqrt(zx * zx + zy * zy + zz * zz);
   }
   return (0.5 * Math.log(r) * r) / dr;
