@@ -11,10 +11,11 @@
  * offset 100: colorMode             u32      (4 bytes)
  * offset 104: maxRaySteps           u32      (4 bytes)
  * offset 108: resolutionScale       f32      (4 bytes)
- * Total: 112 bytes (aligned to 16 = 112)
+ * offset 112: frameCount            u32      (4 bytes)
+ * Total: 128 bytes (aligned to 16 = 128, padded from 116)
  */
 
-const BUFFER_SIZE = 112;
+const BUFFER_SIZE = 128;
 
 export class UniformBuffer {
   readonly buffer: GPUBuffer;
@@ -34,7 +35,7 @@ export class UniformBuffer {
   }
 
   setViewProjectionInverse(m: Float32Array): void {
-    this.floatView.set(m, 0); // offset 0, 16 floats
+    this.floatView.set(m, 0);
   }
 
   setCameraPosition(x: number, y: number, z: number): void {
@@ -74,6 +75,10 @@ export class UniformBuffer {
 
   setResolutionScale(scale: number): void {
     this.floatView[27] = scale;
+  }
+
+  setFrameCount(count: number): void {
+    this.uintView[28] = count;
   }
 
   upload(device: GPUDevice): void {

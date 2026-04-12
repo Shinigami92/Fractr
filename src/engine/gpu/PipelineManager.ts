@@ -128,10 +128,40 @@ export class PipelineManager {
     renderMode: RenderMode,
   ): GPURenderPipeline {
     const key = `${fractalType}:${colorMode}:${renderMode}`;
+    return this.buildPipeline(key, fractalType, colorMode, renderMode, this.ctx.format, undefined);
+  }
+
+  getOrCreateAccumPipeline(
+    fractalType: FractalType,
+    colorMode: ColorMode,
+    renderMode: RenderMode,
+  ): GPURenderPipeline {
+    const key = `accum:${fractalType}:${colorMode}:${renderMode}`;
+    return this.buildPipeline(key, fractalType, colorMode, renderMode, 'rgba16float', {
+      color: {
+        srcFactor: 'constant' as GPUBlendFactor,
+        dstFactor: 'one-minus-constant' as GPUBlendFactor,
+        operation: 'add',
+      },
+      alpha: {
+        srcFactor: 'one',
+        dstFactor: 'zero',
+        operation: 'add',
+      },
+    });
+  }
+
+  private buildPipeline(
+    key: string,
+    fractalType: FractalType,
+    colorMode: ColorMode,
+    renderMode: RenderMode,
+    format: GPUTextureFormat,
+    blend: GPUBlendState | undefined,
+  ): GPURenderPipeline {
     let pipeline = this.cache.get(key);
     if (pipeline) return pipeline;
 
-    // Assemble fragment shader from modules
     const fragmentSource = [
       uniformsSrc,
       raySrc,
@@ -164,7 +194,7 @@ export class PipelineManager {
       fragment: {
         module: fragmentModule,
         entryPoint: 'main',
-        targets: [{ format: this.ctx.format }],
+        targets: [{ format, blend }],
       },
       primitive: {
         topology: 'triangle-list',

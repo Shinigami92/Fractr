@@ -24,6 +24,7 @@ const props = defineProps<{
   fps: number;
   camera: { x: number; y: number; z: number; yaw: number; pitch: number };
   effectiveIterations: number;
+  sampleCount: number;
 }>();
 
 const hud = useHudSettings();
@@ -41,7 +42,7 @@ function toDeg(rad: number): string {
       v-if="hud.showFps || hud.showCoordinates"
       class="flex flex-col gap-0.5 p-3 font-mono text-xs text-white/70"
     >
-      <div v-if="hud.showFps">{{ props.fps }} FPS</div>
+      <div v-if="hud.showFps">{{ props.fps }} FPS · {{ props.sampleCount }} samples</div>
       <template v-if="hud.showCoordinates">
         <div>
           X: {{ props.camera.x.toFixed(3) }} Y: {{ props.camera.y.toFixed(3) }} Z:

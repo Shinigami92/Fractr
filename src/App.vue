@@ -33,6 +33,7 @@ const shareNotification = ref(false);
 const camera = new FPSCamera(0, 0, 3);
 const cameraPos = ref({ x: 0, y: 0, z: 3, yaw: 0, pitch: 0 });
 const currentIterations = ref(0);
+const sampleCount = ref(0);
 
 // Restore state from URL or default to Mandelbulb
 const urlState = readStateFromURL();
@@ -196,6 +197,11 @@ const gameLoop = useGameLoop({
     if (isPressed(bindings.moveUp)) camera.moveUp(speed);
     if (isPressed(bindings.moveDown)) camera.moveUp(-speed);
 
+    // Reset accumulation when camera moves
+    if (moving) {
+      renderer?.resetAccumulation();
+    }
+
     // Update reactive camera position for HUD
     cameraPos.value = {
       x: camera.position[0]!,
@@ -221,6 +227,7 @@ const gameLoop = useGameLoop({
   },
   render() {
     renderer?.render();
+    sampleCount.value = renderer?.sampleCount ?? 0;
   },
 });
 
@@ -310,11 +317,20 @@ watch(
 );
 watch(
   () => fractal.colorMode,
-  (mode) => renderer?.setColorMode(mode),
+  (mode) => {
+    renderer?.setColorMode(mode);
+    renderer?.resetAccumulation();
+  },
 );
 watch(
   () => fractal.renderMode,
-  (mode) => renderer?.setRenderMode(mode),
+  (mode) => {
+    renderer?.setRenderMode(mode);
+    renderer?.resetAccumulation();
+  },
+);
+watch([() => fractal.power, () => fractal.maxIterations, () => fractal.bailout], () =>
+  renderer?.resetAccumulation(),
 );
 
 // Handle game state transitions
@@ -510,6 +526,7 @@ onUnmounted(() => {
         :fps="gameLoop.fps.value"
         :camera="cameraPos"
         :effective-iterations="currentIterations"
+        :sample-count="sampleCount"
       />
 
       <Transition name="fade">
