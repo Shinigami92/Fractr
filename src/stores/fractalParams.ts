@@ -10,7 +10,17 @@ export type FractalType =
   | 'kleinian'
   | 'koch3d'
   | 'apollonian'
-  | 'juliabulb';
+  | 'juliabulb'
+  | 'octahedron'
+  | 'cantordust'
+  | 'burningship'
+  | 'tricorn'
+  | 'cospower2'
+  | 'kaleidobox'
+  | 'spudsville'
+  | 'bristorbrot'
+  | 'xenodreambuie'
+  | 'gyroid';
 export type RenderMode =
   | 'ray'
   | 'cone'
@@ -94,6 +104,59 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
   },
+  octahedron: {
+    label: 'Octahedron Fractal',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 8 },
+  },
+  cantordust: {
+    label: 'Cantor Dust 3D',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 10, step: 1, default: 4 },
+  },
+  burningship: {
+    label: 'Burning Ship 3D',
+    power: { label: 'Power', min: 2, max: 16, step: 0.1, default: 8 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  },
+  tricorn: {
+    label: 'Tricorn 3D',
+    power: { label: 'Power', min: 2, max: 16, step: 0.1, default: 8 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  },
+  cospower2: {
+    label: 'Cosine Power-2',
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  },
+  kaleidobox: {
+    label: 'Kaleidoscopic Box',
+    power: { label: 'Scale', min: -3, max: 3, step: 0.1, default: -1.5 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 15 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 200, step: 1, default: 100 },
+  },
+  spudsville: {
+    label: 'Spudsville',
+    power: { label: 'Power', min: 2, max: 12, step: 0.1, default: 4 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 4 },
+  },
+  bristorbrot: {
+    label: 'Bristorbrot',
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  },
+  xenodreambuie: {
+    label: 'Xenodreambuie',
+    power: { label: 'Power', min: 2, max: 16, step: 0.1, default: 8 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  },
+  gyroid: {
+    label: 'Gyroid',
+    power: { label: 'Scale', min: 1, max: 20, step: 0.1, default: 5 },
+    maxIterations: { label: 'Detail Levels', min: 0, max: 5, step: 1, default: 2 },
+  },
 };
 
 const FRACTAL_TYPES: FractalType[] = [
@@ -106,6 +169,16 @@ const FRACTAL_TYPES: FractalType[] = [
   'koch3d',
   'apollonian',
   'juliabulb',
+  'octahedron',
+  'cantordust',
+  'burningship',
+  'tricorn',
+  'cospower2',
+  'kaleidobox',
+  'spudsville',
+  'bristorbrot',
+  'xenodreambuie',
+  'gyroid',
 ];
 const COLOR_MODES: ColorMode[] = [
   // Visually striking

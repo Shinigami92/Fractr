@@ -21,14 +21,24 @@ import pathtraceSrc from '../../shaders/pathtrace.wgsl?raw';
 import raymarcherSrc from '../../shaders/raymarcher.wgsl?raw';
 import reflectionSrc from '../../shaders/reflection.wgsl?raw';
 import apollonianSrc from '../../shaders/sdf/apollonian.wgsl?raw';
+import bristorbrotSrc from '../../shaders/sdf/bristorbrot.wgsl?raw';
+import burningshipSrc from '../../shaders/sdf/burningship.wgsl?raw';
+import cantordustSrc from '../../shaders/sdf/cantordust.wgsl?raw';
+import cospower2Src from '../../shaders/sdf/cospower2.wgsl?raw';
+import gyroidSrc from '../../shaders/sdf/gyroid.wgsl?raw';
 import juliabulbSrc from '../../shaders/sdf/juliabulb.wgsl?raw';
+import kaleidoboxSrc from '../../shaders/sdf/kaleidobox.wgsl?raw';
 import kleinianSrc from '../../shaders/sdf/kleinian.wgsl?raw';
 import koch3dSrc from '../../shaders/sdf/koch3d.wgsl?raw';
 import mandelboxSrc from '../../shaders/sdf/mandelbox.wgsl?raw';
 import mandelbulbSrc from '../../shaders/sdf/mandelbulb.wgsl?raw';
 import mengerSrc from '../../shaders/sdf/menger.wgsl?raw';
+import octahedronSrc from '../../shaders/sdf/octahedron.wgsl?raw';
 import quatjuliaSrc from '../../shaders/sdf/quatjulia.wgsl?raw';
 import sierpinskiSrc from '../../shaders/sdf/sierpinski.wgsl?raw';
+import spudsvilleSrc from '../../shaders/sdf/spudsville.wgsl?raw';
+import tricornSrc from '../../shaders/sdf/tricorn.wgsl?raw';
+import xenodreambuieSrc from '../../shaders/sdf/xenodreambuie.wgsl?raw';
 import softshadowSrc from '../../shaders/softshadow.wgsl?raw';
 import volumeSrc from '../../shaders/volume.wgsl?raw';
 import type { ColorMode, FractalType, RenderMode } from '../../stores/fractalParams';
@@ -54,6 +64,16 @@ const SDF_SOURCES: Record<FractalType, string> = {
   koch3d: koch3dSrc,
   apollonian: apollonianSrc,
   juliabulb: juliabulbSrc,
+  octahedron: octahedronSrc,
+  cantordust: cantordustSrc,
+  burningship: burningshipSrc,
+  tricorn: tricornSrc,
+  cospower2: cospower2Src,
+  kaleidobox: kaleidoboxSrc,
+  spudsville: spudsvilleSrc,
+  bristorbrot: bristorbrotSrc,
+  xenodreambuie: xenodreambuieSrc,
+  gyroid: gyroidSrc,
 };
 
 const COLOR_SOURCES: Record<ColorMode, string> = {

@@ -24,6 +24,16 @@ const FRACTAL_TYPES = new Set([
   'koch3d',
   'apollonian',
   'juliabulb',
+  'octahedron',
+  'cantordust',
+  'burningship',
+  'tricorn',
+  'cospower2',
+  'kaleidobox',
+  'spudsville',
+  'bristorbrot',
+  'xenodreambuie',
+  'gyroid',
 ]);
 const COLOR_MODES = new Set([
   'distance',
