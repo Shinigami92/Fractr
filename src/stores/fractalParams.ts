@@ -108,19 +108,22 @@ const FRACTAL_TYPES: FractalType[] = [
   'juliabulb',
 ];
 const COLOR_MODES: ColorMode[] = [
-  'distance',
-  'orbit_trap',
-  'iteration',
-  'ao',
-  'normal',
-  'curvature',
+  // Visually striking
   'glow',
-  'stripe',
-  'fresnel',
-  'depth',
-  'triplanar',
-  'temperature',
+  'distance',
   'chromatic',
+  'temperature',
+  'orbit_trap',
+  'stripe',
+  // Lighting-focused
+  'ao',
+  'fresnel',
+  'curvature',
+  'iteration',
+  // Analytical
+  'triplanar',
+  'normal',
+  'depth',
 ];
 
 const RENDER_MODES: RenderMode[] = [
@@ -138,14 +141,14 @@ export const useFractalParams = defineStore('fractalParams', () => {
   const power = ref(8);
   const maxIterations = ref(20);
   const bailout = ref(2);
-  const colorMode = ref<ColorMode>('distance');
+  const colorMode = ref<ColorMode>('glow');
   const renderMode = ref<RenderMode>('ray');
 
   const config = computed(() => FRACTAL_CONFIGS[fractalType.value]);
 
   function reset(): void {
     setFractalType('mandelbulb');
-    colorMode.value = 'distance';
+    colorMode.value = 'glow';
     renderMode.value = 'ray';
   }
 
