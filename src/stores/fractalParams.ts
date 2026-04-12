@@ -198,15 +198,21 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     short: 'Kleinian',
     maxIterations: { label: 'Max Iterations', min: 1, max: 20, step: 1, default: 10 },
     camera: { x: 0, y: 0, z: 5, yaw: -Math.PI / 2, pitch: 0 },
-    defaultDynamicIterations: false
+    defaultDynamicIterations: false,
   },
   gyroid: {
     label: 'Gyroid',
     short: 'Gyroid',
     power: { label: 'Scale', min: 1, max: 20, step: 0.1, default: 5 },
-    camera: { x: 0.224, y: 0.064, z: 1.249, yaw: (-47.1 * Math.PI) / 180, pitch: (-32.7 * Math.PI) / 180 },
+    camera: {
+      x: 0.224,
+      y: 0.064,
+      z: 1.249,
+      yaw: (-47.1 * Math.PI) / 180,
+      pitch: (-32.7 * Math.PI) / 180,
+    },
     maxIterations: { label: 'Detail Levels', min: 0, max: 5, step: 1, default: 2 },
-    defaultDynamicIterations: false
+    defaultDynamicIterations: false,
   },
 };
 
