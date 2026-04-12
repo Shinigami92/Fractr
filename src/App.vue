@@ -375,7 +375,7 @@ function onKeyDown(e: KeyboardEvent): void {
       fractal.cycleColorMode(e.shiftKey);
     }
     if (e.code === controls.keybindings.cycleFractalType) {
-      fractal.cycleFractalType();
+      fractal.cycleFractalType(e.shiftKey);
       resetCamera();
     }
     if (e.code === controls.keybindings.toggleDynamicIterations) {

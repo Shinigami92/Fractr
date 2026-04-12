@@ -125,9 +125,10 @@ export const useFractalParams = defineStore('fractalParams', () => {
     colorMode.value = COLOR_MODES[(idx + delta) % COLOR_MODES.length]!;
   }
 
-  function cycleFractalType(): void {
+  function cycleFractalType(reverse = false): void {
     const idx = FRACTAL_TYPES.indexOf(fractalType.value);
-    const next = FRACTAL_TYPES[(idx + 1) % FRACTAL_TYPES.length]!;
+    const delta = reverse ? FRACTAL_TYPES.length - 1 : 1;
+    const next = FRACTAL_TYPES[(idx + delta) % FRACTAL_TYPES.length]!;
     setFractalType(next);
   }
 
