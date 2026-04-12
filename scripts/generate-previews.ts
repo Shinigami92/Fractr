@@ -1,6 +1,6 @@
 import { chromium } from '@playwright/test';
 import { type ChildProcess, execSync, spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const FRACTALS = [
@@ -262,9 +262,12 @@ async function main() {
       await page.waitForTimeout(3000);
 
       const canvas = page.locator('canvas');
-      const outPath = resolve(OUTPUT_DIR, `${fractal.type}.png`);
-      await canvas.screenshot({ path: outPath, type: 'png' });
-      console.log(`  Saved ${outPath}`);
+      const pngPath = resolve(OUTPUT_DIR, `${fractal.type}.png`);
+      const webpPath = resolve(OUTPUT_DIR, `${fractal.type}.webp`);
+      await canvas.screenshot({ path: pngPath, type: 'png' });
+      execSync(`cwebp -q 85 "${pngPath}" -o "${webpPath}"`, { stdio: 'pipe' });
+      unlinkSync(pngPath);
+      console.log(`  Saved ${webpPath}`);
 
       await page.close();
     }

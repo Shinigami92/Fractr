@@ -50,7 +50,7 @@ function onImgError(key: string): void {
             <div class="relative aspect-video w-full overflow-hidden bg-surface-dim">
               <img
                 v-if="!imgErrors.has(key)"
-                :src="`previews/${key}.png`"
+                :src="`previews/${key}.webp`"
                 :alt="cfg.label"
                 class="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
                 loading="lazy"
