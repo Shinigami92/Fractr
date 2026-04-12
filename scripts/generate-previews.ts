@@ -149,7 +149,17 @@ const FRACTALS = [
     yaw: -2.35,
     pitch: -0.3,
   },
-  { type: 'spudsville', power: 4, iter: 16, bail: 50, x: 0, y: 0, z: 2.1, yaw: -1.57, pitch: 0 },
+  {
+    type: 'spudsville',
+    power: 4,
+    iter: 16,
+    bail: 50,
+    x: 2.0,
+    y: 1.5,
+    z: 3.0,
+    yaw: -2.35,
+    pitch: -0.3,
+  },
   {
     type: 'bristorbrot',
     power: 0,
@@ -297,6 +307,7 @@ async function main() {
         z: String(fractal.z),
         yaw: String(fractal.yaw),
         pitch: String(fractal.pitch),
+        dyn: '0',
         preview: '1',
       });
 

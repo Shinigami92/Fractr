@@ -155,7 +155,7 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     power: { label: 'Power', min: 2, max: 12, step: 0.1, default: 4 },
     maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
     bailout: { label: 'Bailout Radius', min: 1, max: 200, step: 1, default: 50 },
-    camera: { x: 0, y: 0, z: 2.1, yaw: -Math.PI / 2, pitch: 0 },
+    camera: { x: 2.0, y: 1.5, z: 3.0, yaw: -2.35, pitch: -0.3 },
   },
   // Geometric IFS
   menger: {
