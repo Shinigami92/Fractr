@@ -141,6 +141,11 @@ function resetAll(): void {
           >
             <option value="ray">Ray Marching</option>
             <option value="cone">Cone Marching</option>
+            <option value="pathtrace">Path Tracing</option>
+            <option value="volume">Volume Rendering</option>
+            <option value="softshadow">Soft Shadows</option>
+            <option value="reflection">Reflections</option>
+            <option value="dof">Depth of Field</option>
           </select>
         </label>
         <label class="flex flex-col gap-1">

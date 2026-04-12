@@ -1,8 +1,18 @@
 <script setup lang="ts">
-import { FRACTAL_CONFIGS, useFractalParams } from '../../stores/fractalParams';
+import { FRACTAL_CONFIGS, type RenderMode, useFractalParams } from '../../stores/fractalParams';
 import { useGraphicsSettings } from '../../stores/graphicsSettings';
 import { useHudSettings } from '../../stores/hudSettings';
 import Crosshair from './Crosshair.vue';
+
+const RENDER_MODE_LABELS: Record<RenderMode, string> = {
+  ray: 'ray march',
+  cone: 'cone march',
+  pathtrace: 'path trace',
+  volume: 'volume',
+  softshadow: 'soft shadows',
+  reflection: 'reflections',
+  dof: 'depth of field',
+};
 
 const props = defineProps<{
   fps: number;
@@ -34,7 +44,7 @@ function toDeg(rad: number): string {
         <div>Yaw: {{ toDeg(props.camera.yaw) }}° Pitch: {{ toDeg(props.camera.pitch) }}°</div>
         <div class="mt-1 text-white/40">
           {{ FRACTAL_CONFIGS[fractal.fractalType].label }}
-          · {{ fractal.colorMode.replace('_', ' ') }} · {{ fractal.renderMode }} marching
+          · {{ fractal.colorMode.replace('_', ' ') }} · {{ RENDER_MODE_LABELS[fractal.renderMode] }}
         </div>
         <div class="text-white/40">
           <template v-if="fractal.config.power">

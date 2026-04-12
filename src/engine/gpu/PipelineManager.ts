@@ -10,8 +10,11 @@ import colorStripeSrc from '../../shaders/coloring/stripe.wgsl?raw';
 import raySrc from '../../shaders/common/ray.wgsl?raw';
 import uniformsSrc from '../../shaders/common/uniforms.wgsl?raw';
 import conemarcherSrc from '../../shaders/conemarcher.wgsl?raw';
+import dofSrc from '../../shaders/dof.wgsl?raw';
 import fullscreenSrc from '../../shaders/fullscreen.wgsl?raw';
+import pathtraceSrc from '../../shaders/pathtrace.wgsl?raw';
 import raymarcherSrc from '../../shaders/raymarcher.wgsl?raw';
+import reflectionSrc from '../../shaders/reflection.wgsl?raw';
 import apollonianSrc from '../../shaders/sdf/apollonian.wgsl?raw';
 import juliabulbSrc from '../../shaders/sdf/juliabulb.wgsl?raw';
 import kleinianSrc from '../../shaders/sdf/kleinian.wgsl?raw';
@@ -21,11 +24,18 @@ import mandelbulbSrc from '../../shaders/sdf/mandelbulb.wgsl?raw';
 import mengerSrc from '../../shaders/sdf/menger.wgsl?raw';
 import quatjuliaSrc from '../../shaders/sdf/quatjulia.wgsl?raw';
 import sierpinskiSrc from '../../shaders/sdf/sierpinski.wgsl?raw';
+import softshadowSrc from '../../shaders/softshadow.wgsl?raw';
+import volumeSrc from '../../shaders/volume.wgsl?raw';
 import type { ColorMode, FractalType, RenderMode } from '../../stores/fractalParams';
 
 const MARCHER_SOURCES: Record<RenderMode, string> = {
   ray: raymarcherSrc,
   cone: conemarcherSrc,
+  pathtrace: pathtraceSrc,
+  volume: volumeSrc,
+  softshadow: softshadowSrc,
+  reflection: reflectionSrc,
+  dof: dofSrc,
 };
 import type { WebGPUContext } from './WebGPUContext';
 

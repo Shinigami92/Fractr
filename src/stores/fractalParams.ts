@@ -11,7 +11,14 @@ export type FractalType =
   | 'koch3d'
   | 'apollonian'
   | 'juliabulb';
-export type RenderMode = 'ray' | 'cone';
+export type RenderMode =
+  | 'ray'
+  | 'cone'
+  | 'pathtrace'
+  | 'volume'
+  | 'softshadow'
+  | 'reflection'
+  | 'dof';
 export type ColorMode =
   | 'distance'
   | 'orbit_trap'
@@ -106,7 +113,15 @@ const COLOR_MODES: ColorMode[] = [
   'stripe',
 ];
 
-const RENDER_MODES: RenderMode[] = ['ray', 'cone'];
+const RENDER_MODES: RenderMode[] = [
+  'ray',
+  'cone',
+  'pathtrace',
+  'volume',
+  'softshadow',
+  'reflection',
+  'dof',
+];
 
 export const useFractalParams = defineStore('fractalParams', () => {
   const fractalType = ref<FractalType>('mandelbulb');
