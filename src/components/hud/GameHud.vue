@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { FRACTAL_CONFIGS, type RenderMode, useFractalParams } from '../../stores/fractalParams';
+import {
+  COLOR_MODE_OPTIONS,
+  FRACTAL_CONFIGS,
+  type RenderMode,
+  useFractalParams,
+} from '../../stores/fractalParams';
 import { useGraphicsSettings } from '../../stores/graphicsSettings';
 import { useHudSettings } from '../../stores/hudSettings';
 import Crosshair from './Crosshair.vue';
@@ -54,7 +59,8 @@ function toDeg(rad: number): string {
         <div>Yaw: {{ toDeg(props.camera.yaw) }}° Pitch: {{ toDeg(props.camera.pitch) }}°</div>
         <div class="mt-1 text-white/40">
           {{ FRACTAL_CONFIGS[fractal.fractalType].label }}
-          · {{ fractal.colorMode.replace('_', ' ') }} · {{ RENDER_MODE_LABELS[fractal.renderMode] }}
+          · {{ COLOR_MODE_OPTIONS.find((o) => o.value === fractal.colorMode)?.label }} ·
+          {{ RENDER_MODE_LABELS[fractal.renderMode] }}
         </div>
         <div class="text-white/40">
           <template v-if="fractal.config.power">

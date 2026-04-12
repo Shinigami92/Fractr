@@ -247,10 +247,21 @@ const RENDER_MODES: RenderMode[] = [
   'volume',
 ];
 
-export const COLOR_MODE_OPTIONS: { value: ColorMode; label: string }[] = COLOR_MODES.map((m) => ({
-  value: m,
-  label: m.replace('_', ' '),
-}));
+export const COLOR_MODE_OPTIONS: { value: ColorMode; label: string }[] = [
+  { value: 'glow', label: 'Glow' },
+  { value: 'distance', label: 'Distance Estimation' },
+  { value: 'chromatic', label: 'Chromatic' },
+  { value: 'temperature', label: 'Temperature' },
+  { value: 'orbit_trap', label: 'Orbit Trap' },
+  { value: 'stripe', label: 'Stripe' },
+  { value: 'ao', label: 'Ambient Occlusion' },
+  { value: 'fresnel', label: 'Fresnel' },
+  { value: 'curvature', label: 'Curvature' },
+  { value: 'iteration', label: 'Iteration Gradient' },
+  { value: 'triplanar', label: 'Triplanar' },
+  { value: 'normal', label: 'Normal' },
+  { value: 'depth', label: 'Depth' },
+];
 
 export const RENDER_MODE_OPTIONS: { value: RenderMode; label: string }[] = [
   { value: 'ray', label: 'Ray Marching' },
