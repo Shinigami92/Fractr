@@ -3,7 +3,18 @@ import { type ChildProcess, execSync, spawn } from 'node:child_process';
 import { mkdirSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const FRACTALS = [
+const FRACTALS: {
+  type: string;
+  power: number;
+  iter: number;
+  bail: number;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  pitch: number;
+  roll?: number;
+}[] = [
   {
     type: 'mandelbulb',
     power: 8,
@@ -307,6 +318,7 @@ async function main() {
         z: String(fractal.z),
         yaw: String(fractal.yaw),
         pitch: String(fractal.pitch),
+        roll: String(fractal.roll ?? 0),
         dyn: '0',
         preview: '1',
       });
