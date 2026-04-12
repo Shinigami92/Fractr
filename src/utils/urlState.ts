@@ -11,6 +11,7 @@ export interface SharedState {
   z: number;
   yaw: number;
   pitch: number;
+  preview: boolean;
 }
 
 const FRACTAL_TYPES = new Set([
@@ -60,6 +61,7 @@ export function readStateFromURL(): SharedState | null {
     z: get('z', 3),
     yaw: get('yaw', -Math.PI / 2),
     pitch: get('pitch', 0),
+    preview: params.get('preview') === '1',
   };
 }
 

@@ -1,12 +1,16 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-export type AppMode = 'title' | 'loading' | 'playing' | 'paused' | 'settings';
+export type AppMode = 'title' | 'select' | 'loading' | 'playing' | 'paused' | 'settings';
 export type SettingsSource = 'title' | 'pause';
 
 export const useAppState = defineStore('appState', () => {
   const mode = ref<AppMode>('title');
   const settingsSource = ref<SettingsSource>('title');
+
+  function openSelect(): void {
+    mode.value = 'select';
+  }
 
   function startGame(): void {
     mode.value = 'loading';
@@ -40,6 +44,7 @@ export const useAppState = defineStore('appState', () => {
   return {
     mode,
     settingsSource,
+    openSelect,
     startGame,
     onLoaded,
     pause,

@@ -5,7 +5,7 @@ import MenuButton from './MenuButton.vue';
 const appState = useAppState();
 
 function onStart(): void {
-  appState.startGame();
+  appState.openSelect();
 }
 
 function onSettings(): void {

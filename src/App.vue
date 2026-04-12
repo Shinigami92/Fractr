@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import GameHud from './components/hud/GameHud.vue';
+import FractalSelectScreen from './components/menu/FractalSelectScreen.vue';
 import PauseMenu from './components/menu/PauseMenu.vue';
 import SettingsMenu from './components/menu/SettingsMenu.vue';
 import TitleScreen from './components/menu/TitleScreen.vue';
@@ -36,6 +37,7 @@ const currentIterations = ref(0);
 // Restore state from URL or default to Mandelbulb
 const urlState = readStateFromURL();
 let startFromURL = false;
+const previewMode = urlState?.preview ?? false;
 if (urlState) {
   fractal.fractalType = urlState.fractalType;
   fractal.power = urlState.power;
@@ -48,8 +50,9 @@ if (urlState) {
   camera.yaw = urlState.yaw;
   camera.pitch = urlState.pitch;
   startFromURL = true;
-  // Clean the URL so refresh goes back to default
-  window.history.replaceState({}, '', window.location.pathname);
+  if (!previewMode) {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
 } else {
   fractal.setFractalType('mandelbulb');
 }
@@ -218,10 +221,13 @@ const gameLoop = useGameLoop({
 // Handle title screen preview rendering
 const previewLoop = useGameLoop({
   update() {
-    // Only auto-orbit on title screen (and settings opened from title)
+    // Only auto-orbit on title/select screen (and settings opened from title)
+    // In preview mode, camera stays fixed at URL position
     const shouldOrbit =
-      appState.mode === 'title' ||
-      (appState.mode === 'settings' && appState.settingsSource === 'title');
+      !previewMode &&
+      (appState.mode === 'title' ||
+        appState.mode === 'select' ||
+        (appState.mode === 'settings' && appState.settingsSource === 'title'));
 
     if (shouldOrbit) {
       const t = performance.now() / 5000;
@@ -233,8 +239,8 @@ const previewLoop = useGameLoop({
     }
     // Paused / settings-from-pause: keep current camera position (frozen frame)
 
-    // Use low quality only on title screen, not in settings (so changes are visible)
-    const lowQuality = appState.mode === 'title';
+    // Use low quality only on title screen, not in settings or preview mode
+    const lowQuality = appState.mode === 'title' && !previewMode;
     renderer?.updateUniforms(
       camera,
       {
@@ -265,7 +271,10 @@ async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
     renderer.setColorMode(fractal.colorMode);
     startTime = performance.now();
 
-    if (startFromURL) {
+    if (previewMode) {
+      // Screenshot mode: render continuously at full quality, no UI
+      previewLoop.start();
+    } else if (startFromURL) {
       // Jump directly into 3D view from shared URL
       appState.startGame();
     } else {
@@ -317,7 +326,7 @@ watch(
       appState.onLoaded();
     } else {
       gameLoop.stop();
-      if (mode === 'title') {
+      if (mode === 'title' || mode === 'select') {
         applyCanvasResolution(PREVIEW_SCALE);
         previewLoop.start();
       } else if (mode === 'paused' || mode === 'settings') {
@@ -345,7 +354,9 @@ watch(
 // Handle keyboard shortcuts
 function onKeyDown(e: KeyboardEvent): void {
   if (e.code === 'Escape') {
-    if (appState.mode === 'paused') {
+    if (appState.mode === 'select') {
+      appState.backToTitle();
+    } else if (appState.mode === 'paused') {
       appState.resume();
     } else if (appState.mode === 'settings') {
       appState.closeSettings();
@@ -444,13 +455,14 @@ onUnmounted(() => {
 
     <template v-else>
       <WebGPUCanvas
-        :class="{ 'blur-sm': appState.mode !== 'playing' }"
+        :class="{ 'blur-sm': !previewMode && appState.mode !== 'playing' }"
         @ready="onCanvasReady"
         @resize="onResize"
         @click="onCanvasClick"
       />
 
-      <TitleScreen v-if="appState.mode === 'title'" />
+      <TitleScreen v-if="!previewMode && appState.mode === 'title'" />
+      <FractalSelectScreen v-if="!previewMode && appState.mode === 'select'" />
       <PauseMenu v-if="appState.mode === 'paused'" />
       <SettingsMenu v-if="appState.mode === 'settings'" />
       <GameHud
