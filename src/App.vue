@@ -423,6 +423,15 @@ function onCanvasClick(): void {
   }
 }
 
+function onMouseDown(e: MouseEvent): void {
+  if (appState.mode !== 'playing') return;
+  // Mouse button 4 (browser forward) = toggle dynamic iterations
+  if (e.button === 3) {
+    e.preventDefault();
+    graphics.dynamicIterations = !graphics.dynamicIterations;
+  }
+}
+
 function onContextMenu(e: MouseEvent): void {
   if (appState.mode === 'playing') {
     e.preventDefault();
@@ -437,12 +446,14 @@ function onWheel(e: WheelEvent): void {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('mousedown', onMouseDown);
   window.addEventListener('contextmenu', onContextMenu);
   window.addEventListener('wheel', onWheel, { passive: false });
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('mousedown', onMouseDown);
   window.removeEventListener('contextmenu', onContextMenu);
   window.removeEventListener('wheel', onWheel);
   gameLoop.stop();
