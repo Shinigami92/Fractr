@@ -73,10 +73,10 @@ export class FPSCamera {
       const cosR = Math.cos(roll);
       const sinR = Math.sin(roll);
       this._right[0] = rx * cosR + ux * sinR;
-      this._right[1] = 0 * cosR + uy * sinR;
+      this._right[1] = uy * sinR;
       this._right[2] = rz * cosR + uz * sinR;
       this._up[0] = ux * cosR - rx * sinR;
-      this._up[1] = uy * cosR - 0 * sinR;
+      this._up[1] = uy * cosR;
       this._up[2] = uz * cosR - rz * sinR;
     } else {
       this._right[0] = rx;
