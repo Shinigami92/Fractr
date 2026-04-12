@@ -351,11 +351,13 @@ watch(
   },
 );
 
-// Handle pointer lock loss → pause
+// Handle pointer lock loss → pause (unless intentionally unlocked via Ctrl)
+let cursorUnlocked = false;
+
 watch(
   () => pointerLock.isLocked.value,
   (locked) => {
-    if (!locked && appState.mode === 'playing') {
+    if (!locked && appState.mode === 'playing' && !cursorUnlocked) {
       appState.pause();
     }
   },
@@ -363,6 +365,17 @@ watch(
 
 // Handle keyboard shortcuts
 function onKeyDown(e: KeyboardEvent): void {
+  // Ctrl to unlock cursor without pausing
+  if (
+    (e.code === 'ControlLeft' || e.code === 'ControlRight') &&
+    appState.mode === 'playing' &&
+    pointerLock.isLocked.value
+  ) {
+    cursorUnlocked = true;
+    pointerLock.exitLock();
+    return;
+  }
+
   if (e.code === 'Escape') {
     if (appState.mode === 'select') {
       appState.backToTitle();
@@ -425,6 +438,7 @@ function onKeyDown(e: KeyboardEvent): void {
 
 function onCanvasClick(): void {
   if (appState.mode === 'playing' && !pointerLock.isLocked.value) {
+    cursorUnlocked = false;
     pointerLock.requestLock();
   }
 }
