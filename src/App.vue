@@ -58,11 +58,12 @@ if (urlState) {
 }
 
 function resetCamera(): void {
-  camera.position[0] = 0;
-  camera.position[1] = 0;
-  camera.position[2] = 3;
-  camera.yaw = -Math.PI / 2;
-  camera.pitch = 0;
+  const cam = fractal.config.camera;
+  camera.position[0] = cam?.x ?? 0;
+  camera.position[1] = cam?.y ?? 0;
+  camera.position[2] = cam?.z ?? 3;
+  camera.yaw = cam?.yaw ?? -Math.PI / 2;
+  camera.pitch = cam?.pitch ?? 0;
 }
 
 let renderer: Renderer | null = null;

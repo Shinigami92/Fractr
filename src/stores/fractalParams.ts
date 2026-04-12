@@ -52,11 +52,20 @@ export interface ParamSliderConfig {
   default: number;
 }
 
+export interface CameraStart {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  pitch: number;
+}
+
 export interface FractalConfig {
   label: string;
   power?: ParamSliderConfig;
   maxIterations: ParamSliderConfig;
   bailout?: ParamSliderConfig;
+  camera?: CameraStart;
 }
 
 export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
@@ -124,7 +133,8 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     label: 'Spudsville',
     power: { label: 'Power', min: 2, max: 12, step: 0.1, default: 4 },
     maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
-    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 4 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 200, step: 1, default: 50 },
+    camera: { x: 0, y: 0, z: 2.1, yaw: -Math.PI / 2, pitch: 0 },
   },
   // Geometric IFS
   menger: {
@@ -155,10 +165,12 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
   kleinian: {
     label: 'Pseudo-Kleinian',
     maxIterations: { label: 'Max Iterations', min: 1, max: 20, step: 1, default: 10 },
+    camera: { x: 0, y: 0, z: 5, yaw: -Math.PI / 2, pitch: 0 },
   },
   gyroid: {
     label: 'Gyroid',
     power: { label: 'Scale', min: 1, max: 20, step: 0.1, default: 5 },
+    camera: { x: 0, y: 0, z: 1.5, yaw: -Math.PI / 2, pitch: 0 },
     maxIterations: { label: 'Detail Levels', min: 0, max: 5, step: 1, default: 2 },
   },
 };
