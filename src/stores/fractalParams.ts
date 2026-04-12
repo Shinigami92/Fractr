@@ -28,7 +28,13 @@ export type RenderMode =
   | 'volume'
   | 'softshadow'
   | 'reflection'
-  | 'dof';
+  | 'dof'
+  | 'ao_render'
+  | 'sss'
+  | 'cel'
+  | 'wireframe'
+  | 'duallighting'
+  | 'fog';
 export type ColorMode =
   | 'distance'
   | 'orbit_trap'
@@ -223,9 +229,15 @@ const RENDER_MODES: RenderMode[] = [
   'ray',
   'softshadow',
   'reflection',
+  'duallighting',
+  'ao_render',
+  'cel',
+  'wireframe',
+  'sss',
   'cone',
   'pathtrace',
   'dof',
+  'fog',
   'volume',
 ];
 
@@ -238,9 +250,15 @@ export const RENDER_MODE_OPTIONS: { value: RenderMode; label: string }[] = [
   { value: 'ray', label: 'Ray Marching' },
   { value: 'softshadow', label: 'Soft Shadows' },
   { value: 'reflection', label: 'Reflections' },
+  { value: 'duallighting', label: 'Dual Lighting' },
+  { value: 'ao_render', label: 'Ambient Occlusion' },
+  { value: 'cel', label: 'Cel Shading' },
+  { value: 'wireframe', label: 'Wireframe / Edges' },
+  { value: 'sss', label: 'Subsurface Scattering' },
   { value: 'cone', label: 'Cone Marching' },
   { value: 'pathtrace', label: 'Path Tracing' },
   { value: 'dof', label: 'Depth of Field' },
+  { value: 'fog', label: 'Volumetric Fog' },
   { value: 'volume', label: 'Volume Rendering' },
 ];
 

@@ -12,6 +12,12 @@ const RENDER_MODE_LABELS: Record<RenderMode, string> = {
   softshadow: 'soft shadows',
   reflection: 'reflections',
   dof: 'depth of field',
+  ao_render: 'ambient occlusion',
+  sss: 'subsurface scattering',
+  cel: 'cel shading',
+  wireframe: 'wireframe',
+  duallighting: 'dual lighting',
+  fog: 'volumetric fog',
 };
 
 const props = defineProps<{

@@ -1,3 +1,5 @@
+import aoRenderSrc from '../../shaders/ao_render.wgsl?raw';
+import celSrc from '../../shaders/cel.wgsl?raw';
 // WGSL source imports
 import colorAoSrc from '../../shaders/coloring/ao.wgsl?raw';
 import colorChromaticSrc from '../../shaders/coloring/chromatic.wgsl?raw';
@@ -16,6 +18,8 @@ import raySrc from '../../shaders/common/ray.wgsl?raw';
 import uniformsSrc from '../../shaders/common/uniforms.wgsl?raw';
 import conemarcherSrc from '../../shaders/conemarcher.wgsl?raw';
 import dofSrc from '../../shaders/dof.wgsl?raw';
+import duallightingSrc from '../../shaders/duallighting.wgsl?raw';
+import fogSrc from '../../shaders/fog.wgsl?raw';
 import fullscreenSrc from '../../shaders/fullscreen.wgsl?raw';
 import pathtraceSrc from '../../shaders/pathtrace.wgsl?raw';
 import raymarcherSrc from '../../shaders/raymarcher.wgsl?raw';
@@ -40,7 +44,9 @@ import spudsvilleSrc from '../../shaders/sdf/spudsville.wgsl?raw';
 import tricornSrc from '../../shaders/sdf/tricorn.wgsl?raw';
 import xenodreambuieSrc from '../../shaders/sdf/xenodreambuie.wgsl?raw';
 import softshadowSrc from '../../shaders/softshadow.wgsl?raw';
+import sssSrc from '../../shaders/sss.wgsl?raw';
 import volumeSrc from '../../shaders/volume.wgsl?raw';
+import wireframeSrc from '../../shaders/wireframe.wgsl?raw';
 import type { ColorMode, FractalType, RenderMode } from '../../stores/fractalParams';
 
 const MARCHER_SOURCES: Record<RenderMode, string> = {
@@ -51,6 +57,12 @@ const MARCHER_SOURCES: Record<RenderMode, string> = {
   softshadow: softshadowSrc,
   reflection: reflectionSrc,
   dof: dofSrc,
+  ao_render: aoRenderSrc,
+  sss: sssSrc,
+  cel: celSrc,
+  wireframe: wireframeSrc,
+  duallighting: duallightingSrc,
+  fog: fogSrc,
 };
 import type { WebGPUContext } from './WebGPUContext';
 
