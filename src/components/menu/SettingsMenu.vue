@@ -192,6 +192,10 @@ function resetAll(): void {
           <span class="text-xs text-white/50">Dynamic Iterations (more detail when close)</span>
         </label>
         <label class="flex items-center gap-2">
+          <input v-model="graphics.animatedColors" type="checkbox" class="accent-accent" />
+          <span class="text-xs text-white/50">Animated Colors</span>
+        </label>
+        <label class="flex items-center gap-2">
           <input v-model="hud.showFps" type="checkbox" class="accent-accent" />
           <span class="text-xs text-white/50">Show FPS</span>
         </label>
@@ -247,6 +251,7 @@ function resetAll(): void {
           <p>I — Toggle Dynamic Iterations</p>
           <p>. / , — Increase/Decrease Max Iterations</p>
           <p>K / J — Increase/Decrease Bailout</p>
+          <p>G — Toggle Animated Colors</p>
           <p>R — Cycle Render Mode</p>
           <p>P — Copy Share URL</p>
         </div>

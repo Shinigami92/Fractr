@@ -10,6 +10,7 @@ struct Uniforms {
   maxRaySteps: u32,
   resolutionScale: f32,
   frameCount: u32,
+  animatedColors: u32,
 }
 
 @group(0) @binding(0) var<uniform> uniforms: Uniforms;

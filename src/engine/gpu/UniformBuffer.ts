@@ -12,7 +12,8 @@
  * offset 104: maxRaySteps           u32      (4 bytes)
  * offset 108: resolutionScale       f32      (4 bytes)
  * offset 112: frameCount            u32      (4 bytes)
- * Total: 128 bytes (aligned to 16 = 128, padded from 116)
+ * offset 116: animatedColors        u32      (4 bytes)
+ * Total: 128 bytes (aligned to 16 = 128, padded from 120)
  */
 
 const BUFFER_SIZE = 128;
@@ -79,6 +80,10 @@ export class UniformBuffer {
 
   setFrameCount(count: number): void {
     this.uintView[28] = count;
+  }
+
+  setAnimatedColors(enabled: boolean): void {
+    this.uintView[29] = enabled ? 1 : 0;
   }
 
   upload(device: GPUDevice): void {

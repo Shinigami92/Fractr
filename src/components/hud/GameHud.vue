@@ -59,8 +59,9 @@ function toDeg(rad: number): string {
         <div>Yaw: {{ toDeg(props.camera.yaw) }}° Pitch: {{ toDeg(props.camera.pitch) }}°</div>
         <div class="mt-1 text-white/40">
           {{ FRACTAL_CONFIGS[fractal.fractalType].label }}
-          · {{ COLOR_MODE_OPTIONS.find((o) => o.value === fractal.colorMode)?.label }} ·
-          {{ RENDER_MODE_LABELS[fractal.renderMode] }}
+          · {{ COLOR_MODE_OPTIONS.find((o) => o.value === fractal.colorMode)?.label }}
+          <span v-if="graphics.animatedColors" class="text-cyan/60">[anim]</span>
+          · {{ RENDER_MODE_LABELS[fractal.renderMode] }}
         </div>
         <div class="text-white/40">
           <template v-if="fractal.config.power">

@@ -138,6 +138,7 @@ export class Renderer {
       colorMode: number;
       maxRaySteps: number;
       resolutionScale: number;
+      animatedColors: boolean;
     },
     time: number,
   ): void {
@@ -159,6 +160,7 @@ export class Renderer {
     this.uniformBuffer.setMaxRaySteps(params.maxRaySteps);
     this.uniformBuffer.setResolutionScale(params.resolutionScale);
     this.uniformBuffer.setFrameCount(this._sampleCount);
+    this.uniformBuffer.setAnimatedColors(params.animatedColors);
     this.uniformBuffer.upload(this.ctx.device);
   }
 

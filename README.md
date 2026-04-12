@@ -10,6 +10,7 @@ Ultra-performant 3D fractal explorer powered by WebGPU. Fly through infinite mat
 
 - **19 fractals** — Mandelbulb, Mandelbox, Menger Sponge, Sierpinski, Quaternion Julia, Gyroid, and more
 - **13 color modes** — Glow, Distance Estimation, Chromatic, Temperature, Ambient Occlusion, Fresnel, and more
+- **Animated colors** — toggle time-based color animations (cycling hues, moving bands, pulsing glow)
 - **16 render modes** — Ray Marching, Soft Shadows, Reflections, Path Tracing, Volume Rendering, Cel Shading, and more
 - **Progressive accumulation** — stochastic modes converge to noise-free images when stationary
 - **Radial menu** — hold R/C/V to open a wheel for quickly picking any mode
@@ -35,27 +36,28 @@ Ultra-performant 3D fractal explorer powered by WebGPU. Fly through infinite mat
 
 ## Controls
 
-| Key              | Action                           |
-| ---------------- | -------------------------------- |
-| W/A/S/D          | Move                             |
-| E/Q              | Up/Down                          |
-| Mouse            | Look                             |
-| Left click       | Move forward                     |
-| Right click      | Move backward                    |
-| Shift            | Sprint (2x speed)                |
-| Escape           | Pause                            |
-| Ctrl             | Unlock cursor without pausing    |
-| C / Shift+C      | Cycle color mode                 |
-| R / Shift+R      | Cycle render mode                |
-| V / Shift+V      | Cycle fractal type               |
-| Hold C / R / V   | Open radial menu for quick pick  |
-| I                | Toggle dynamic iterations        |
-| . / ,            | Increase/decrease max iterations |
-| K / J            | Increase/decrease bailout        |
-| Scroll wheel     | Adjust max iterations            |
-| F3               | Toggle HUD                       |
-| H                | Toggle crosshair                 |
-| P                | Copy share URL                   |
+| Key            | Action                           |
+| -------------- | -------------------------------- |
+| W/A/S/D        | Move                             |
+| E/Q            | Up/Down                          |
+| Mouse          | Look                             |
+| Left click     | Move forward                     |
+| Right click    | Move backward                    |
+| Shift          | Sprint (2x speed)                |
+| Escape         | Pause                            |
+| Ctrl           | Unlock cursor without pausing    |
+| C / Shift+C    | Cycle color mode                 |
+| R / Shift+R    | Cycle render mode                |
+| V / Shift+V    | Cycle fractal type               |
+| Hold C / R / V | Open radial menu for quick pick  |
+| I              | Toggle dynamic iterations        |
+| . / ,          | Increase/decrease max iterations |
+| K / J          | Increase/decrease bailout        |
+| G              | Toggle animated colors           |
+| Scroll wheel   | Adjust max iterations            |
+| F3             | Toggle HUD                       |
+| H              | Toggle crosshair                 |
+| P              | Copy share URL                   |
 
 ## Requirements
 

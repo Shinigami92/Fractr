@@ -7,6 +7,7 @@ export const useGraphicsSettings = defineStore('graphicsSettings', () => {
   const adaptiveQuality = ref(true);
   const targetFps = ref(60);
   const dynamicIterations = ref(true);
+  const animatedColors = ref(false);
 
   function reset(): void {
     resolutionScale.value = 1.0;
@@ -14,7 +15,16 @@ export const useGraphicsSettings = defineStore('graphicsSettings', () => {
     adaptiveQuality.value = true;
     targetFps.value = 60;
     dynamicIterations.value = true;
+    animatedColors.value = false;
   }
 
-  return { resolutionScale, maxRaySteps, adaptiveQuality, targetFps, dynamicIterations, reset };
+  return {
+    resolutionScale,
+    maxRaySteps,
+    adaptiveQuality,
+    targetFps,
+    dynamicIterations,
+    animatedColors,
+    reset,
+  };
 });

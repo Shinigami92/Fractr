@@ -17,6 +17,7 @@ export interface KeybindingMap {
   decreaseIterations: string;
   increaseBailout: string;
   decreaseBailout: string;
+  toggleAnimatedColors: string;
   copyShareURL: string;
   cycleRenderMode: string;
 }
@@ -37,6 +38,7 @@ const DEFAULT_KEYBINDINGS: KeybindingMap = {
   decreaseIterations: 'Comma',
   increaseBailout: 'KeyK',
   decreaseBailout: 'KeyJ',
+  toggleAnimatedColors: 'KeyG',
   copyShareURL: 'KeyP',
   cycleRenderMode: 'KeyR',
 };

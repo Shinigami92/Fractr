@@ -355,12 +355,13 @@ const gameLoop = useGameLoop({
         colorMode: COLOR_MODE_MAP[fractal.colorMode],
         maxRaySteps: graphics.maxRaySteps,
         resolutionScale: graphics.resolutionScale,
+        animatedColors: graphics.animatedColors,
       },
       (performance.now() - startTime) / 1000,
     );
   },
   render() {
-    renderer?.render(!isMovingThisFrame);
+    renderer?.render(!isMovingThisFrame && !graphics.animatedColors);
     sampleCount.value = renderer?.sampleCount ?? 0;
   },
 });
@@ -397,6 +398,7 @@ const previewLoop = useGameLoop({
         colorMode: COLOR_MODE_MAP[fractal.colorMode],
         maxRaySteps: lowQuality ? 64 : graphics.maxRaySteps,
         resolutionScale: graphics.resolutionScale,
+        animatedColors: graphics.animatedColors,
       },
       (performance.now() - startTime) / 1000,
     );
@@ -563,6 +565,9 @@ function onKeyDown(e: KeyboardEvent): void {
     }
     if (e.code === controls.keybindings.decreaseBailout) {
       fractal.adjustBailout(-1);
+    }
+    if (e.code === controls.keybindings.toggleAnimatedColors) {
+      graphics.animatedColors = !graphics.animatedColors;
     }
     if (e.code === controls.keybindings.copyShareURL) {
       const url = buildShareURL({
