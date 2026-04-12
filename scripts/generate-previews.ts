@@ -206,12 +206,21 @@ function waitForServer(server: ChildProcess): Promise<void> {
 }
 
 async function main() {
+  // Filter fractals by CLI args: `pnpm run generate-previews mandelbulb menger`
+  const args = process.argv.slice(2);
+  const targets = args.length > 0 ? FRACTALS.filter((f) => args.includes(f.type)) : FRACTALS;
+
+  if (targets.length === 0) {
+    console.error(`No matching fractals. Available: ${FRACTALS.map((f) => f.type).join(', ')}`);
+    process.exit(1);
+  }
+
   mkdirSync(OUTPUT_DIR, { recursive: true });
 
   console.log('Building...');
   execSync('pnpm run build', { stdio: 'inherit', cwd: resolve(import.meta.dirname, '..') });
 
-  console.log('Starting preview server...');
+  console.log(`Starting preview server... (${targets.length} fractal(s) to capture)`);
   const server = spawn('pnpm', ['run', 'preview', '--port', String(PORT)], {
     stdio: 'pipe',
     cwd: resolve(import.meta.dirname, '..'),
@@ -226,7 +235,7 @@ async function main() {
       args: ['--enable-unsafe-webgpu', '--enable-features=Vulkan'],
     });
 
-    for (const fractal of FRACTALS) {
+    for (const fractal of targets) {
       console.log(`Capturing ${fractal.type}...`);
 
       const page = await browser.newPage({
