@@ -12,6 +12,7 @@ export interface SharedState {
   z: number;
   yaw: number;
   pitch: number;
+  roll: number;
   preview: boolean;
 }
 
@@ -77,6 +78,7 @@ export function readStateFromURL(): SharedState | null {
     z: get('z', 3),
     yaw: get('yaw', -Math.PI / 2),
     pitch: get('pitch', 0),
+    roll: get('roll', 0),
     dynamicIterations: params.get('dyn') !== '0',
     preview: params.get('preview') === '1',
   };
@@ -95,6 +97,7 @@ export function buildShareURL(state: SharedState): string {
   params.set('z', state.z.toFixed(4));
   params.set('yaw', state.yaw.toFixed(4));
   params.set('pitch', state.pitch.toFixed(4));
+  params.set('roll', state.roll.toFixed(4));
 
   const base = `${window.location.origin}${window.location.pathname}`;
   return `${base}?${params.toString()}`;

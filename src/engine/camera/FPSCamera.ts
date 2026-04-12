@@ -31,7 +31,7 @@ export class FPSCamera {
     // Project world up onto the camera's right-up plane
     const worldUpDotRight = this._right[1]!;
     const worldUpDotUp = this._up[1]!;
-    return Math.atan2(-worldUpDotRight, worldUpDotUp);
+    return Math.atan2(worldUpDotRight, worldUpDotUp);
   }
 
   // Set orientation from Euler angles (for URL restore / reset)

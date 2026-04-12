@@ -156,8 +156,7 @@ if (urlState) {
   camera.position[0] = urlState.x;
   camera.position[1] = urlState.y;
   camera.position[2] = urlState.z;
-  camera.yaw = urlState.yaw;
-  camera.pitch = urlState.pitch;
+  camera.setFromEuler(urlState.yaw, urlState.pitch, urlState.roll);
   startFromURL = true;
 } else {
   fractal.setFractalType('mandelbulb');
@@ -189,6 +188,7 @@ function syncURLState(): void {
     z: camera.position[2]!,
     yaw: camera.yaw,
     pitch: camera.pitch,
+    roll: camera.roll,
     preview: false,
   });
   const params = url.split('?')[1] ?? '';
@@ -598,6 +598,7 @@ function onKeyDown(e: KeyboardEvent): void {
         z: camera.position[2]!,
         yaw: camera.yaw,
         pitch: camera.pitch,
+        roll: camera.roll,
         preview: false,
       });
       navigator.clipboard.writeText(url);
