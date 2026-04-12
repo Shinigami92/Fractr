@@ -413,13 +413,6 @@ function onKeyDown(e: KeyboardEvent): void {
     if (e.code === controls.keybindings.toggleCrosshair) {
       hudSettings.toggleCrosshair();
     }
-    if (e.code === controls.keybindings.cycleColorMode) {
-      fractal.cycleColorMode(e.shiftKey);
-    }
-    if (e.code === controls.keybindings.cycleFractalType) {
-      fractal.cycleFractalType(e.shiftKey);
-      resetCamera();
-    }
     if (e.code === controls.keybindings.toggleDynamicIterations) {
       graphics.dynamicIterations = !graphics.dynamicIterations;
     }
@@ -428,9 +421,6 @@ function onKeyDown(e: KeyboardEvent): void {
     }
     if (e.code === controls.keybindings.decreaseIterations) {
       fractal.adjustIterations(-1);
-    }
-    if (e.code === controls.keybindings.cycleRenderMode) {
-      fractal.cycleRenderMode(e.shiftKey);
     }
     if (e.code === controls.keybindings.copyShareURL) {
       const url = buildShareURL({
@@ -462,6 +452,22 @@ function onCanvasClick(): void {
   }
 }
 
+// Cycle actions on key up — fires once per press, no repeat when held
+function onKeyUp(e: KeyboardEvent): void {
+  if (appState.mode !== 'playing' || e.ctrlKey || e.metaKey || e.altKey) return;
+
+  if (e.code === controls.keybindings.cycleColorMode) {
+    fractal.cycleColorMode(e.shiftKey);
+  }
+  if (e.code === controls.keybindings.cycleFractalType) {
+    fractal.cycleFractalType(e.shiftKey);
+    resetCamera();
+  }
+  if (e.code === controls.keybindings.cycleRenderMode) {
+    fractal.cycleRenderMode(e.shiftKey);
+  }
+}
+
 function onMouseDown(e: MouseEvent): void {
   if (appState.mode !== 'playing') return;
   // Mouse button 5 (browser forward, e.button=4) = toggle dynamic iterations
@@ -485,6 +491,7 @@ function onWheel(e: WheelEvent): void {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
   window.addEventListener('mousedown', onMouseDown);
   window.addEventListener('contextmenu', onContextMenu);
   window.addEventListener('wheel', onWheel, { passive: false });
@@ -492,6 +499,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('keyup', onKeyUp);
   window.removeEventListener('mousedown', onMouseDown);
   window.removeEventListener('contextmenu', onContextMenu);
   window.removeEventListener('wheel', onWheel);
