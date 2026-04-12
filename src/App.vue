@@ -269,6 +269,7 @@ async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
     renderer.resize(canvas.width, canvas.height);
     renderer.setFractalType(fractal.fractalType);
     renderer.setColorMode(fractal.colorMode);
+    renderer.setRenderMode(fractal.renderMode);
     startTime = performance.now();
 
     if (previewMode) {
@@ -304,6 +305,10 @@ watch(
 watch(
   () => fractal.colorMode,
   (mode) => renderer?.setColorMode(mode),
+);
+watch(
+  () => fractal.renderMode,
+  (mode) => renderer?.setRenderMode(mode),
 );
 
 // Handle game state transitions
@@ -386,6 +391,9 @@ function onKeyDown(e: KeyboardEvent): void {
     }
     if (e.code === controls.keybindings.decreaseIterations) {
       fractal.adjustIterations(-1);
+    }
+    if (e.code === controls.keybindings.cycleRenderMode) {
+      fractal.cycleRenderMode(e.shiftKey);
     }
     if (e.code === controls.keybindings.copyShareURL) {
       const url = buildShareURL({

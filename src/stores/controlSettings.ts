@@ -16,6 +16,7 @@ export interface KeybindingMap {
   increaseIterations: string;
   decreaseIterations: string;
   copyShareURL: string;
+  cycleRenderMode: string;
 }
 
 const DEFAULT_KEYBINDINGS: KeybindingMap = {
@@ -33,6 +34,7 @@ const DEFAULT_KEYBINDINGS: KeybindingMap = {
   increaseIterations: 'Period',
   decreaseIterations: 'Comma',
   copyShareURL: 'KeyP',
+  cycleRenderMode: 'KeyR',
 };
 
 export const useControlSettings = defineStore('controlSettings', () => {

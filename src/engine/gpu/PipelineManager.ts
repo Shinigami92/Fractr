@@ -9,6 +9,7 @@ import colorOrbitTrapSrc from '../../shaders/coloring/orbit_trap.wgsl?raw';
 import colorStripeSrc from '../../shaders/coloring/stripe.wgsl?raw';
 import raySrc from '../../shaders/common/ray.wgsl?raw';
 import uniformsSrc from '../../shaders/common/uniforms.wgsl?raw';
+import conemarcherSrc from '../../shaders/conemarcher.wgsl?raw';
 import fullscreenSrc from '../../shaders/fullscreen.wgsl?raw';
 import raymarcherSrc from '../../shaders/raymarcher.wgsl?raw';
 import apollonianSrc from '../../shaders/sdf/apollonian.wgsl?raw';
@@ -20,7 +21,12 @@ import mandelbulbSrc from '../../shaders/sdf/mandelbulb.wgsl?raw';
 import mengerSrc from '../../shaders/sdf/menger.wgsl?raw';
 import quatjuliaSrc from '../../shaders/sdf/quatjulia.wgsl?raw';
 import sierpinskiSrc from '../../shaders/sdf/sierpinski.wgsl?raw';
-import type { ColorMode, FractalType } from '../../stores/fractalParams';
+import type { ColorMode, FractalType, RenderMode } from '../../stores/fractalParams';
+
+const MARCHER_SOURCES: Record<RenderMode, string> = {
+  ray: raymarcherSrc,
+  cone: conemarcherSrc,
+};
 import type { WebGPUContext } from './WebGPUContext';
 
 const SDF_SOURCES: Record<FractalType, string> = {
@@ -64,8 +70,12 @@ export class PipelineManager {
     });
   }
 
-  getOrCreatePipeline(fractalType: FractalType, colorMode: ColorMode): GPURenderPipeline {
-    const key = `${fractalType}:${colorMode}`;
+  getOrCreatePipeline(
+    fractalType: FractalType,
+    colorMode: ColorMode,
+    renderMode: RenderMode,
+  ): GPURenderPipeline {
+    const key = `${fractalType}:${colorMode}:${renderMode}`;
     let pipeline = this.cache.get(key);
     if (pipeline) return pipeline;
 
@@ -75,7 +85,7 @@ export class PipelineManager {
       raySrc,
       SDF_SOURCES[fractalType],
       COLOR_SOURCES[colorMode],
-      raymarcherSrc,
+      MARCHER_SOURCES[renderMode],
     ].join('\n');
 
     const vertexModule = this.ctx.device.createShaderModule({

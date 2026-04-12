@@ -1,4 +1,4 @@
-import type { ColorMode, FractalType } from '../stores/fractalParams';
+import type { ColorMode, FractalType, RenderMode } from '../stores/fractalParams';
 import type { FPSCamera } from './camera/FPSCamera';
 import { PipelineManager } from './gpu/PipelineManager';
 import { UniformBuffer } from './gpu/UniformBuffer';
@@ -11,6 +11,7 @@ export class Renderer {
   private bindGroup: GPUBindGroup;
   private currentFractal: FractalType = 'mandelbulb';
   private currentColor: ColorMode = 'distance';
+  private currentRenderMode: RenderMode = 'ray';
   private width = 1;
   private height = 1;
 
@@ -45,6 +46,10 @@ export class Renderer {
 
   setColorMode(mode: ColorMode): void {
     this.currentColor = mode;
+  }
+
+  setRenderMode(mode: RenderMode): void {
+    this.currentRenderMode = mode;
   }
 
   updateUniforms(
@@ -83,6 +88,7 @@ export class Renderer {
     const pipeline = this.pipelineManager.getOrCreatePipeline(
       this.currentFractal,
       this.currentColor,
+      this.currentRenderMode,
     );
 
     const commandEncoder = this.ctx.device.createCommandEncoder();

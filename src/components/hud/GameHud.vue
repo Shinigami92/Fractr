@@ -34,7 +34,7 @@ function toDeg(rad: number): string {
         <div>Yaw: {{ toDeg(props.camera.yaw) }}° Pitch: {{ toDeg(props.camera.pitch) }}°</div>
         <div class="mt-1 text-white/40">
           {{ FRACTAL_CONFIGS[fractal.fractalType].label }}
-          · {{ fractal.colorMode.replace('_', ' ') }}
+          · {{ fractal.colorMode.replace('_', ' ') }} · {{ fractal.renderMode }} marching
         </div>
         <div class="text-white/40">
           <template v-if="fractal.config.power">

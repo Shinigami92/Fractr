@@ -11,6 +11,7 @@ export type FractalType =
   | 'koch3d'
   | 'apollonian'
   | 'juliabulb';
+export type RenderMode = 'ray' | 'cone';
 export type ColorMode =
   | 'distance'
   | 'orbit_trap'
@@ -105,18 +106,28 @@ const COLOR_MODES: ColorMode[] = [
   'stripe',
 ];
 
+const RENDER_MODES: RenderMode[] = ['ray', 'cone'];
+
 export const useFractalParams = defineStore('fractalParams', () => {
   const fractalType = ref<FractalType>('mandelbulb');
   const power = ref(8);
   const maxIterations = ref(20);
   const bailout = ref(2);
   const colorMode = ref<ColorMode>('distance');
+  const renderMode = ref<RenderMode>('ray');
 
   const config = computed(() => FRACTAL_CONFIGS[fractalType.value]);
 
   function reset(): void {
     setFractalType('mandelbulb');
     colorMode.value = 'distance';
+    renderMode.value = 'ray';
+  }
+
+  function cycleRenderMode(reverse = false): void {
+    const idx = RENDER_MODES.indexOf(renderMode.value);
+    const delta = reverse ? RENDER_MODES.length - 1 : 1;
+    renderMode.value = RENDER_MODES[(idx + delta) % RENDER_MODES.length]!;
   }
 
   function cycleColorMode(reverse = false): void {
@@ -151,9 +162,11 @@ export const useFractalParams = defineStore('fractalParams', () => {
     maxIterations,
     bailout,
     colorMode,
+    renderMode,
     config,
     reset,
     cycleColorMode,
+    cycleRenderMode,
     cycleFractalType,
     setFractalType,
     adjustIterations,

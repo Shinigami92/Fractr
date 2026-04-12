@@ -134,6 +134,16 @@ function resetAll(): void {
       <!-- Graphics Tab -->
       <div v-if="activeTab === 'graphics'" class="flex flex-col gap-4">
         <label class="flex flex-col gap-1">
+          <span class="text-xs text-white/50">Render Mode</span>
+          <select
+            v-model="fractal.renderMode"
+            class="border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white"
+          >
+            <option value="ray">Ray Marching</option>
+            <option value="cone">Cone Marching</option>
+          </select>
+        </label>
+        <label class="flex flex-col gap-1">
           <span class="text-xs text-white/50">Resolution Scale</span>
           <input
             v-model.number="graphics.resolutionScale"
@@ -234,6 +244,7 @@ function resetAll(): void {
           <p>V — Cycle Fractal Type</p>
           <p>I — Toggle Dynamic Iterations</p>
           <p>. / , — Increase/Decrease Max Iterations</p>
+          <p>R — Cycle Render Mode</p>
           <p>P — Copy Share URL</p>
         </div>
       </div>
