@@ -84,6 +84,19 @@ const radialSelectedIndex = computed(() => {
   return Math.floor((((angle + halfStep) % TAU) / TAU) * count) % count;
 });
 
+const radialCurrentValue = computed(() => {
+  switch (radialMenuType.value) {
+    case 'color':
+      return fractal.colorMode;
+    case 'render':
+      return fractal.renderMode;
+    case 'fractal':
+      return fractal.fractalType;
+    default:
+      return '';
+  }
+});
+
 function openRadialMenu(type: RadialMenuType): void {
   radialMenuType.value = type;
   radialCursorX.value = 0;
@@ -683,6 +696,7 @@ onUnmounted(() => {
         v-if="radialMenuType"
         :options="radialMenuOptions"
         :selected-index="radialSelectedIndex"
+        :current-value="radialCurrentValue"
         :cursor-x="radialCursorX"
         :cursor-y="radialCursorY"
       />

@@ -4,6 +4,7 @@ import { computed } from 'vue';
 const props = defineProps<{
   options: { value: string; short: string }[];
   selectedIndex: number;
+  currentValue: string;
   cursorX: number;
   cursorY: number;
 }>();
@@ -89,10 +90,18 @@ const sectors = computed(() => {
           :key="sector.value"
           :d="sector.path"
           :fill="
-            sector.index === selectedIndex ? 'rgba(124, 58, 237, 0.2)' : 'rgba(255, 255, 255, 0.05)'
+            sector.index === selectedIndex
+              ? 'rgba(124, 58, 237, 0.2)'
+              : sector.value === currentValue
+                ? 'rgba(124, 58, 237, 0.08)'
+                : 'rgba(255, 255, 255, 0.05)'
           "
           :stroke="
-            sector.index === selectedIndex ? 'rgba(167, 139, 250, 0.4)' : 'rgba(255, 255, 255, 0.1)'
+            sector.index === selectedIndex
+              ? 'rgba(167, 139, 250, 0.4)'
+              : sector.value === currentValue
+                ? 'rgba(167, 139, 250, 0.25)'
+                : 'rgba(255, 255, 255, 0.1)'
           "
           stroke-width="1"
           class="transition-colors"
@@ -122,9 +131,17 @@ const sectors = computed(() => {
           :y="sector.ly"
           text-anchor="middle"
           dominant-baseline="central"
-          :fill="sector.index === selectedIndex ? 'white' : 'rgba(255, 255, 255, 0.55)'"
+          :fill="
+            sector.index === selectedIndex
+              ? 'white'
+              : sector.value === currentValue
+                ? 'rgba(167, 139, 250, 0.9)'
+                : 'rgba(255, 255, 255, 0.55)'
+          "
           :font-size="sector.index === selectedIndex ? '12' : '10'"
-          :font-weight="sector.index === selectedIndex ? 'bold' : 'normal'"
+          :font-weight="
+            sector.index === selectedIndex || sector.value === currentValue ? 'bold' : 'normal'
+          "
           font-family="system-ui, sans-serif"
           class="select-none"
         >
