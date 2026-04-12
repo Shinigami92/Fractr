@@ -446,7 +446,7 @@ watch(
   (type) => {
     renderer?.setFractalType(type);
     resetCamera();
-    graphics.dynamicIterations = true;
+    graphics.dynamicIterations = fractal.config.defaultDynamicIterations !== false;
   },
 );
 watch(

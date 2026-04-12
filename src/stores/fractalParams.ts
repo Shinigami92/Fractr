@@ -76,6 +76,7 @@ export interface FractalConfig {
   maxIterations: ParamSliderConfig;
   bailout?: ParamSliderConfig;
   camera?: CameraStart;
+  defaultDynamicIterations?: boolean;
 }
 
 export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
@@ -141,6 +142,7 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     power: { label: 'Scale', min: -3, max: 3, step: 0.1, default: -1.5 },
     maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 15 },
     bailout: { label: 'Bailout Radius', min: 1, max: 200, step: 1, default: 100 },
+    defaultDynamicIterations: false,
   },
   kaleidobox: {
     label: 'Kaleidoscopic Box',
@@ -148,30 +150,32 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     power: { label: 'Scale', min: -3, max: 3, step: 0.1, default: -1.5 },
     maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 15 },
     bailout: { label: 'Bailout Radius', min: 1, max: 200, step: 1, default: 100 },
+    defaultDynamicIterations: false,
   },
   spudsville: {
     label: 'Spudsville',
     short: 'Spudsville',
     power: { label: 'Power', min: 2, max: 12, step: 0.1, default: 4 },
-    maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
-    bailout: { label: 'Bailout Radius', min: 1, max: 200, step: 1, default: 50 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 14 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 200, step: 1, default: 12 },
     camera: { x: 2.0, y: 1.5, z: 3.0, yaw: -2.35, pitch: -0.3 },
   },
   // Geometric IFS
   menger: {
     label: 'Menger Sponge',
     short: 'Menger',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 6 },
+    maxIterations: { label: 'Max Iterations', min: 1, max: 20, step: 1, default: 12 },
   },
   sierpinski: {
     label: 'Sierpinski Tetrahedron',
     short: 'Sierpinski',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 8 },
+    maxIterations: { label: 'Max Iterations', min: 1, max: 24, step: 1, default: 10 },
+    defaultDynamicIterations: false,
   },
   koch3d: {
     label: 'Koch Snowflake 3D',
     short: 'Koch 3D',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 5 },
+    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 12 },
   },
   octahedron: {
     label: 'Octahedron Fractal',
@@ -194,13 +198,15 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     short: 'Kleinian',
     maxIterations: { label: 'Max Iterations', min: 1, max: 20, step: 1, default: 10 },
     camera: { x: 0, y: 0, z: 5, yaw: -Math.PI / 2, pitch: 0 },
+    defaultDynamicIterations: false
   },
   gyroid: {
     label: 'Gyroid',
     short: 'Gyroid',
     power: { label: 'Scale', min: 1, max: 20, step: 0.1, default: 5 },
-    camera: { x: 0, y: 0, z: 1.5, yaw: -Math.PI / 2, pitch: 0 },
+    camera: { x: 0.224, y: 0.064, z: 1.249, yaw: (-47.1 * Math.PI) / 180, pitch: (-32.7 * Math.PI) / 180 },
     maxIterations: { label: 'Detail Levels', min: 0, max: 5, step: 1, default: 2 },
+    defaultDynamicIterations: false
   },
 };
 
