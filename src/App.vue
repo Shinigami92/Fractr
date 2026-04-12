@@ -103,6 +103,7 @@ const COLOR_MODE_MAP: Record<ColorMode, number> = {
 const { isPressed } = useInput();
 const pointerLock = usePointerLock(canvasRef);
 
+let isMovingThisFrame = false;
 let adaptiveScale = 1.0;
 let appliedScale = 1.0;
 let adaptTimer = 0;
@@ -197,7 +198,8 @@ const gameLoop = useGameLoop({
     if (isPressed(bindings.moveUp)) camera.moveUp(speed);
     if (isPressed(bindings.moveDown)) camera.moveUp(-speed);
 
-    // Reset accumulation when camera moves
+    // Track movement for render path selection
+    isMovingThisFrame = moving;
     if (moving) {
       renderer?.resetAccumulation();
     }
@@ -226,7 +228,7 @@ const gameLoop = useGameLoop({
     );
   },
   render() {
-    renderer?.render();
+    renderer?.render(!isMovingThisFrame);
     sampleCount.value = renderer?.sampleCount ?? 0;
   },
 });

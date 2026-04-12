@@ -162,56 +162,81 @@ export class Renderer {
     this.uniformBuffer.upload(this.ctx.device);
   }
 
-  render(): void {
+  render(accumulate = false): void {
     this.ensureAccumulationTexture();
-
     const commandEncoder = this.ctx.device.createCommandEncoder();
-
-    // Pass 1: Render sample to accumulation texture with blending
-    const accumView = this.accumulationTexture!.createView();
-    const blendWeight = 1 / (this._sampleCount + 1);
-
-    const samplePass = commandEncoder.beginRenderPass({
-      colorAttachments: [
-        {
-          view: accumView,
-          loadOp: this._sampleCount === 0 ? 'clear' : 'load',
-          storeOp: 'store',
-          clearValue: { r: 0, g: 0, b: 0, a: 1 },
-        },
-      ],
-    });
-
-    // Use constant blend factor for progressive averaging
-    const blendPipeline = this.pipelineManager.getOrCreateAccumPipeline(
-      this.currentFractal,
-      this.currentColor,
-      this.currentRenderMode,
-    );
-    samplePass.setPipeline(blendPipeline);
-    samplePass.setBindGroup(0, this.bindGroup);
-    samplePass.setBlendConstant({ r: blendWeight, g: blendWeight, b: blendWeight, a: 1 });
-    samplePass.draw(3);
-    samplePass.end();
-
-    this._sampleCount++;
-
-    // Pass 2: Blit accumulation texture to canvas
     const canvasView = this.ctx.context.getCurrentTexture().createView();
-    const blitPass = commandEncoder.beginRenderPass({
-      colorAttachments: [
-        {
-          view: canvasView,
-          loadOp: 'clear',
-          storeOp: 'store',
-          clearValue: { r: 0, g: 0, b: 0, a: 1 },
-        },
-      ],
-    });
-    blitPass.setPipeline(this.blitPipeline);
-    blitPass.setBindGroup(0, this.blitBindGroup!);
-    blitPass.draw(3);
-    blitPass.end();
+
+    if (accumulate) {
+      // Accumulation path: render to float texture with blending, then blit
+      const accumView = this.accumulationTexture!.createView();
+      const blendWeight = 1 / (this._sampleCount + 1);
+
+      const samplePass = commandEncoder.beginRenderPass({
+        colorAttachments: [
+          {
+            view: accumView,
+            loadOp: this._sampleCount === 0 ? 'clear' : 'load',
+            storeOp: 'store',
+            clearValue: { r: 0, g: 0, b: 0, a: 1 },
+          },
+        ],
+      });
+
+      const blendPipeline = this.pipelineManager.getOrCreateAccumPipeline(
+        this.currentFractal,
+        this.currentColor,
+        this.currentRenderMode,
+      );
+      samplePass.setPipeline(blendPipeline);
+      samplePass.setBindGroup(0, this.bindGroup);
+      samplePass.setBlendConstant({ r: blendWeight, g: blendWeight, b: blendWeight, a: 1 });
+      samplePass.draw(3);
+      samplePass.end();
+
+      this._sampleCount++;
+
+      // Blit accumulation to canvas
+      const blitPass = commandEncoder.beginRenderPass({
+        colorAttachments: [
+          {
+            view: canvasView,
+            loadOp: 'clear',
+            storeOp: 'store',
+            clearValue: { r: 0, g: 0, b: 0, a: 1 },
+          },
+        ],
+      });
+      blitPass.setPipeline(this.blitPipeline);
+      blitPass.setBindGroup(0, this.blitBindGroup!);
+      blitPass.draw(3);
+      blitPass.end();
+    } else {
+      // Fast path: render directly to canvas (no accumulation overhead)
+      // Keep sampleCount at 0 so accumulation starts clean when camera stops
+      this._sampleCount = 0;
+
+      const pipeline = this.pipelineManager.getOrCreatePipeline(
+        this.currentFractal,
+        this.currentColor,
+        this.currentRenderMode,
+      );
+
+      const pass = commandEncoder.beginRenderPass({
+        colorAttachments: [
+          {
+            view: canvasView,
+            loadOp: 'clear',
+            storeOp: 'store',
+            clearValue: { r: 0, g: 0, b: 0, a: 1 },
+          },
+        ],
+      });
+      pass.setPipeline(pipeline);
+      pass.setBindGroup(0, this.bindGroup);
+      pass.draw(3);
+      pass.end();
+    }
 
     this.ctx.device.queue.submit([commandEncoder.finish()]);
   }
