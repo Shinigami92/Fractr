@@ -34,7 +34,10 @@ export type RenderMode =
   | 'cel'
   | 'wireframe'
   | 'duallighting'
-  | 'fog';
+  | 'fog'
+  | 'multibounce'
+  | 'radiosity'
+  | 'bidir';
 export type ColorMode =
   | 'distance'
   | 'orbit_trap'
@@ -236,6 +239,9 @@ const RENDER_MODES: RenderMode[] = [
   'sss',
   'cone',
   'pathtrace',
+  'multibounce',
+  'radiosity',
+  'bidir',
   'dof',
   'fog',
   'volume',
@@ -256,7 +262,10 @@ export const RENDER_MODE_OPTIONS: { value: RenderMode; label: string }[] = [
   { value: 'wireframe', label: 'Wireframe / Edges' },
   { value: 'sss', label: 'Subsurface Scattering' },
   { value: 'cone', label: 'Cone Marching' },
-  { value: 'pathtrace', label: 'Path Tracing' },
+  { value: 'pathtrace', label: 'Path Tracing (1 bounce)' },
+  { value: 'multibounce', label: 'Multi-bounce GI (3 bounces)' },
+  { value: 'radiosity', label: 'Radiosity' },
+  { value: 'bidir', label: 'Bidirectional Path Trace' },
   { value: 'dof', label: 'Depth of Field' },
   { value: 'fog', label: 'Volumetric Fog' },
   { value: 'volume', label: 'Volume Rendering' },

@@ -18,6 +18,9 @@ const RENDER_MODE_LABELS: Record<RenderMode, string> = {
   wireframe: 'wireframe',
   duallighting: 'dual lighting',
   fog: 'volumetric fog',
+  multibounce: 'multi-bounce GI',
+  radiosity: 'radiosity',
+  bidir: 'bidirectional',
 };
 
 const props = defineProps<{

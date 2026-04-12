@@ -1,4 +1,5 @@
 import aoRenderSrc from '../../shaders/ao_render.wgsl?raw';
+import bidirSrc from '../../shaders/bidir.wgsl?raw';
 import celSrc from '../../shaders/cel.wgsl?raw';
 // WGSL source imports
 import colorAoSrc from '../../shaders/coloring/ao.wgsl?raw';
@@ -21,7 +22,9 @@ import dofSrc from '../../shaders/dof.wgsl?raw';
 import duallightingSrc from '../../shaders/duallighting.wgsl?raw';
 import fogSrc from '../../shaders/fog.wgsl?raw';
 import fullscreenSrc from '../../shaders/fullscreen.wgsl?raw';
+import multibounceSrc from '../../shaders/multibounce.wgsl?raw';
 import pathtraceSrc from '../../shaders/pathtrace.wgsl?raw';
+import radiositySrc from '../../shaders/radiosity.wgsl?raw';
 import raymarcherSrc from '../../shaders/raymarcher.wgsl?raw';
 import reflectionSrc from '../../shaders/reflection.wgsl?raw';
 import apollonianSrc from '../../shaders/sdf/apollonian.wgsl?raw';
@@ -63,6 +66,9 @@ const MARCHER_SOURCES: Record<RenderMode, string> = {
   wireframe: wireframeSrc,
   duallighting: duallightingSrc,
   fog: fogSrc,
+  multibounce: multibounceSrc,
+  radiosity: radiositySrc,
+  bidir: bidirSrc,
 };
 import type { WebGPUContext } from './WebGPUContext';
 
