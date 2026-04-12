@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-export type AppMode = 'title' | 'select' | 'loading' | 'playing' | 'paused' | 'settings';
+export type AppMode = 'title' | 'select' | 'loading' | 'playing' | 'paused' | 'settings' | 'saves';
 export type SettingsSource = 'title' | 'pause';
 
 export const useAppState = defineStore('appState', () => {
@@ -37,6 +37,17 @@ export const useAppState = defineStore('appState', () => {
     mode.value = settingsSource.value === 'pause' ? 'paused' : 'title';
   }
 
+  let savesReturnMode: AppMode = 'title';
+
+  function openSaves(): void {
+    savesReturnMode = mode.value === 'playing' ? 'paused' : mode.value;
+    mode.value = 'saves';
+  }
+
+  function closeSaves(): void {
+    mode.value = savesReturnMode;
+  }
+
   function backToTitle(): void {
     mode.value = 'title';
   }
@@ -45,6 +56,8 @@ export const useAppState = defineStore('appState', () => {
     mode,
     settingsSource,
     openSelect,
+    openSaves,
+    closeSaves,
     startGame,
     onLoaded,
     pause,

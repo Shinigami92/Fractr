@@ -4,6 +4,7 @@ import GameHud from './components/hud/GameHud.vue';
 import RadialMenu from './components/hud/RadialMenu.vue';
 import FractalSelectScreen from './components/menu/FractalSelectScreen.vue';
 import PauseMenu from './components/menu/PauseMenu.vue';
+import SavesBrowser from './components/menu/SavesBrowser.vue';
 import SettingsMenu from './components/menu/SettingsMenu.vue';
 import TitleScreen from './components/menu/TitleScreen.vue';
 import WebGPUCanvas from './components/WebGPUCanvas.vue';
@@ -14,6 +15,7 @@ import { FPSCamera } from './engine/camera/FPSCamera';
 import { evaluateSDF } from './engine/fractals/sdf';
 import { WebGPUContext } from './engine/gpu/WebGPUContext';
 import { Renderer } from './engine/Renderer';
+import { type SaveEntry, type SavedState, saveState, saveThumbnail } from './services/savesDB';
 import { useAppState } from './stores/appState';
 import { useControlSettings } from './stores/controlSettings';
 import {
@@ -37,7 +39,17 @@ const hudSettings = useHudSettings();
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const gpuError = ref<string | null>(null);
+const savesBrowserRef = ref<InstanceType<typeof SavesBrowser> | null>(null);
 const shareNotification = ref(false);
+const notificationText = ref('');
+
+function showNotification(text: string, duration = 2000): void {
+  notificationText.value = text;
+  shareNotification.value = true;
+  setTimeout(() => {
+    shareNotification.value = false;
+  }, duration);
+}
 
 // Radial menu state
 type RadialMenuType = 'color' | 'render' | 'fractal' | null;
@@ -193,6 +205,150 @@ function syncURLState(): void {
   });
   const params = url.split('?')[1] ?? '';
   window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+}
+
+function getCurrentState(): SavedState {
+  return {
+    fractalType: fractal.fractalType,
+    power: fractal.power,
+    maxIterations: fractal.maxIterations,
+    bailout: fractal.bailout,
+    colorMode: fractal.colorMode,
+    renderMode: fractal.renderMode,
+    dynamicIterations: graphics.dynamicIterations,
+    x: camera.position[0]!,
+    y: camera.position[1]!,
+    z: camera.position[2]!,
+    yaw: camera.yaw,
+    pitch: camera.pitch,
+    roll: camera.roll,
+  };
+}
+
+async function quickSave(): Promise<void> {
+  const state = getCurrentState();
+  // Capture thumbnail from current canvas
+  const canvas = canvasRef.value;
+  let thumbnail: Blob | undefined;
+  if (canvas) {
+    thumbnail = await new Promise<Blob | undefined>((resolve) => {
+      canvas.toBlob((blob) => resolve(blob ?? undefined), 'image/webp', 0.7);
+    });
+  }
+  const saved = await saveState(state, thumbnail);
+  if (saved) {
+    showNotification('Location saved');
+  } else {
+    showNotification('Already saved');
+  }
+}
+
+function loadSavedState(state: SavedState): void {
+  fractal.fractalType = state.fractalType;
+  fractal.power = state.power;
+  fractal.maxIterations = state.maxIterations;
+  fractal.bailout = state.bailout;
+  fractal.colorMode = state.colorMode;
+  fractal.renderMode = state.renderMode;
+  graphics.dynamicIterations = state.dynamicIterations;
+  camera.position[0] = state.x;
+  camera.position[1] = state.y;
+  camera.position[2] = state.z;
+  camera.setFromEuler(state.yaw, state.pitch, state.roll);
+  renderer?.setFractalType(state.fractalType);
+  renderer?.setColorMode(state.colorMode);
+  renderer?.setRenderMode(state.renderMode);
+  renderer?.resetAccumulation();
+  startFromURL = true; // prevent camera reset on loading → playing transition
+  appState.startGame();
+}
+
+async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
+  if (!renderer) return;
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+
+  // Stop preview loop so it doesn't overwrite our renders
+  previewLoop.stop();
+
+  // Save current state to restore after
+  const prevState = getCurrentState();
+
+  for (const save of saves) {
+    const s = save.state;
+    // Temporarily set renderer state
+    renderer.setFractalType(s.fractalType);
+    renderer.setColorMode(s.colorMode);
+    renderer.setRenderMode(s.renderMode);
+    camera.position[0] = s.x;
+    camera.position[1] = s.y;
+    camera.position[2] = s.z;
+    camera.setFromEuler(s.yaw, s.pitch, s.roll);
+
+    renderer.updateUniforms(
+      camera,
+      {
+        power: s.power,
+        maxIterations: s.maxIterations,
+        bailout: s.bailout,
+        colorMode: COLOR_MODE_MAP[s.colorMode],
+        maxRaySteps: graphics.maxRaySteps,
+        resolutionScale: 1,
+        animatedColors: false,
+      },
+      0,
+    );
+    renderer.resetAccumulation();
+
+    // Time-based rendering: keep rendering until enough time has passed
+    const renderTimeMs = Math.max(300, s.maxIterations * 30);
+    const params = {
+      power: s.power,
+      maxIterations: s.maxIterations,
+      bailout: s.bailout,
+      colorMode: COLOR_MODE_MAP[s.colorMode],
+      maxRaySteps: graphics.maxRaySteps,
+      resolutionScale: 1,
+      animatedColors: false,
+    };
+
+    const startMs = performance.now();
+    while (performance.now() - startMs < renderTimeMs) {
+      renderer.updateUniforms(camera, params, 0);
+      renderer.render(false);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+
+    // Extra settle for GPU flush
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const blob = await new Promise<Blob | undefined>((resolve) => {
+      canvas.toBlob((b) => resolve(b ?? undefined), 'image/webp', 0.7);
+    });
+
+    if (blob) {
+      await saveThumbnail(save.stateHash, blob);
+      // Show thumbnail immediately in the browser
+      savesBrowserRef.value?.setThumbnail(save.stateHash, blob);
+    }
+
+    // Delay between captures
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  // Restore previous state
+  renderer.setFractalType(prevState.fractalType);
+  renderer.setColorMode(prevState.colorMode);
+  renderer.setRenderMode(prevState.renderMode);
+  camera.position[0] = prevState.x;
+  camera.position[1] = prevState.y;
+  camera.position[2] = prevState.z;
+  camera.setFromEuler(prevState.yaw, prevState.pitch, prevState.roll);
+  renderer.resetAccumulation();
+
+  // Restart preview loop and refresh thumbnails in the browser
+  previewLoop.start();
+  savesBrowserRef.value?.refreshThumbnails();
 }
 
 let renderer: Renderer | null = null;
@@ -463,8 +619,10 @@ watch(
   () => fractal.fractalType,
   (type) => {
     renderer?.setFractalType(type);
-    resetCamera();
-    graphics.dynamicIterations = fractal.config.defaultDynamicIterations !== false;
+    if (!startFromURL) {
+      resetCamera();
+      graphics.dynamicIterations = fractal.config.defaultDynamicIterations !== false;
+    }
   },
 );
 watch(
@@ -512,7 +670,7 @@ watch(
         applyCanvasResolution(PREVIEW_SCALE);
         previewLoop.start();
         window.history.replaceState({}, '', window.location.pathname);
-      } else if (mode === 'paused' || mode === 'settings') {
+      } else if (mode === 'paused' || mode === 'settings' || mode === 'saves') {
         // Keep current resolution when pausing from gameplay
         const fromGame = oldMode === 'playing' || oldMode === 'paused';
         if (!fromGame) {
@@ -556,6 +714,8 @@ function onKeyDown(e: KeyboardEvent): void {
       appState.resume();
     } else if (appState.mode === 'settings') {
       appState.closeSettings();
+    } else if (appState.mode === 'saves') {
+      appState.closeSaves();
     }
     // 'playing' → pointer lock exit triggers pause via watcher above
   }
@@ -585,6 +745,15 @@ function onKeyDown(e: KeyboardEvent): void {
     if (e.code === controls.keybindings.toggleAnimatedColors) {
       graphics.animatedColors = !graphics.animatedColors;
     }
+    if (e.code === controls.keybindings.quickSave) {
+      e.preventDefault();
+      quickSave();
+    }
+    if (e.code === controls.keybindings.openSaves) {
+      cursorUnlocked = true;
+      pointerLock.exitLock();
+      appState.openSaves();
+    }
     if (e.code === controls.keybindings.copyShareURL) {
       const url = buildShareURL({
         fractalType: fractal.fractalType,
@@ -602,10 +771,7 @@ function onKeyDown(e: KeyboardEvent): void {
         preview: false,
       });
       navigator.clipboard.writeText(url);
-      shareNotification.value = true;
-      setTimeout(() => {
-        shareNotification.value = false;
-      }, 2000);
+      showNotification('Share URL copied to clipboard');
     }
 
     // Radial menu hold detection for cycle keys
@@ -715,6 +881,12 @@ onUnmounted(() => {
       <FractalSelectScreen v-if="!previewMode && appState.mode === 'select'" />
       <PauseMenu v-if="appState.mode === 'paused'" />
       <SettingsMenu v-if="appState.mode === 'settings'" />
+      <SavesBrowser
+        v-if="appState.mode === 'saves'"
+        ref="savesBrowserRef"
+        @load="loadSavedState"
+        @regenerate-thumbnails="regenerateThumbnails"
+      />
       <GameHud
         v-if="appState.mode === 'playing'"
         :fps="gameLoop.fps.value"
@@ -737,7 +909,7 @@ onUnmounted(() => {
           v-if="shareNotification"
           class="pointer-events-none fixed bottom-8 left-1/2 z-30 -translate-x-1/2 border border-white/10 bg-surface-dim/90 px-4 py-2 font-mono text-sm text-accent-bright"
         >
-          Share URL copied to clipboard
+          {{ notificationText }}
         </div>
       </Transition>
     </template>

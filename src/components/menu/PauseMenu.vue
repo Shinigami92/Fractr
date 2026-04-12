@@ -12,6 +12,10 @@ function onSettings(): void {
   appState.openSettings('pause');
 }
 
+function onSaves(): void {
+  appState.openSaves();
+}
+
 function onBackToMenu(): void {
   appState.backToTitle();
 }
@@ -31,6 +35,7 @@ function onBackToMenu(): void {
 
       <div class="flex flex-col gap-3">
         <MenuButton label="Resume" @click="onResume" />
+        <MenuButton label="Saved Locations" @click="onSaves" />
         <MenuButton label="Settings" @click="onSettings" />
         <MenuButton label="Back to Menu" @click="onBackToMenu" />
       </div>

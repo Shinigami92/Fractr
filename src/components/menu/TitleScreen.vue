@@ -8,6 +8,10 @@ function onStart(): void {
   appState.openSelect();
 }
 
+function onSaves(): void {
+  appState.openSaves();
+}
+
 function onSettings(): void {
   appState.openSettings('title');
 }
@@ -34,6 +38,7 @@ function onSettings(): void {
 
       <div class="flex flex-col gap-3">
         <MenuButton label="Start" @click="onStart" />
+        <MenuButton label="Saved Locations" @click="onSaves" />
         <MenuButton label="Settings" @click="onSettings" />
       </div>
 

@@ -11,9 +11,11 @@ Ultra-performant 3D fractal explorer powered by WebGPU. Fly through infinite mat
 - **19 fractals** — Mandelbulb, Mandelbox, Menger Sponge, Sierpinski, Quaternion Julia, Gyroid, and more
 - **13 color modes** — Glow, Distance Estimation, Chromatic, Temperature, Ambient Occlusion, Fresnel, and more
 - **Animated colors** — toggle time-based color animations (cycling hues, moving bands, pulsing glow)
-- **16 render modes** — Ray Marching, Soft Shadows, Reflections, Path Tracing, Volume Rendering, Cel Shading, and more
+- **17 render modes** — Ray Marching, Soft Shadows, Reflections, Whitted Ray Trace, Path Tracing, Volume Rendering, Cel Shading, and more
 - **Progressive accumulation** — stochastic modes converge to noise-free images when stationary
+- **6DOF camera** — full six degrees of freedom with roll (Q/E), fly like a spaceship
 - **Radial menu** — hold R/C/V to open a wheel for quickly picking any mode
+- **Saved locations** — F5 to quick-save with thumbnail, browse/filter/load/export/import saves
 - **Distance-based camera speed** — automatically slows near surfaces for precise deep-zoom exploration
 - **Dynamic iterations** — detail level adapts based on proximity to fractal surface
 - **Adaptive quality** — resolution scales with FPS for smooth performance on any GPU
@@ -55,6 +57,8 @@ Ultra-performant 3D fractal explorer powered by WebGPU. Fly through infinite mat
 | . / ,          | Increase/decrease max iterations |
 | K / J          | Increase/decrease bailout        |
 | G              | Toggle animated colors           |
+| F5             | Quick save location              |
+| B              | Browse saved locations           |
 | Scroll wheel   | Adjust max iterations            |
 | F3             | Toggle HUD                       |
 | H              | Toggle crosshair                 |
@@ -62,7 +66,7 @@ Ultra-performant 3D fractal explorer powered by WebGPU. Fly through infinite mat
 
 ## Requirements
 
-- A browser with **WebGPU support** (Chrome 113+, Edge 113+)
+- A browser with **[WebGPU support](https://caniuse.com/webgpu)** (Chrome 113+, Edge 113+)
 - Tested on MacBook Pro M1 and Nvidia RTX 4080 Super
 
 ## Development

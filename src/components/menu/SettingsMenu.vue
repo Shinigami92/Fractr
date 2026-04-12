@@ -254,6 +254,8 @@ function resetAll(): void {
           <p>K / J — Increase/Decrease Bailout</p>
           <p>G — Toggle Animated Colors</p>
           <p>R — Cycle Render Mode</p>
+          <p>F5 — Quick Save Location</p>
+          <p>B — Saved Locations</p>
           <p>P — Copy Share URL</p>
         </div>
       </div>
