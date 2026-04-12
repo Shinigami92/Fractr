@@ -149,17 +149,7 @@ const FRACTALS = [
     yaw: -2.35,
     pitch: -0.3,
   },
-  {
-    type: 'spudsville',
-    power: 4,
-    iter: 16,
-    bail: 4,
-    x: 1.5,
-    y: 0.8,
-    z: 1.5,
-    yaw: -2.35,
-    pitch: -0.35,
-  },
+  { type: 'spudsville', power: 4, iter: 16, bail: 50, x: 0, y: 0, z: 2.1, yaw: -1.57, pitch: 0 },
   {
     type: 'bristorbrot',
     power: 0,
@@ -185,10 +175,61 @@ const FRACTALS = [
   { type: 'gyroid', power: 5, iter: 2, bail: 100, x: 0, y: 0, z: 1.5, yaw: -1.57, pitch: 0 },
 ];
 
-const WIDTH = 960;
-const HEIGHT = 540;
-const OUTPUT_DIR = resolve(import.meta.dirname, '../public/previews');
+const PRESETS = {
+  thumbnail: { width: 960, height: 540, wait: 3000 },
+  highres: { width: 1920, height: 1080, wait: 5000 },
+};
+
 const PORT = 4173;
+
+interface Options {
+  fractals: string[];
+  color: string;
+  preset: keyof typeof PRESETS;
+  outDir: string;
+}
+
+function parseArgs(): Options {
+  const args = process.argv.slice(2);
+  const fractals: string[] = [];
+  let color = 'glow';
+  let preset: keyof typeof PRESETS = 'thumbnail';
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]!;
+    if (arg === '--color' && args[i + 1]) {
+      color = args[++i]!;
+    } else if (arg === '--highres') {
+      preset = 'highres';
+    } else if (arg === '--help') {
+      console.log(`Usage: generate-previews [options] [fractal names...]
+
+Options:
+  --color <mode>   Color mode (default: glow)
+  --highres        1920x1080 with longer render wait (default: 960x540)
+  --help           Show this help
+
+Examples:
+  pnpm run generate-previews
+  pnpm run generate-previews mandelbulb menger --color chromatic
+  pnpm run generate-previews --highres --color distance
+  pnpm run generate-previews mandelbulb --highres
+
+Available fractals: ${FRACTALS.map((f) => f.type).join(', ')}
+Available colors: glow, distance, orbit_trap, iteration, ao, normal, curvature, stripe, fresnel, depth, triplanar, temperature, chromatic`);
+      process.exit(0);
+    } else if (!arg.startsWith('--')) {
+      fractals.push(arg);
+    }
+  }
+
+  const outDir =
+    preset === 'highres'
+      ? resolve(import.meta.dirname, '../public/screenshots')
+      : resolve(import.meta.dirname, '../public/previews');
+
+  return { fractals, color, preset, outDir };
+}
 
 function waitForServer(server: ChildProcess): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -206,21 +247,24 @@ function waitForServer(server: ChildProcess): Promise<void> {
 }
 
 async function main() {
-  // Filter fractals by CLI args: `pnpm run generate-previews mandelbulb menger`
-  const args = process.argv.slice(2);
-  const targets = args.length > 0 ? FRACTALS.filter((f) => args.includes(f.type)) : FRACTALS;
+  const opts = parseArgs();
+  const targets =
+    opts.fractals.length > 0 ? FRACTALS.filter((f) => opts.fractals.includes(f.type)) : FRACTALS;
 
   if (targets.length === 0) {
     console.error(`No matching fractals. Available: ${FRACTALS.map((f) => f.type).join(', ')}`);
     process.exit(1);
   }
 
-  mkdirSync(OUTPUT_DIR, { recursive: true });
+  const { width, height, wait } = PRESETS[opts.preset];
+  mkdirSync(opts.outDir, { recursive: true });
 
   console.log('Building...');
   execSync('pnpm run build', { stdio: 'inherit', cwd: resolve(import.meta.dirname, '..') });
 
-  console.log(`Starting preview server... (${targets.length} fractal(s) to capture)`);
+  console.log(
+    `Capturing ${targets.length} fractal(s) at ${width}x${height} with color=${opts.color}...`,
+  );
   const server = spawn('pnpm', ['run', 'preview', '--port', String(PORT)], {
     stdio: 'pipe',
     cwd: resolve(import.meta.dirname, '..'),
@@ -239,7 +283,7 @@ async function main() {
       console.log(`Capturing ${fractal.type}...`);
 
       const page = await browser.newPage({
-        viewport: { width: WIDTH, height: HEIGHT },
+        viewport: { width, height },
       });
 
       const params = new URLSearchParams({
@@ -247,7 +291,7 @@ async function main() {
         p: String(fractal.power),
         i: String(fractal.iter),
         b: String(fractal.bail),
-        c: 'glow',
+        c: opts.color,
         x: String(fractal.x),
         y: String(fractal.y),
         z: String(fractal.z),
@@ -257,15 +301,13 @@ async function main() {
       });
 
       await page.goto(`http://localhost:${PORT}/Fractr/?${params.toString()}`);
-
-      // Wait for WebGPU render
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(wait);
 
       const canvas = page.locator('canvas');
-      const pngPath = resolve(OUTPUT_DIR, `${fractal.type}.png`);
-      const webpPath = resolve(OUTPUT_DIR, `${fractal.type}.webp`);
+      const pngPath = resolve(opts.outDir, `${fractal.type}.png`);
+      const webpPath = resolve(opts.outDir, `${fractal.type}.webp`);
       await canvas.screenshot({ path: pngPath, type: 'png' });
-      execSync(`cwebp -q 85 "${pngPath}" -o "${webpPath}"`, { stdio: 'pipe' });
+      execSync(`cwebp -q 90 "${pngPath}" -o "${webpPath}"`, { stdio: 'pipe' });
       unlinkSync(pngPath);
       console.log(`  Saved ${webpPath}`);
 
