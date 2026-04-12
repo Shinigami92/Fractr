@@ -2,7 +2,13 @@
 import { ref } from 'vue';
 import { useAppState } from '../../stores/appState';
 import { useControlSettings } from '../../stores/controlSettings';
-import { FRACTAL_CONFIGS, type FractalType, useFractalParams } from '../../stores/fractalParams';
+import {
+  COLOR_MODE_OPTIONS,
+  FRACTAL_CONFIGS,
+  type FractalType,
+  RENDER_MODE_OPTIONS,
+  useFractalParams,
+} from '../../stores/fractalParams';
 import { useGraphicsSettings } from '../../stores/graphicsSettings';
 import { useHudSettings } from '../../stores/hudSettings';
 
@@ -119,19 +125,9 @@ function resetAll(): void {
             v-model="fractal.colorMode"
             class="border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white"
           >
-            <option value="distance">Distance Estimation</option>
-            <option value="orbit_trap">Orbit Trap</option>
-            <option value="iteration">Iteration Gradient</option>
-            <option value="ao">Ambient Occlusion</option>
-            <option value="normal">Normal</option>
-            <option value="curvature">Curvature</option>
-            <option value="glow">Glow</option>
-            <option value="stripe">Stripe</option>
-            <option value="fresnel">Fresnel</option>
-            <option value="depth">Depth</option>
-            <option value="triplanar">Triplanar</option>
-            <option value="temperature">Temperature</option>
-            <option value="chromatic">Chromatic</option>
+            <option v-for="opt in COLOR_MODE_OPTIONS" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
           </select>
         </label>
       </div>
@@ -144,13 +140,9 @@ function resetAll(): void {
             v-model="fractal.renderMode"
             class="border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white"
           >
-            <option value="ray">Ray Marching</option>
-            <option value="cone">Cone Marching</option>
-            <option value="pathtrace">Path Tracing</option>
-            <option value="volume">Volume Rendering</option>
-            <option value="softshadow">Soft Shadows</option>
-            <option value="reflection">Reflections</option>
-            <option value="dof">Depth of Field</option>
+            <option v-for="opt in RENDER_MODE_OPTIONS" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
           </select>
         </label>
         <label class="flex flex-col gap-1">

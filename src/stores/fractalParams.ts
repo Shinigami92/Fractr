@@ -60,57 +60,12 @@ export interface FractalConfig {
 }
 
 export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
+  // Organic bulbs
   mandelbulb: {
     label: 'Mandelbulb',
     power: { label: 'Power', min: 2, max: 16, step: 0.1, default: 8 },
     maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
-  },
-  mandelbox: {
-    label: 'Mandelbox',
-    power: { label: 'Scale', min: -3, max: 3, step: 0.1, default: -1.5 },
-    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 15 },
-    bailout: { label: 'Bailout Radius', min: 1, max: 200, step: 1, default: 100 },
-  },
-  menger: {
-    label: 'Menger Sponge',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 6 },
-  },
-  sierpinski: {
-    label: 'Sierpinski Tetrahedron',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 8 },
-  },
-  quatjulia: {
-    label: 'Quaternion Julia',
-    power: { label: 'Seed', min: -3, max: 3, step: 0.1, default: -1.5 },
-    maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
-    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 4 },
-  },
-  kleinian: {
-    label: 'Pseudo-Kleinian',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 20, step: 1, default: 10 },
-  },
-  koch3d: {
-    label: 'Koch Snowflake 3D',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 5 },
-  },
-  apollonian: {
-    label: 'Apollonian Gasket',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 7 },
-  },
-  juliabulb: {
-    label: 'Juliabulb',
-    power: { label: 'Seed', min: -3, max: 3, step: 0.1, default: 2.0 },
-    maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
-    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
-  },
-  octahedron: {
-    label: 'Octahedron Fractal',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 8 },
-  },
-  cantordust: {
-    label: 'Cantor Dust 3D',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 10, step: 1, default: 4 },
   },
   burningship: {
     label: 'Burning Ship 3D',
@@ -124,10 +79,40 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
   },
+  xenodreambuie: {
+    label: 'Xenodreambuie',
+    power: { label: 'Power', min: 2, max: 16, step: 0.1, default: 8 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  },
+  juliabulb: {
+    label: 'Juliabulb',
+    power: { label: 'Seed', min: -3, max: 3, step: 0.1, default: 2.0 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  },
   cospower2: {
     label: 'Cosine Power-2',
     maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  },
+  bristorbrot: {
+    label: 'Bristorbrot',
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  },
+  quatjulia: {
+    label: 'Quaternion Julia',
+    power: { label: 'Seed', min: -3, max: 3, step: 0.1, default: -1.5 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 4 },
+  },
+  // Architectural boxes
+  mandelbox: {
+    label: 'Mandelbox',
+    power: { label: 'Scale', min: -3, max: 3, step: 0.1, default: -1.5 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 15 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 200, step: 1, default: 100 },
   },
   kaleidobox: {
     label: 'Kaleidoscopic Box',
@@ -141,16 +126,35 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 4 },
   },
-  bristorbrot: {
-    label: 'Bristorbrot',
-    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
-    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  // Geometric IFS
+  menger: {
+    label: 'Menger Sponge',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 6 },
   },
-  xenodreambuie: {
-    label: 'Xenodreambuie',
-    power: { label: 'Power', min: 2, max: 16, step: 0.1, default: 8 },
-    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
-    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  sierpinski: {
+    label: 'Sierpinski Tetrahedron',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 8 },
+  },
+  koch3d: {
+    label: 'Koch Snowflake 3D',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 5 },
+  },
+  octahedron: {
+    label: 'Octahedron Fractal',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 8 },
+  },
+  cantordust: {
+    label: 'Cantor Dust 3D',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 10, step: 1, default: 4 },
+  },
+  apollonian: {
+    label: 'Apollonian Gasket',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 7 },
+  },
+  // Exotic
+  kleinian: {
+    label: 'Pseudo-Kleinian',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 20, step: 1, default: 10 },
   },
   gyroid: {
     label: 'Gyroid',
@@ -211,6 +215,21 @@ const RENDER_MODES: RenderMode[] = [
   'pathtrace',
   'dof',
   'volume',
+];
+
+export const COLOR_MODE_OPTIONS: { value: ColorMode; label: string }[] = COLOR_MODES.map((m) => ({
+  value: m,
+  label: m.replace('_', ' '),
+}));
+
+export const RENDER_MODE_OPTIONS: { value: RenderMode; label: string }[] = [
+  { value: 'ray', label: 'Ray Marching' },
+  { value: 'softshadow', label: 'Soft Shadows' },
+  { value: 'reflection', label: 'Reflections' },
+  { value: 'cone', label: 'Cone Marching' },
+  { value: 'pathtrace', label: 'Path Tracing' },
+  { value: 'dof', label: 'Depth of Field' },
+  { value: 'volume', label: 'Volume Rendering' },
 ];
 
 export const useFractalParams = defineStore('fractalParams', () => {
