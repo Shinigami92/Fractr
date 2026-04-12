@@ -63,30 +63,30 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
   },
   sierpinski: {
     label: 'Sierpinski Tetrahedron',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 10 },
+    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 8 },
   },
   quatjulia: {
     label: 'Quaternion Julia',
-    power: { label: 'Seed', min: -5, max: 5, step: 0.1, default: -1.5 },
-    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    power: { label: 'Seed', min: -3, max: 3, step: 0.1, default: -1.5 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 4 },
   },
   kleinian: {
     label: 'Pseudo-Kleinian',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 32, step: 1, default: 12 },
+    maxIterations: { label: 'Max Iterations', min: 1, max: 20, step: 1, default: 10 },
   },
   koch3d: {
     label: 'Koch Snowflake 3D',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 6 },
+    maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 5 },
   },
   apollonian: {
     label: 'Apollonian Gasket',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 8 },
+    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 7 },
   },
   juliabulb: {
     label: 'Juliabulb',
-    power: { label: 'Seed', min: -5, max: 5, step: 0.1, default: 1.0 },
-    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    power: { label: 'Seed', min: -3, max: 3, step: 0.1, default: 2.0 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
   },
 };
