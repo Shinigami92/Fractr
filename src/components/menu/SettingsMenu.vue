@@ -255,6 +255,7 @@ function resetAll(): void {
           <p>G — Toggle Animated Colors</p>
           <p>R — Cycle Render Mode</p>
           <p>F5 — Quick Save Location</p>
+          <p>F6 — Screenshot to Clipboard</p>
           <p>B — Saved Locations</p>
           <p>P — Copy Share URL</p>
         </div>

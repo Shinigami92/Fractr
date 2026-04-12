@@ -19,6 +19,7 @@ export interface KeybindingMap {
   decreaseBailout: string;
   toggleAnimatedColors: string;
   quickSave: string;
+  screenshot: string;
   openSaves: string;
   copyShareURL: string;
   cycleRenderMode: string;
@@ -42,6 +43,7 @@ const DEFAULT_KEYBINDINGS: KeybindingMap = {
   decreaseBailout: 'KeyJ',
   toggleAnimatedColors: 'KeyG',
   quickSave: 'F5',
+  screenshot: 'F6',
   openSaves: 'KeyB',
   copyShareURL: 'KeyP',
   cycleRenderMode: 'KeyR',

@@ -243,6 +243,28 @@ async function quickSave(): Promise<void> {
   }
 }
 
+async function takeScreenshot(): Promise<void> {
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((b) => resolve(b), 'image/png');
+  });
+  if (!blob) return;
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    showNotification('Screenshot copied to clipboard');
+  } catch {
+    // Fallback: download the file
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fractr-${Date.now()}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showNotification('Screenshot saved as file');
+  }
+}
+
 function loadSavedState(state: SavedState): void {
   fractal.fractalType = state.fractalType;
   fractal.power = state.power;
@@ -748,6 +770,10 @@ function onKeyDown(e: KeyboardEvent): void {
     if (e.code === controls.keybindings.quickSave) {
       e.preventDefault();
       quickSave();
+    }
+    if (e.code === controls.keybindings.screenshot) {
+      e.preventDefault();
+      takeScreenshot();
     }
     if (e.code === controls.keybindings.openSaves) {
       cursorUnlocked = true;

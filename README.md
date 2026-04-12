@@ -58,6 +58,7 @@ Ultra-performant 3D fractal explorer powered by WebGPU. Fly through infinite mat
 | K / J          | Increase/decrease bailout        |
 | G              | Toggle animated colors           |
 | F5             | Quick save location              |
+| F6             | Screenshot to clipboard          |
 | B              | Browse saved locations           |
 | Scroll wheel   | Adjust max iterations            |
 | F3             | Toggle HUD                       |
