@@ -388,7 +388,7 @@ function onKeyDown(e: KeyboardEvent): void {
     // 'playing' → pointer lock exit triggers pause via watcher above
   }
 
-  if (appState.mode === 'playing') {
+  if (appState.mode === 'playing' && !e.ctrlKey && !e.metaKey && !e.altKey) {
     if (e.code === controls.keybindings.toggleHud) {
       hudSettings.toggleHud();
     }
