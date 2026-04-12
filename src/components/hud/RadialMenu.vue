@@ -13,7 +13,7 @@ const INNER_RADIUS = 45;
 
 const outerRadius = computed(() => {
   const count = props.options.length;
-  return Math.max(120, Math.ceil(50 / Math.sin(Math.PI / count)));
+  return Math.max(100, Math.ceil(42 / Math.sin(Math.PI / count)));
 });
 
 const viewSize = computed(() => outerRadius.value * 2 + 80);
@@ -34,7 +34,7 @@ const sectors = computed(() => {
   const startOffset = -Math.PI / 2;
   const r = outerRadius.value;
   const ir = INNER_RADIUS;
-  const labelR = (r + ir) / 2;
+  const labelR = ir + (r - ir) * 0.67;
 
   return props.options.map((opt, i) => {
     // Sector wedge with gap between segments
