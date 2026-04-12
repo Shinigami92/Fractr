@@ -1,7 +1,16 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
-export type FractalType = 'mandelbulb' | 'mandelbox' | 'menger';
+export type FractalType =
+  | 'mandelbulb'
+  | 'mandelbox'
+  | 'menger'
+  | 'sierpinski'
+  | 'quatjulia'
+  | 'kleinian'
+  | 'koch3d'
+  | 'apollonian'
+  | 'juliabulb';
 export type ColorMode =
   | 'distance'
   | 'orbit_trap'
@@ -44,9 +53,47 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     label: 'Menger Sponge',
     maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 6 },
   },
+  sierpinski: {
+    label: 'Sierpinski Tetrahedron',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 10 },
+  },
+  quatjulia: {
+    label: 'Quaternion Julia',
+    power: { label: 'Seed', min: -5, max: 5, step: 0.1, default: -1.5 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 4 },
+  },
+  kleinian: {
+    label: 'Pseudo-Kleinian',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 32, step: 1, default: 12 },
+  },
+  koch3d: {
+    label: 'Koch Snowflake 3D',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 12, step: 1, default: 6 },
+  },
+  apollonian: {
+    label: 'Apollonian Gasket',
+    maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 8 },
+  },
+  juliabulb: {
+    label: 'Juliabulb',
+    power: { label: 'Seed', min: -5, max: 5, step: 0.1, default: 1.0 },
+    maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+  },
 };
 
-const FRACTAL_TYPES: FractalType[] = ['mandelbulb', 'mandelbox', 'menger'];
+const FRACTAL_TYPES: FractalType[] = [
+  'mandelbulb',
+  'mandelbox',
+  'menger',
+  'sierpinski',
+  'quatjulia',
+  'kleinian',
+  'koch3d',
+  'apollonian',
+  'juliabulb',
+];
 const COLOR_MODES: ColorMode[] = [
   'distance',
   'orbit_trap',

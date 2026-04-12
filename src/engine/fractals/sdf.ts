@@ -101,6 +101,201 @@ function mengerSDF(x: number, y: number, z: number, params: SDFParams): number {
   return d;
 }
 
+function sierpinskiSDF(x: number, y: number, z: number, params: SDFParams): number {
+  let zx = x;
+  let zy = y;
+  let zz = z;
+  const a = [
+    [1, 1, 1],
+    [-1, -1, 1],
+    [1, -1, -1],
+    [-1, 1, -1],
+  ] as const;
+  const scale = 2;
+
+  for (let i = 0; i < params.maxIterations; i++) {
+    let ci = 0;
+    let d = (zx - a[0]![0]) ** 2 + (zy - a[0]![1]) ** 2 + (zz - a[0]![2]) ** 2;
+    for (let j = 1; j < 4; j++) {
+      const dj = (zx - a[j]![0]) ** 2 + (zy - a[j]![1]) ** 2 + (zz - a[j]![2]) ** 2;
+      if (dj < d) {
+        ci = j;
+        d = dj;
+      }
+    }
+    zx = zx * scale - a[ci]![0] * (scale - 1);
+    zy = zy * scale - a[ci]![1] * (scale - 1);
+    zz = zz * scale - a[ci]![2] * (scale - 1);
+  }
+
+  return (Math.sqrt(zx * zx + zy * zy + zz * zz) - 1.5) * scale ** -params.maxIterations;
+}
+
+function quatjuliaSDF(x: number, y: number, z: number, params: SDFParams): number {
+  const c = [params.power * -0.2, 0.6, 0.2, -0.4];
+  let qx = x;
+  let qy = y;
+  let qz = z;
+  let qw = 0;
+  let dqx = 1;
+  let dqy = 0;
+  let dqz = 0;
+  let dqw = 0;
+  let r = Math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw);
+
+  for (let i = 0; i < params.maxIterations; i++) {
+    if (r > params.bailout) break;
+    const ndx = 2 * (qx * dqx - qy * dqy - qz * dqz - qw * dqw);
+    const ndy = 2 * (qx * dqy + qy * dqx + qz * dqw - qw * dqz);
+    const ndz = 2 * (qx * dqz - qy * dqw + qz * dqx + qw * dqy);
+    const ndw = 2 * (qx * dqw + qy * dqz - qz * dqy + qw * dqx);
+    dqx = ndx;
+    dqy = ndy;
+    dqz = ndz;
+    dqw = ndw;
+    const nqx = qx * qx - qy * qy - qz * qz - qw * qw + c[0]!;
+    const nqy = 2 * qx * qy + c[1]!;
+    const nqz = 2 * qx * qz + c[2]!;
+    const nqw = 2 * qx * qw + c[3]!;
+    qx = nqx;
+    qy = nqy;
+    qz = nqz;
+    qw = nqw;
+    r = Math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw);
+  }
+
+  const dr = Math.sqrt(dqx * dqx + dqy * dqy + dqz * dqz + dqw * dqw);
+  return (0.5 * r * Math.log(r)) / dr;
+}
+
+function kleinianSDF(x: number, y: number, z: number, params: SDFParams): number {
+  let zx = x;
+  let zy = y;
+  let zz = z;
+  let dr = 1;
+  const box = [1, 1, 0.5];
+
+  for (let i = 0; i < params.maxIterations; i++) {
+    zx = Math.max(-box[0]!, Math.min(box[0]!, zx)) * 2 - zx;
+    zy = Math.max(-box[1]!, Math.min(box[1]!, zy)) * 2 - zy;
+    zz = Math.max(-box[2]!, Math.min(box[2]!, zz)) * 2 - zz;
+    const r2 = zx * zx + zy * zy + zz * zz;
+    const k = Math.max(1.2 / r2, 1);
+    zx *= k;
+    zy *= k;
+    zz *= k;
+    dr *= k;
+    zx += 0.2;
+    zy += 0.3;
+    zz += -0.4;
+  }
+
+  return (Math.sqrt(zx * zx + zy * zy + zz * zz) - 0.5) / dr;
+}
+
+function koch3dSDF(x: number, y: number, z: number, params: SDFParams): number {
+  let zx = x;
+  let zy = y;
+  let zz = z;
+  const scale = 3;
+  let r = 1;
+
+  for (let i = 0; i < params.maxIterations; i++) {
+    zx = Math.abs(zx);
+    zy = Math.abs(zy);
+    zz = Math.abs(zz);
+    if (zx + zy < 0) {
+      const t = zx;
+      zx = -zy;
+      zy = -t;
+    }
+    if (zx + zz < 0) {
+      const t = zx;
+      zx = -zz;
+      zz = -t;
+    }
+    if (zy + zz < 0) {
+      const t = zy;
+      zy = -zz;
+      zz = -t;
+    }
+    zx = zx * scale - (scale - 1);
+    zy = zy * scale - (scale - 1);
+    zz = zz * scale - (scale - 1);
+    r *= scale;
+  }
+
+  return (Math.sqrt(zx * zx + zy * zy + zz * zz) - 1.5) / r;
+}
+
+function apollonianSDF(x: number, y: number, z: number, params: SDFParams): number {
+  let zx = x;
+  let zy = y;
+  let zz = z;
+  let scale = 1;
+
+  for (let i = 0; i < params.maxIterations; i++) {
+    zx = Math.abs(zx);
+    zy = Math.abs(zy);
+    zz = Math.abs(zz);
+    if (zx < zy) {
+      const t = zx;
+      zx = zy;
+      zy = t;
+    }
+    if (zx < zz) {
+      const t = zx;
+      zx = zz;
+      zz = t;
+    }
+    if (zy < zz) {
+      const t = zy;
+      zy = zz;
+      zz = t;
+    }
+    zx -= 1;
+    zy -= 1;
+    zz -= 1;
+    const r2 = zx * zx + zy * zy + zz * zz;
+    const invR = Math.max(0.5 / r2, 1);
+    zx *= invR;
+    zy *= invR;
+    zz *= invR;
+    scale *= invR;
+    zx += 1;
+    zy += 1;
+    zz += 1;
+  }
+
+  return (Math.sqrt(zx * zx + zy * zy + zz * zz) - 1) / scale;
+}
+
+function juliabulbSDF(x: number, y: number, z: number, params: SDFParams): number {
+  const julia = [params.power * 0.1, -0.5, 0.3];
+  let zx = x;
+  let zy = y;
+  let zz = z;
+  let dr = 1;
+  let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+  const power = 8;
+
+  for (let i = 0; i < params.maxIterations; i++) {
+    if (r > params.bailout) break;
+    const theta = Math.acos(zz / r);
+    const phi = Math.atan2(zy, zx);
+    const rp = r ** power;
+    dr = r ** (power - 1) * power * dr + 1;
+    const nt = theta * power;
+    const np = phi * power;
+    zx = rp * Math.sin(nt) * Math.cos(np) + julia[0]!;
+    zy = rp * Math.sin(nt) * Math.sin(np) + julia[1]!;
+    zz = rp * Math.cos(nt) + julia[2]!;
+    r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+  }
+
+  return (0.5 * Math.log(r) * r) / dr;
+}
+
 const SDF_FUNCTIONS: Record<
   FractalType,
   (x: number, y: number, z: number, params: SDFParams) => number
@@ -108,6 +303,12 @@ const SDF_FUNCTIONS: Record<
   mandelbulb: mandelbulbSDF,
   mandelbox: mandelboxSDF,
   menger: mengerSDF,
+  sierpinski: sierpinskiSDF,
+  quatjulia: quatjuliaSDF,
+  kleinian: kleinianSDF,
+  koch3d: koch3dSDF,
+  apollonian: apollonianSDF,
+  juliabulb: juliabulbSDF,
 };
 
 export function evaluateSDF(

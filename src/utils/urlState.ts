@@ -13,7 +13,17 @@ export interface SharedState {
   pitch: number;
 }
 
-const FRACTAL_TYPES = new Set(['mandelbulb', 'mandelbox', 'menger']);
+const FRACTAL_TYPES = new Set([
+  'mandelbulb',
+  'mandelbox',
+  'menger',
+  'sierpinski',
+  'quatjulia',
+  'kleinian',
+  'koch3d',
+  'apollonian',
+  'juliabulb',
+]);
 const COLOR_MODES = new Set([
   'distance',
   'orbit_trap',

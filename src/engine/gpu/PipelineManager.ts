@@ -11,9 +11,15 @@ import raySrc from '../../shaders/common/ray.wgsl?raw';
 import uniformsSrc from '../../shaders/common/uniforms.wgsl?raw';
 import fullscreenSrc from '../../shaders/fullscreen.wgsl?raw';
 import raymarcherSrc from '../../shaders/raymarcher.wgsl?raw';
+import apollonianSrc from '../../shaders/sdf/apollonian.wgsl?raw';
+import juliabulbSrc from '../../shaders/sdf/juliabulb.wgsl?raw';
+import kleinianSrc from '../../shaders/sdf/kleinian.wgsl?raw';
+import koch3dSrc from '../../shaders/sdf/koch3d.wgsl?raw';
 import mandelboxSrc from '../../shaders/sdf/mandelbox.wgsl?raw';
 import mandelbulbSrc from '../../shaders/sdf/mandelbulb.wgsl?raw';
 import mengerSrc from '../../shaders/sdf/menger.wgsl?raw';
+import quatjuliaSrc from '../../shaders/sdf/quatjulia.wgsl?raw';
+import sierpinskiSrc from '../../shaders/sdf/sierpinski.wgsl?raw';
 import type { ColorMode, FractalType } from '../../stores/fractalParams';
 import type { WebGPUContext } from './WebGPUContext';
 
@@ -21,6 +27,12 @@ const SDF_SOURCES: Record<FractalType, string> = {
   mandelbulb: mandelbulbSrc,
   mandelbox: mandelboxSrc,
   menger: mengerSrc,
+  sierpinski: sierpinskiSrc,
+  quatjulia: quatjuliaSrc,
+  kleinian: kleinianSrc,
+  koch3d: koch3dSrc,
+  apollonian: apollonianSrc,
+  juliabulb: juliabulbSrc,
 };
 
 const COLOR_SOURCES: Record<ColorMode, string> = {
