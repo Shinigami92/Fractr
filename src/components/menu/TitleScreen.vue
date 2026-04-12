@@ -37,7 +37,17 @@ function onSettings(): void {
         <MenuButton label="Settings" @click="onSettings" />
       </div>
 
-      <p class="text-xs text-white/20">WebGPU Required</p>
+      <div class="flex flex-col items-center gap-1">
+        <p class="text-xs text-white/20">WebGPU Required</p>
+        <a
+          href="https://github.com/Shinigami92/Fractr"
+          target="_blank"
+          rel="noopener"
+          class="text-xs text-white/20 transition-colors hover:text-accent-bright/60"
+        >
+          GitHub
+        </a>
+      </div>
     </div>
   </div>
 </template>
