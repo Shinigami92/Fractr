@@ -145,9 +145,6 @@ if (urlState) {
   camera.yaw = urlState.yaw;
   camera.pitch = urlState.pitch;
   startFromURL = true;
-  if (!previewMode) {
-    window.history.replaceState({}, '', window.location.pathname);
-  }
 } else {
   fractal.setFractalType('mandelbulb');
 }
@@ -159,6 +156,27 @@ function resetCamera(): void {
   camera.position[2] = cam?.z ?? 3;
   camera.yaw = cam?.yaw ?? -Math.PI / 2;
   camera.pitch = cam?.pitch ?? 0;
+}
+
+let wasMoving = false;
+
+function syncURLState(): void {
+  if (appState.mode !== 'playing') return;
+  const url = buildShareURL({
+    fractalType: fractal.fractalType,
+    power: fractal.power,
+    maxIterations: fractal.maxIterations,
+    bailout: fractal.bailout,
+    colorMode: fractal.colorMode,
+    x: camera.position[0]!,
+    y: camera.position[1]!,
+    z: camera.position[2]!,
+    yaw: camera.yaw,
+    pitch: camera.pitch,
+    preview: false,
+  });
+  const params = url.split('?')[1] ?? '';
+  window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
 }
 
 let renderer: Renderer | null = null;
@@ -298,7 +316,10 @@ const gameLoop = useGameLoop({
     isMovingThisFrame = moving;
     if (moving) {
       renderer?.resetAccumulation();
+    } else if (wasMoving) {
+      syncURLState();
     }
+    wasMoving = moving;
 
     // Update reactive camera position for HUD
     cameraPos.value = {
@@ -418,6 +439,7 @@ watch(
   (mode) => {
     renderer?.setColorMode(mode);
     renderer?.resetAccumulation();
+    syncURLState();
   },
 );
 watch(
@@ -425,11 +447,13 @@ watch(
   (mode) => {
     renderer?.setRenderMode(mode);
     renderer?.resetAccumulation();
+    syncURLState();
   },
 );
-watch([() => fractal.power, () => fractal.maxIterations, () => fractal.bailout], () =>
-  renderer?.resetAccumulation(),
-);
+watch([() => fractal.power, () => fractal.maxIterations, () => fractal.bailout], () => {
+  renderer?.resetAccumulation();
+  syncURLState();
+});
 
 // Handle game state transitions
 watch(
@@ -454,6 +478,7 @@ watch(
       if (mode === 'title' || mode === 'select') {
         applyCanvasResolution(PREVIEW_SCALE);
         previewLoop.start();
+        window.history.replaceState({}, '', window.location.pathname);
       } else if (mode === 'paused' || mode === 'settings') {
         // Keep current resolution when pausing from gameplay
         const fromGame = oldMode === 'playing' || oldMode === 'paused';
