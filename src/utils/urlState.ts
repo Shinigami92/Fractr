@@ -6,6 +6,7 @@ export interface SharedState {
   maxIterations: number;
   bailout: number;
   colorMode: ColorMode;
+  dynamicIterations: boolean;
   x: number;
   y: number;
   z: number;
@@ -76,6 +77,7 @@ export function readStateFromURL(): SharedState | null {
     z: get('z', 3),
     yaw: get('yaw', -Math.PI / 2),
     pitch: get('pitch', 0),
+    dynamicIterations: params.get('dyn') !== '0',
     preview: params.get('preview') === '1',
   };
 }
@@ -87,6 +89,7 @@ export function buildShareURL(state: SharedState): string {
   params.set('i', String(state.maxIterations));
   params.set('b', state.bailout.toFixed(2));
   params.set('c', state.colorMode);
+  params.set('dyn', state.dynamicIterations ? '1' : '0');
   params.set('x', state.x.toFixed(4));
   params.set('y', state.y.toFixed(4));
   params.set('z', state.z.toFixed(4));

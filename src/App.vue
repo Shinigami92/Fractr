@@ -152,6 +152,7 @@ if (urlState) {
   fractal.maxIterations = urlState.maxIterations;
   fractal.bailout = urlState.bailout;
   fractal.colorMode = urlState.colorMode;
+  graphics.dynamicIterations = urlState.dynamicIterations;
   camera.position[0] = urlState.x;
   camera.position[1] = urlState.y;
   camera.position[2] = urlState.z;
@@ -181,6 +182,7 @@ function syncURLState(): void {
     maxIterations: fractal.maxIterations,
     bailout: fractal.bailout,
     colorMode: fractal.colorMode,
+    dynamicIterations: graphics.dynamicIterations,
     x: camera.position[0]!,
     y: camera.position[1]!,
     z: camera.position[2]!,
@@ -563,6 +565,7 @@ function onKeyDown(e: KeyboardEvent): void {
         maxIterations: fractal.maxIterations,
         bailout: fractal.bailout,
         colorMode: fractal.colorMode,
+        dynamicIterations: graphics.dynamicIterations,
         x: camera.position[0]!,
         y: camera.position[1]!,
         z: camera.position[2]!,
