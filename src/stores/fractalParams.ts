@@ -128,12 +128,12 @@ const COLOR_MODES: ColorMode[] = [
 
 const RENDER_MODES: RenderMode[] = [
   'ray',
-  'cone',
-  'pathtrace',
-  'volume',
   'softshadow',
   'reflection',
+  'cone',
+  'pathtrace',
   'dof',
+  'volume',
 ];
 
 export const useFractalParams = defineStore('fractalParams', () => {
