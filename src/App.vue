@@ -49,7 +49,11 @@ let radialKeyCode: string | null = null;
 const HOLD_DELAY = 200;
 
 const fractalOptions = computed(() =>
-  Object.entries(FRACTAL_CONFIGS).map(([key, cfg]) => ({ value: key, label: cfg.label })),
+  Object.entries(FRACTAL_CONFIGS).map(([key, cfg]) => ({
+    value: key,
+    label: cfg.label,
+    short: cfg.short,
+  })),
 );
 
 const radialMenuOptions = computed(() => {

@@ -2,55 +2,65 @@
 import { computed } from 'vue';
 
 const props = defineProps<{
-  options: { value: string; label: string }[];
+  options: { value: string; short: string }[];
   selectedIndex: number;
   cursorX: number;
   cursorY: number;
 }>();
 
 const TAU = Math.PI * 2;
+const INNER_RADIUS = 45;
 
-// Dynamic radius: ensure labels don't overlap
-// Min spacing ~50px between adjacent items on the circle
-const radius = computed(() => {
+const outerRadius = computed(() => {
   const count = props.options.length;
-  return Math.max(100, Math.ceil(50 / Math.sin(Math.PI / count)));
+  return Math.max(120, Math.ceil(50 / Math.sin(Math.PI / count)));
 });
 
-const viewSize = computed(() => radius.value * 2 + 120);
+const viewSize = computed(() => outerRadius.value * 2 + 80);
+
+// SVG path for the annular ring used as clip-path for backdrop blur
+const blurRingPath = computed(() => {
+  const cx = viewSize.value / 2;
+  const cy = viewSize.value / 2;
+  const or = outerRadius.value + 2;
+  const ir = INNER_RADIUS - 2;
+  // Outer circle clockwise, inner circle counter-clockwise (hole)
+  return `M${cx + or},${cy} A${or},${or} 0 1 1 ${cx - or},${cy} A${or},${or} 0 1 1 ${cx + or},${cy}Z M${cx + ir},${cy} A${ir},${ir} 0 1 0 ${cx - ir},${cy} A${ir},${ir} 0 1 0 ${cx + ir},${cy}Z`;
+});
 
 const sectors = computed(() => {
   const count = props.options.length;
   const angleStep = TAU / count;
-  const startAngle = -Math.PI / 2;
-  const r = radius.value;
+  const startOffset = -Math.PI / 2;
+  const r = outerRadius.value;
+  const ir = INNER_RADIUS;
+  const labelR = (r + ir) / 2;
 
   return props.options.map((opt, i) => {
-    const angle = startAngle + i * angleStep;
-    const x = Math.cos(angle) * r;
-    const y = Math.sin(angle) * r;
-    return { ...opt, x, y, index: i };
-  });
-});
+    // Sector wedge with gap between segments
+    const gap = 0.021;
+    const a1 = startOffset + i * angleStep - angleStep / 2 + gap;
+    const a2 = a1 + angleStep - gap * 2;
+    const large = angleStep > Math.PI ? 1 : 0;
 
-const sectorPath = computed(() => {
-  const count = props.options.length;
-  if (props.selectedIndex < 0) return '';
-  const angleStep = TAU / count;
-  const startAngle = -Math.PI / 2 + props.selectedIndex * angleStep - angleStep / 2;
-  const endAngle = startAngle + angleStep;
-  const r = radius.value + 40;
-  const ir = 40;
-  const x1 = Math.cos(startAngle) * r;
-  const y1 = Math.sin(startAngle) * r;
-  const x2 = Math.cos(endAngle) * r;
-  const y2 = Math.sin(endAngle) * r;
-  const ix1 = Math.cos(endAngle) * ir;
-  const iy1 = Math.sin(endAngle) * ir;
-  const ix2 = Math.cos(startAngle) * ir;
-  const iy2 = Math.sin(startAngle) * ir;
-  const large = angleStep > Math.PI ? 1 : 0;
-  return `M${ix2},${iy2} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} L${ix1},${iy1} A${ir},${ir} 0 ${large} 0 ${ix2},${iy2}Z`;
+    const ox1 = Math.cos(a1) * r;
+    const oy1 = Math.sin(a1) * r;
+    const ox2 = Math.cos(a2) * r;
+    const oy2 = Math.sin(a2) * r;
+    const ix1 = Math.cos(a2) * ir;
+    const iy1 = Math.sin(a2) * ir;
+    const ix2 = Math.cos(a1) * ir;
+    const iy2 = Math.sin(a1) * ir;
+
+    const path = `M${ix2},${iy2} L${ox1},${oy1} A${r},${r} 0 ${large} 1 ${ox2},${oy2} L${ix1},${iy1} A${ir},${ir} 0 ${large} 0 ${ix2},${iy2}Z`;
+
+    // Label position at midpoint of sector
+    const midAngle = startOffset + i * angleStep;
+    const lx = Math.cos(midAngle) * labelR;
+    const ly = Math.sin(midAngle) * labelR;
+
+    return { ...opt, path, lx, ly, index: i };
+  });
 });
 </script>
 
@@ -59,14 +69,37 @@ const sectorPath = computed(() => {
     <div class="absolute inset-0 bg-black/40" />
 
     <div class="relative" :style="{ width: `${viewSize}px`, height: `${viewSize}px` }">
-      <!-- Sector highlight -->
+      <!-- Backdrop blur ring -->
+      <div
+        class="absolute inset-0 backdrop-blur-md"
+        :style="{
+          clipPath: `path('${blurRingPath}')`,
+        }"
+      />
+
       <svg
         :width="viewSize"
         :height="viewSize"
         :viewBox="`${-viewSize / 2} ${-viewSize / 2} ${viewSize} ${viewSize}`"
         class="absolute inset-0"
       >
-        <path v-if="sectorPath" :d="sectorPath" fill="rgba(124, 58, 237, 0.2)" />
+        <!-- Sector wedges -->
+        <path
+          v-for="sector in sectors"
+          :key="sector.value"
+          :d="sector.path"
+          :fill="
+            sector.index === selectedIndex ? 'rgba(124, 58, 237, 0.2)' : 'rgba(255, 255, 255, 0.05)'
+          "
+          :stroke="
+            sector.index === selectedIndex ? 'rgba(167, 139, 250, 0.4)' : 'rgba(255, 255, 255, 0.1)'
+          "
+          stroke-width="1"
+          class="transition-colors"
+          style="transition-duration: 100ms"
+        />
+
+        <!-- Cursor direction line -->
         <line
           v-if="cursorX !== 0 || cursorY !== 0"
           x1="0"
@@ -77,30 +110,27 @@ const sectorPath = computed(() => {
           stroke-opacity="0.25"
           stroke-width="1.5"
         />
-        <circle cx="0" cy="0" r="4" fill="white" opacity="0.3" />
-      </svg>
 
-      <!-- Option tiles -->
-      <div
-        v-for="sector in sectors"
-        :key="sector.value"
-        class="absolute left-1/2 top-1/2 select-none transition-all duration-100"
-        :style="{
-          transform: `translate(calc(-50% + ${sector.x}px), calc(-50% + ${sector.y}px))`,
-          zIndex: sector.index === selectedIndex ? 10 : 1,
-        }"
-      >
-        <div
-          class="whitespace-nowrap rounded px-2.5 py-1 text-center text-[11px] tracking-wide backdrop-blur-md transition-all duration-100"
-          :class="
-            sector.index === selectedIndex
-              ? 'border border-accent-bright/50 bg-accent/20 font-bold text-white'
-              : 'border border-white/10 bg-white/5 text-white/60'
-          "
+        <!-- Center dot -->
+        <circle cx="0" cy="0" r="4" fill="white" opacity="0.3" />
+
+        <!-- Labels on sectors -->
+        <text
+          v-for="sector in sectors"
+          :key="`label-${sector.value}`"
+          :x="sector.lx"
+          :y="sector.ly"
+          text-anchor="middle"
+          dominant-baseline="central"
+          :fill="sector.index === selectedIndex ? 'white' : 'rgba(255, 255, 255, 0.55)'"
+          :font-size="sector.index === selectedIndex ? '12' : '10'"
+          :font-weight="sector.index === selectedIndex ? 'bold' : 'normal'"
+          font-family="system-ui, sans-serif"
+          class="select-none"
         >
-          {{ sector.label }}
-        </div>
-      </div>
+          {{ sector.short }}
+        </text>
+      </svg>
     </div>
   </div>
 </template>
