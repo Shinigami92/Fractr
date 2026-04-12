@@ -37,7 +37,8 @@ export type RenderMode =
   | 'fog'
   | 'multibounce'
   | 'radiosity'
-  | 'bidir';
+  | 'bidir'
+  | 'whitted';
 export type ColorMode =
   | 'distance'
   | 'orbit_trap'
@@ -264,6 +265,7 @@ const RENDER_MODES: RenderMode[] = [
   'ray',
   'softshadow',
   'reflection',
+  'whitted',
   'duallighting',
   'ao_render',
   'cel',
@@ -305,6 +307,7 @@ export const RENDER_MODE_OPTIONS: ModeOption[] = [
   { value: 'ray', label: 'Ray Marching', short: 'Ray' },
   { value: 'softshadow', label: 'Soft Shadows', short: 'Shadows' },
   { value: 'reflection', label: 'Reflections', short: 'Reflect' },
+  { value: 'whitted', label: 'Whitted Ray Trace', short: 'Whitted' },
   { value: 'duallighting', label: 'Dual Lighting', short: 'Dual Light' },
   { value: 'ao_render', label: 'Ambient Occlusion', short: 'AO' },
   { value: 'cel', label: 'Cel Shading', short: 'Cel' },

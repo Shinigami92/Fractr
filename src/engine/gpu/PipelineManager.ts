@@ -49,6 +49,7 @@ import xenodreambuieSrc from '../../shaders/sdf/xenodreambuie.wgsl?raw';
 import softshadowSrc from '../../shaders/softshadow.wgsl?raw';
 import sssSrc from '../../shaders/sss.wgsl?raw';
 import volumeSrc from '../../shaders/volume.wgsl?raw';
+import whittedSrc from '../../shaders/whitted.wgsl?raw';
 import wireframeSrc from '../../shaders/wireframe.wgsl?raw';
 import type { ColorMode, FractalType, RenderMode } from '../../stores/fractalParams';
 
@@ -69,6 +70,7 @@ const MARCHER_SOURCES: Record<RenderMode, string> = {
   multibounce: multibounceSrc,
   radiosity: radiositySrc,
   bidir: bidirSrc,
+  whitted: whittedSrc,
 };
 import type { WebGPUContext } from './WebGPUContext';
 

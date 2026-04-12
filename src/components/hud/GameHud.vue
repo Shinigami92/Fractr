@@ -26,6 +26,7 @@ const RENDER_MODE_LABELS: Record<RenderMode, string> = {
   multibounce: 'multi-bounce GI',
   radiosity: 'radiosity',
   bidir: 'bidirectional',
+  whitted: 'whitted ray trace',
 };
 
 const props = defineProps<{
