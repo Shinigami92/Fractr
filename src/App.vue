@@ -83,6 +83,11 @@ const COLOR_MODE_MAP: Record<ColorMode, number> = {
   distance: 0,
   orbit_trap: 1,
   iteration: 2,
+  ao: 3,
+  normal: 4,
+  curvature: 5,
+  glow: 6,
+  stripe: 7,
 };
 
 const { isPressed } = useInput();

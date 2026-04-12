@@ -14,7 +14,16 @@ export interface SharedState {
 }
 
 const FRACTAL_TYPES = new Set(['mandelbulb', 'mandelbox', 'menger']);
-const COLOR_MODES = new Set(['distance', 'orbit_trap', 'iteration']);
+const COLOR_MODES = new Set([
+  'distance',
+  'orbit_trap',
+  'iteration',
+  'ao',
+  'normal',
+  'curvature',
+  'glow',
+  'stripe',
+]);
 
 export function readStateFromURL(): SharedState | null {
   const params = new URLSearchParams(window.location.search);

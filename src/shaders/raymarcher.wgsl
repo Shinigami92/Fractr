@@ -21,11 +21,13 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
 
   var t = 0.0;
   var result: SDFResult;
+  var steps = 0u;
   let maxSteps = uniforms.maxRaySteps;
 
   for (var i = 0u; i < maxSteps; i++) {
     let p = ray.origin + ray.direction * t;
     result = sceneSDF(p);
+    steps = i + 1u;
 
     // Distance-dependent epsilon: no point in sub-pixel precision
     let eps = max(0.0001, t * pixelSize * 0.5);
@@ -45,7 +47,8 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
   let hitPos = ray.origin + ray.direction * t;
   let normalEps = max(0.0005, t * pixelSize);
   let normal = estimateNormal(hitPos, normalEps);
-  let color = computeColor(result, ray, hitPos, t, normal);
+  let stepRatio = f32(steps) / f32(maxSteps);
+  let color = computeColor(result, ray, hitPos, t, normal, stepRatio);
 
   return vec4f(color, 1.0);
 }

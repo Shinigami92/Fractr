@@ -122,6 +122,11 @@ function resetAll(): void {
             <option value="distance">Distance Estimation</option>
             <option value="orbit_trap">Orbit Trap</option>
             <option value="iteration">Iteration Gradient</option>
+            <option value="ao">Ambient Occlusion</option>
+            <option value="normal">Normal</option>
+            <option value="curvature">Curvature</option>
+            <option value="glow">Glow</option>
+            <option value="stripe">Stripe</option>
           </select>
         </label>
       </div>

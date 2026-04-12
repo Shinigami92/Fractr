@@ -1,4 +1,4 @@
-fn computeColor(result: SDFResult, ray: Ray, hitPos: vec3f, t: f32, normal: vec3f) -> vec3f {
+fn computeColor(result: SDFResult, ray: Ray, hitPos: vec3f, t: f32, normal: vec3f, stepRatio: f32) -> vec3f {
   let iterRatio = f32(result.iterations) / f32(uniforms.maxIterations);
   let distFactor = clamp(result.minDist * 2.0, 0.0, 1.0);
 

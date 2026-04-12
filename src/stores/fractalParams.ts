@@ -2,7 +2,15 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
 export type FractalType = 'mandelbulb' | 'mandelbox' | 'menger';
-export type ColorMode = 'distance' | 'orbit_trap' | 'iteration';
+export type ColorMode =
+  | 'distance'
+  | 'orbit_trap'
+  | 'iteration'
+  | 'ao'
+  | 'normal'
+  | 'curvature'
+  | 'glow'
+  | 'stripe';
 
 export interface ParamSliderConfig {
   label: string;
@@ -39,7 +47,16 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
 };
 
 const FRACTAL_TYPES: FractalType[] = ['mandelbulb', 'mandelbox', 'menger'];
-const COLOR_MODES: ColorMode[] = ['distance', 'orbit_trap', 'iteration'];
+const COLOR_MODES: ColorMode[] = [
+  'distance',
+  'orbit_trap',
+  'iteration',
+  'ao',
+  'normal',
+  'curvature',
+  'glow',
+  'stripe',
+];
 
 export const useFractalParams = defineStore('fractalParams', () => {
   const fractalType = ref<FractalType>('mandelbulb');
