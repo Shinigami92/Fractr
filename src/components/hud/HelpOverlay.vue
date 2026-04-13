@@ -69,7 +69,10 @@ const groups: KeyGroup[] = [
   {
     title: 'Fractal Parameters',
     entries: [
-      { key: display(controls.keybindings.toggleDynamicIterations), label: 'Toggle dynamic iterations' },
+      {
+        key: display(controls.keybindings.toggleDynamicIterations),
+        label: 'Toggle dynamic iterations',
+      },
       {
         key: `${display(controls.keybindings.increaseIterations)} / ${display(controls.keybindings.decreaseIterations)}`,
         label: 'Iterations +/-',
@@ -131,9 +134,7 @@ const groups: KeyGroup[] = [
           </div>
         </div>
       </div>
-      <div
-        class="col-span-full pt-2 text-center text-xs text-white/40"
-      >
+      <div class="col-span-full pt-2 text-center text-xs text-white/40">
         Press F1 or Esc to close
       </div>
     </div>
