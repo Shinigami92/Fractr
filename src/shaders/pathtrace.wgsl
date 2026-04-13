@@ -44,7 +44,7 @@ fn marchRay(origin: vec3f, dir: vec3f, maxSteps: u32, pixelSize: f32) -> vec4f {
   for (var i = 0u; i < maxSteps; i++) {
     let p = origin + dir * t;
     let d = sceneSDF(p).distance;
-    let eps = max(0.0001, t * pixelSize * 0.5);
+    let eps = max(1e-6, t * pixelSize * 0.5);
     if (d < eps) { return vec4f(p, t); }
     if (t > MAX_DISTANCE) { break; }
     t += max(d, t * pixelSize * 0.1);
@@ -68,7 +68,7 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
     let p = ray.origin + ray.direction * t;
     result = sceneSDF(p);
     steps = i + 1u;
-    let eps = max(0.0001, t * pixelSize * 0.5);
+    let eps = max(1e-6, t * pixelSize * 0.5);
     if (result.distance < eps) { break; }
     if (t > MAX_DISTANCE) { break; }
     t += max(result.distance, t * pixelSize * 0.1);

@@ -49,7 +49,7 @@ fn marchRay(origin: vec3f, dir: vec3f, maxSteps: u32, pixelSize: f32) -> HitInfo
   for (var i = 0u; i < maxSteps; i++) {
     let p = origin + dir * t;
     result = sceneSDF(p);
-    let eps = max(0.0001, t * pixelSize * 0.5);
+    let eps = max(1e-6, t * pixelSize * 0.5);
     if (result.distance < eps) {
       let n = estimateNormal(p, max(0.0005, t * pixelSize));
       return HitInfo(true, p, n, t, result);

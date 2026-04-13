@@ -67,7 +67,7 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
     let p = ray.origin + ray.direction * t;
     result = sceneSDF(p);
     steps = i + 1u;
-    let eps = max(0.0001, t * pixelSize * 0.5);
+    let eps = max(1e-6, t * pixelSize * 0.5);
     if (result.distance < eps) { break; }
     if (t > MAX_DISTANCE) { break; }
     t += max(result.distance, t * pixelSize * 0.1);
@@ -94,7 +94,7 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
   for (var i = 0u; i < maxSteps / 3u; i++) {
     let p = hitPos + normal * 0.002 + bounceDir * bounceT;
     let d = sceneSDF(p).distance;
-    let eps = max(0.0001, bounceT * pixelSize * 0.5);
+    let eps = max(1e-6, bounceT * pixelSize * 0.5);
     if (d < eps) {
       let bp = hitPos + normal * 0.002 + bounceDir * bounceT;
       let bn = estimateNormal(bp, max(0.0005, bounceT * pixelSize));

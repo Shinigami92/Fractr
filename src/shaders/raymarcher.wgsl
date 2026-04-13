@@ -30,7 +30,7 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
     steps = i + 1u;
 
     // Distance-dependent epsilon: no point in sub-pixel precision
-    let eps = max(0.0001, t * pixelSize * 0.5);
+    let eps = max(1e-6, t * pixelSize * 0.5);
     if (result.distance < eps) { break; }
     if (t > MAX_DISTANCE) { break; }
 

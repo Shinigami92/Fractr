@@ -470,7 +470,7 @@ const gameLoop = useGameLoop({
       { power: fractal.power, maxIterations: fractal.maxIterations, bailout: fractal.bailout },
     );
     const absDist = Math.abs(dist);
-    const speedScale = Math.max(0.001, Math.min(1, absDist));
+    const speedScale = Math.max(1e-6, Math.min(1, absDist));
     const sprint = isPressed('ShiftLeft') || isPressed('ShiftRight') ? 2 : 1;
     const speed = controls.cameraSpeed * speedScale * sprint * dt;
 
