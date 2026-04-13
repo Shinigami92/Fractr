@@ -140,18 +140,20 @@ export class Renderer {
       resolutionScale: number;
       animatedColors: boolean;
       stepFactor: number;
+      originOffset?: [number, number, number];
     },
     time: number,
   ): void {
     const aspect = this.width / this.height;
-    const vpInverse = camera.getViewProjectionInverse(aspect);
+    const offset = params.originOffset;
+    const sx = camera.position[0]! - (offset?.[0] ?? 0);
+    const sy = camera.position[1]! - (offset?.[1] ?? 0);
+    const sz = camera.position[2]! - (offset?.[2] ?? 0);
+    const shifted = offset ? new Float32Array([sx, sy, sz]) : undefined;
+    const vpInverse = camera.getViewProjectionInverse(aspect, undefined, shifted);
 
     this.uniformBuffer.setViewProjectionInverse(vpInverse);
-    this.uniformBuffer.setCameraPosition(
-      camera.position[0]!,
-      camera.position[1]!,
-      camera.position[2]!,
-    );
+    this.uniformBuffer.setCameraPosition(sx, sy, sz);
     this.uniformBuffer.setTime(time);
     this.uniformBuffer.setResolution(this.width, this.height);
     this.uniformBuffer.setPower(params.power);

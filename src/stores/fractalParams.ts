@@ -80,6 +80,8 @@ export interface FractalConfig {
   defaultDynamicIterations?: boolean;
   /** Over-relaxation factor for ray marching (<1 adds safety margin for non-Lipschitz DEs). Default 1.0. */
   stepFactor?: number;
+  /** Spatial period for coordinate re-centering (only for translation-invariant SDFs). Returns the period in world units; undefined disables re-centering. */
+  periodOffset?: (power: number) => number;
 }
 
 export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
@@ -220,6 +222,7 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     },
     maxIterations: { label: 'Detail Levels', min: 1, max: 24, step: 1, default: 16 },
     stepFactor: 0.2,
+    periodOffset: (power) => (2 * Math.PI) / power,
   },
 };
 

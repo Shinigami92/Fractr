@@ -307,7 +307,18 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
     camera.position[2] = s.z;
     camera.setFromEuler(s.yaw, s.pitch, s.roll);
 
-    const saveStepFactor = FRACTAL_CONFIGS[s.fractalType].stepFactor ?? 1;
+    const saveCfg = FRACTAL_CONFIGS[s.fractalType];
+    const saveStepFactor = saveCfg.stepFactor ?? 1;
+    let saveOriginOffset: [number, number, number] | undefined;
+    const savePeriodFn = saveCfg.periodOffset;
+    if (savePeriodFn) {
+      const period = savePeriodFn(s.power);
+      saveOriginOffset = [
+        Math.round(s.x / period) * period,
+        Math.round(s.y / period) * period,
+        Math.round(s.z / period) * period,
+      ];
+    }
     renderer.updateUniforms(
       camera,
       {
@@ -319,6 +330,7 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
         resolutionScale: 1,
         animatedColors: false,
         stepFactor: saveStepFactor,
+        originOffset: saveOriginOffset,
       },
       0,
     );
@@ -335,6 +347,7 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
       resolutionScale: 1,
       animatedColors: false,
       stepFactor: saveStepFactor,
+      originOffset: saveOriginOffset,
     };
 
     const startMs = performance.now();
@@ -391,6 +404,21 @@ function applyCanvasResolution(scale: number): void {
   canvas.width = w;
   canvas.height = h;
   renderer?.resize(w, h);
+}
+
+// For periodic SDFs (declared via FractalConfig.periodOffset), snap the camera
+// position to a multiple of the SDF's period so the GPU sees small coordinates
+// with full f32 precision. Subtraction is done here in JS f64, so no
+// cancellation loss.
+function computeOriginOffset(): [number, number, number] | undefined {
+  const periodFn = fractal.config.periodOffset;
+  if (!periodFn) return undefined;
+  const period = periodFn(fractal.power);
+  return [
+    Math.round(camera.position[0]! / period) * period,
+    Math.round(camera.position[1]! / period) * period,
+    Math.round(camera.position[2]! / period) * period,
+  ];
 }
 
 const COLOR_MODE_MAP: Record<ColorMode, number> = {
@@ -554,6 +582,7 @@ const gameLoop = useGameLoop({
         resolutionScale: graphics.resolutionScale,
         animatedColors: graphics.animatedColors,
         stepFactor: fractal.config.stepFactor ?? 1,
+        originOffset: computeOriginOffset(),
       },
       (performance.now() - startTime) / 1000,
     );
@@ -598,6 +627,7 @@ const previewLoop = useGameLoop({
         resolutionScale: graphics.resolutionScale,
         animatedColors: graphics.animatedColors,
         stepFactor: fractal.config.stepFactor ?? 1,
+        originOffset: computeOriginOffset(),
       },
       (performance.now() - startTime) / 1000,
     );

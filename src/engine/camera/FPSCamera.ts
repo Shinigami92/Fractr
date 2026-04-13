@@ -126,11 +126,15 @@ export class FPSCamera {
     vec3.scaleAndAdd(this.position, this.position, this._up, amount);
   }
 
-  getViewProjectionInverse(aspect: number, fov = Math.PI / 3): Float32Array {
+  getViewProjectionInverse(
+    aspect: number,
+    fov = Math.PI / 3,
+    positionOverride?: vec3.Vec3,
+  ): Float32Array {
     const r = this._right;
     const u = this._up;
     const f = this._forward;
-    const p = this.position;
+    const p = positionOverride ?? this.position;
 
     const v = this.viewMatrix;
     v[0] = r[0]!;
