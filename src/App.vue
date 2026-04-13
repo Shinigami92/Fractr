@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import GameHud from './components/hud/GameHud.vue';
+import HelpOverlay from './components/hud/HelpOverlay.vue';
 import RadialMenu from './components/hud/RadialMenu.vue';
 import FractalSelectScreen from './components/menu/FractalSelectScreen.vue';
 import PauseMenu from './components/menu/PauseMenu.vue';
@@ -54,6 +55,7 @@ function showNotification(text: string, duration = 2000): void {
 // Radial menu state
 type RadialMenuType = 'color' | 'render' | 'fractal' | null;
 const radialMenuType = ref<RadialMenuType>(null);
+const showHelpOverlay = ref(false);
 const radialCursorX = ref(0);
 const radialCursorY = ref(0);
 let radialHoldTimer: ReturnType<typeof setTimeout> | null = null;
@@ -745,7 +747,7 @@ let cursorUnlocked = false;
 watch(
   () => pointerLock.isLocked.value,
   (locked) => {
-    if (!locked && appState.mode === 'playing' && !cursorUnlocked) {
+    if (!locked && appState.mode === 'playing' && !cursorUnlocked && !showHelpOverlay.value) {
       appState.pause();
     }
   },
@@ -753,6 +755,15 @@ watch(
 
 // Handle keyboard shortcuts
 function onKeyDown(e: KeyboardEvent): void {
+  // F1 toggles the help overlay during gameplay (closing also allowed if open)
+  if (e.code === 'F1') {
+    e.preventDefault();
+    if (appState.mode === 'playing' || showHelpOverlay.value) {
+      showHelpOverlay.value = !showHelpOverlay.value;
+    }
+    return;
+  }
+
   // Ctrl to unlock cursor without pausing
   if (
     (e.code === 'ControlLeft' || e.code === 'ControlRight') &&
@@ -765,6 +776,10 @@ function onKeyDown(e: KeyboardEvent): void {
   }
 
   if (e.code === 'Escape') {
+    if (showHelpOverlay.value) {
+      showHelpOverlay.value = false;
+      return;
+    }
     if (appState.mode === 'select') {
       appState.backToTitle();
     } else if (appState.mode === 'paused') {
@@ -964,6 +979,8 @@ onUnmounted(() => {
         :cursor-x="radialCursorX"
         :cursor-y="radialCursorY"
       />
+
+      <HelpOverlay v-if="showHelpOverlay" />
 
       <Transition name="fade">
         <div

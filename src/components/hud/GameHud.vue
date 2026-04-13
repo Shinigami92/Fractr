@@ -81,5 +81,12 @@ function toDeg(rad: number): string {
       </template>
     </div>
     <Crosshair v-if="hud.showCrosshair" />
+    <div
+      v-if="hud.showFps || hud.showCoordinates"
+      class="fixed bottom-3 left-3 font-mono text-xs text-white/40"
+    >
+      <kbd class="border border-white/10 bg-white/5 px-1.5 py-0.5 text-white/60">F1</kbd>
+      <span class="ml-2">controls</span>
+    </div>
   </div>
 </template>
