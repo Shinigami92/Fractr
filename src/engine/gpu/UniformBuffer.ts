@@ -13,7 +13,8 @@
  * offset 108: resolutionScale       f32      (4 bytes)
  * offset 112: frameCount            u32      (4 bytes)
  * offset 116: animatedColors        u32      (4 bytes)
- * Total: 128 bytes (aligned to 16 = 128, padded from 120)
+ * offset 120: stepFactor            f32      (4 bytes)
+ * Total: 128 bytes (aligned to 16 = 128, padded from 124)
  */
 
 const BUFFER_SIZE = 128;
@@ -84,6 +85,10 @@ export class UniformBuffer {
 
   setAnimatedColors(enabled: boolean): void {
     this.uintView[29] = enabled ? 1 : 0;
+  }
+
+  setStepFactor(f: number): void {
+    this.floatView[30] = f;
   }
 
   upload(device: GPUDevice): void {

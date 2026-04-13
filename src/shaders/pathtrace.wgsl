@@ -47,7 +47,7 @@ fn marchRay(origin: vec3f, dir: vec3f, maxSteps: u32, pixelSize: f32) -> vec4f {
     let eps = max(1e-6, t * pixelSize * 0.5);
     if (d < eps) { return vec4f(p, t); }
     if (t > MAX_DISTANCE) { break; }
-    t += max(d, t * pixelSize * 0.1);
+    t += max(d, t * pixelSize * 0.1) * uniforms.stepFactor;
   }
   return vec4f(0.0, 0.0, 0.0, -1.0);
 }
@@ -71,7 +71,7 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
     let eps = max(1e-6, t * pixelSize * 0.5);
     if (result.distance < eps) { break; }
     if (t > MAX_DISTANCE) { break; }
-    t += max(result.distance, t * pixelSize * 0.1);
+    t += max(result.distance, t * pixelSize * 0.1) * uniforms.stepFactor;
   }
 
   if (t > MAX_DISTANCE) {

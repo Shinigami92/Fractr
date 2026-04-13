@@ -139,6 +139,7 @@ export class Renderer {
       maxRaySteps: number;
       resolutionScale: number;
       animatedColors: boolean;
+      stepFactor: number;
     },
     time: number,
   ): void {
@@ -161,6 +162,7 @@ export class Renderer {
     this.uniformBuffer.setResolutionScale(params.resolutionScale);
     this.uniformBuffer.setFrameCount(this._sampleCount);
     this.uniformBuffer.setAnimatedColors(params.animatedColors);
+    this.uniformBuffer.setStepFactor(params.stepFactor);
     this.uniformBuffer.upload(this.ctx.device);
   }
 

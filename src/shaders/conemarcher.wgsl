@@ -49,7 +49,7 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
     if (t > MAX_DISTANCE) { break; }
 
     // Step by SDF distance, clamped to cone-aware minimum
-    t += max(result.distance, t * pixelSize * 0.1);
+    t += max(result.distance, t * pixelSize * 0.1) * uniforms.stepFactor;
   }
 
   if (t > MAX_DISTANCE) {

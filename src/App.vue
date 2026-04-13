@@ -307,6 +307,7 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
     camera.position[2] = s.z;
     camera.setFromEuler(s.yaw, s.pitch, s.roll);
 
+    const saveStepFactor = FRACTAL_CONFIGS[s.fractalType].stepFactor ?? 1;
     renderer.updateUniforms(
       camera,
       {
@@ -317,6 +318,7 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
         maxRaySteps: graphics.maxRaySteps,
         resolutionScale: 1,
         animatedColors: false,
+        stepFactor: saveStepFactor,
       },
       0,
     );
@@ -332,6 +334,7 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
       maxRaySteps: graphics.maxRaySteps,
       resolutionScale: 1,
       animatedColors: false,
+      stepFactor: saveStepFactor,
     };
 
     const startMs = performance.now();
@@ -550,6 +553,7 @@ const gameLoop = useGameLoop({
         maxRaySteps: graphics.maxRaySteps,
         resolutionScale: graphics.resolutionScale,
         animatedColors: graphics.animatedColors,
+        stepFactor: fractal.config.stepFactor ?? 1,
       },
       (performance.now() - startTime) / 1000,
     );
@@ -593,6 +597,7 @@ const previewLoop = useGameLoop({
         maxRaySteps: lowQuality ? 64 : graphics.maxRaySteps,
         resolutionScale: graphics.resolutionScale,
         animatedColors: graphics.animatedColors,
+        stepFactor: fractal.config.stepFactor ?? 1,
       },
       (performance.now() - startTime) / 1000,
     );

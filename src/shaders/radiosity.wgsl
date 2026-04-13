@@ -52,7 +52,7 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
     let eps = max(1e-6, t * pixelSize * 0.5);
     if (result.distance < eps) { break; }
     if (t > MAX_DISTANCE) { break; }
-    t += max(result.distance, t * pixelSize * 0.1);
+    t += max(result.distance, t * pixelSize * 0.1) * uniforms.stepFactor;
   }
 
   if (t > MAX_DISTANCE) {
@@ -87,7 +87,7 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
       let eps = max(1e-6, sampleT * pixelSize * 0.5);
       if (sampleResult.distance < eps) { hit = true; break; }
       if (sampleT > MAX_DISTANCE) { break; }
-      sampleT += max(sampleResult.distance, sampleT * pixelSize * 0.1);
+      sampleT += max(sampleResult.distance, sampleT * pixelSize * 0.1) * uniforms.stepFactor;
     }
 
     if (hit) {

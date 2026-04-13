@@ -34,9 +34,10 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
     if (result.distance < eps) { break; }
     if (t > MAX_DISTANCE) { break; }
 
-    // Clamp minimum step to a fraction of pixel footprint
-    // Prevents thousands of micro-steps near the surface
-    t += max(result.distance, t * pixelSize * 0.1);
+    // Clamp minimum step to a fraction of pixel footprint to prevent
+    // thousands of micro-steps near the surface; stepFactor (<1) adds
+    // safety margin for non-Lipschitz DEs (set per fractal)
+    t += max(result.distance, t * pixelSize * 0.1) * uniforms.stepFactor;
   }
 
   if (t > MAX_DISTANCE) {

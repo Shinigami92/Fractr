@@ -55,7 +55,7 @@ fn marchRay(origin: vec3f, dir: vec3f, maxSteps: u32, pixelSize: f32) -> HitInfo
       return HitInfo(true, p, n, t, result);
     }
     if (t > MAX_DISTANCE) { break; }
-    t += max(result.distance, t * pixelSize * 0.1);
+    t += max(result.distance, t * pixelSize * 0.1) * uniforms.stepFactor;
   }
   return HitInfo(false, vec3f(0.0), vec3f(0.0), -1.0, result);
 }

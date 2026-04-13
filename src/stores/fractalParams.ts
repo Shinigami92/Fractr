@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { acceptHMRUpdate, defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
 export type FractalType =
@@ -78,6 +78,8 @@ export interface FractalConfig {
   bailout?: ParamSliderConfig;
   camera?: CameraStart;
   defaultDynamicIterations?: boolean;
+  /** Over-relaxation factor for ray marching (<1 adds safety margin for non-Lipschitz DEs). Default 1.0. */
+  stepFactor?: number;
 }
 
 export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
@@ -122,12 +124,14 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     short: 'Cos Pow-2',
     maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+    stepFactor: 0.5,
   },
   bristorbrot: {
     label: 'Bristorbrot',
     short: 'Bristorbrot',
     maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+    stepFactor: 0.3,
   },
   quatjulia: {
     label: 'Quaternion Julia',
@@ -135,6 +139,7 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     power: { label: 'Seed', min: -3, max: 3, step: 0.1, default: -1.5 },
     maxIterations: { label: 'Max Iterations', min: 4, max: 48, step: 1, default: 16 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 4 },
+    stepFactor: 0.7,
   },
   // Architectural boxes
   mandelbox: {
@@ -160,6 +165,7 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 14 },
     bailout: { label: 'Bailout Radius', min: 1, max: 200, step: 1, default: 12 },
     camera: { x: 2.0, y: 1.5, z: 3.0, yaw: -2.35, pitch: -0.3 },
+    stepFactor: 0.6,
   },
   // Geometric IFS
   menger: {
@@ -192,6 +198,7 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     label: 'Apollonian Gasket',
     short: 'Apollonian',
     maxIterations: { label: 'Max Iterations', min: 1, max: 16, step: 1, default: 7 },
+    stepFactor: 0.5,
   },
   // Exotic
   kleinian: {
@@ -213,6 +220,7 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     },
     maxIterations: { label: 'Detail Levels', min: 0, max: 5, step: 1, default: 2 },
     defaultDynamicIterations: false,
+    stepFactor: 0.2,
   },
 };
 
@@ -393,3 +401,7 @@ export const useFractalParams = defineStore('fractalParams', () => {
     adjustBailout,
   };
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useFractalParams, import.meta.hot));
+}
