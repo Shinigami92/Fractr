@@ -197,9 +197,8 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
   kleinian: {
     label: 'Pseudo-Kleinian',
     short: 'Kleinian',
-    maxIterations: { label: 'Max Iterations', min: 1, max: 20, step: 1, default: 10 },
+    maxIterations: { label: 'Max Iterations', min: 1, max: 100, step: 1, default: 64 },
     camera: { x: 0, y: 0, z: 5, yaw: -Math.PI / 2, pitch: 0 },
-    defaultDynamicIterations: false,
   },
   gyroid: {
     label: 'Gyroid',
