@@ -218,8 +218,7 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
       yaw: (-47.1 * Math.PI) / 180,
       pitch: (-32.7 * Math.PI) / 180,
     },
-    maxIterations: { label: 'Detail Levels', min: 0, max: 5, step: 1, default: 2 },
-    defaultDynamicIterations: false,
+    maxIterations: { label: 'Detail Levels', min: 1, max: 24, step: 1, default: 16 },
     stepFactor: 0.2,
   },
 };

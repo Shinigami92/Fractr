@@ -134,8 +134,9 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
     lightT += max(d, 0.01);
   }
 
-  // Combine: direct + camera bounce + light bounce
-  let finalColor = directContrib * 0.5 + bounceContrib * 0.3 + lightBounceContrib * surfaceColor * 0.2;
+  // Combine: ambient + direct + camera bounce + light bounce
+  let ambient = surfaceColor * 0.3;
+  let finalColor = ambient + directContrib * 0.5 + bounceContrib * 0.4 + lightBounceContrib * surfaceColor * 0.25;
 
   return vec4f(finalColor, 1.0);
 }

@@ -62,8 +62,8 @@ fn main(@builtin(position) fragCoord: vec4f) -> @location(0) vec4f {
   let lightDir = normalize(vec3f(0.5, 1.0, -0.3));
   let shadow = calcSoftShadow(hitPos + normal * 0.002, lightDir, 0.01, 10.0, 16.0);
 
-  // Apply shadow: darken shadowed areas but keep some ambient
-  let shadowed = baseColor * (0.15 + shadow * 0.85);
+  // Apply shadow: darken shadowed areas but keep enough ambient for cavities
+  let shadowed = baseColor * (0.4 + shadow * 0.6);
 
   return vec4f(shadowed, 1.0);
 }
