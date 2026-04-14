@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { useInputMode } from '../../composables/useInputMode';
 import {
   COLOR_MODE_OPTIONS,
   FRACTAL_CONFIGS,
   type RenderMode,
   useFractalParams,
 } from '../../stores/fractalParams';
-import { useInputMode } from '../../composables/useInputMode';
 import { useGraphicsSettings } from '../../stores/graphicsSettings';
 import { useHudSettings } from '../../stores/hudSettings';
 import Crosshair from './Crosshair.vue';

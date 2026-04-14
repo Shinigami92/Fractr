@@ -771,7 +771,13 @@ let cursorUnlocked = false;
 watch(
   () => pointerLock.isLocked.value,
   (locked) => {
-    if (!locked && appState.mode === 'playing' && !cursorUnlocked && !showHelpOverlay.value && !isTouchActive.value) {
+    if (
+      !locked &&
+      appState.mode === 'playing' &&
+      !cursorUnlocked &&
+      !showHelpOverlay.value &&
+      !isTouchActive.value
+    ) {
       appState.pause();
     }
   },
