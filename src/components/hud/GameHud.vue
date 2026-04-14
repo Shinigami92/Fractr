@@ -5,6 +5,7 @@ import {
   type RenderMode,
   useFractalParams,
 } from '../../stores/fractalParams';
+import { useInputMode } from '../../composables/useInputMode';
 import { useGraphicsSettings } from '../../stores/graphicsSettings';
 import { useHudSettings } from '../../stores/hudSettings';
 import Crosshair from './Crosshair.vue';
@@ -41,6 +42,7 @@ const props = defineProps<{
 }>();
 
 const hud = useHudSettings();
+const { isTouchActive } = useInputMode();
 const fractal = useFractalParams();
 const graphics = useGraphicsSettings();
 
@@ -93,6 +95,7 @@ function toDeg(rad: number): string {
       <span class="ml-2">controls</span>
     </div>
     <button
+      v-if="isTouchActive"
       class="pointer-events-auto fixed top-3 right-3 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/60 backdrop-blur-sm transition-colors active:bg-white/20"
       @click.stop="emit('pause')"
     >

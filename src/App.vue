@@ -11,7 +11,9 @@ import TitleScreen from './components/menu/TitleScreen.vue';
 import WebGPUCanvas from './components/WebGPUCanvas.vue';
 import { useGameLoop } from './composables/useGameLoop';
 import { useInput } from './composables/useInput';
+import { useInputMode } from './composables/useInputMode';
 import { usePointerLock } from './composables/usePointerLock';
+import { useTouchControls } from './composables/useTouchControls';
 import { FPSCamera } from './engine/camera/FPSCamera';
 import { evaluateSDF } from './engine/fractals/sdf';
 import { WebGPUContext } from './engine/gpu/WebGPUContext';
@@ -441,6 +443,8 @@ const COLOR_MODE_MAP: Record<ColorMode, number> = {
 
 const { isPressed } = useInput();
 const pointerLock = usePointerLock(canvasRef);
+const { isTouchActive, mount: mountInputMode, unmount: unmountInputMode } = useInputMode();
+const touchControls = useTouchControls();
 
 let isMovingThisFrame = false;
 let adaptiveScale = 1.0;
@@ -488,10 +492,13 @@ const gameLoop = useGameLoop({
   update(dt) {
     if (appState.mode !== 'playing') return;
 
-    // Camera rotation from mouse (disabled while radial menu is open)
+    // Camera rotation from mouse + touch (disabled while radial menu is open)
     const { dx, dy } = pointerLock.consumeMovement();
+    const touchLook = touchControls.consumeLookDelta();
+    const totalDx = dx + touchLook.dx;
+    const totalDy = dy + touchLook.dy;
     if (!radialMenuType.value) {
-      camera.rotate(dx * controls.mouseSensitivity, -dy * controls.mouseSensitivity);
+      camera.rotate(totalDx * controls.mouseSensitivity, -totalDy * controls.mouseSensitivity);
     }
 
     // Distance-based camera speed: slow near surfaces, fast in open space
@@ -518,6 +525,12 @@ const gameLoop = useGameLoop({
 
     const bindings = controls.keybindings;
     const rollSpeed = 1.5 * dt;
+    const touchMove = touchControls.getMovementVector();
+    const touchActive =
+      Math.abs(touchMove.x) > 0.05 ||
+      Math.abs(touchMove.y) > 0.05 ||
+      Math.abs(touchLook.dx) > 1 ||
+      Math.abs(touchLook.dy) > 1;
     const moving =
       isPressed(bindings.moveForward) ||
       isPressed(bindings.moveBackward) ||
@@ -528,7 +541,8 @@ const gameLoop = useGameLoop({
       isPressed('Mouse0') ||
       isPressed('Mouse2') ||
       Math.abs(dx) > 1 ||
-      Math.abs(dy) > 1;
+      Math.abs(dy) > 1 ||
+      touchActive;
 
     // Adaptive quality
     adaptQuality(dt, gameLoop.fps.value, moving);
@@ -551,6 +565,12 @@ const gameLoop = useGameLoop({
       } else {
         camera.rollCamera(rollSpeed);
       }
+    }
+
+    // Touch analog movement (additive to keyboard)
+    if (Math.abs(touchMove.x) > 0.05 || Math.abs(touchMove.y) > 0.05) {
+      camera.moveForward(-touchMove.y * speed);
+      camera.moveRight(touchMove.x * speed);
     }
 
     // Track movement for render path selection
@@ -642,6 +662,8 @@ const previewLoop = useGameLoop({
 async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
   canvasRef.value = canvas;
   pointerLock.mount();
+  mountInputMode();
+  touchControls.mount(canvas);
 
   try {
     const ctx = await WebGPUContext.create(canvas);
@@ -720,7 +742,9 @@ watch(
       applyCanvasResolution(1);
       previewLoop.stop();
       gameLoop.start();
-      pointerLock.requestLock();
+      if (!isTouchActive.value) {
+        pointerLock.requestLock();
+      }
     } else if (mode === 'loading') {
       appState.onLoaded();
     } else {
@@ -747,7 +771,7 @@ let cursorUnlocked = false;
 watch(
   () => pointerLock.isLocked.value,
   (locked) => {
-    if (!locked && appState.mode === 'playing' && !cursorUnlocked && !showHelpOverlay.value) {
+    if (!locked && appState.mode === 'playing' && !cursorUnlocked && !showHelpOverlay.value && !isTouchActive.value) {
       appState.pause();
     }
   },
@@ -868,7 +892,7 @@ function onKeyDown(e: KeyboardEvent): void {
 }
 
 function onCanvasClick(): void {
-  if (appState.mode === 'playing' && !pointerLock.isLocked.value) {
+  if (appState.mode === 'playing' && !pointerLock.isLocked.value && !isTouchActive.value) {
     cursorUnlocked = false;
     pointerLock.requestLock();
   }
@@ -932,6 +956,8 @@ onUnmounted(() => {
   gameLoop.stop();
   previewLoop.stop();
   pointerLock.unmount();
+  unmountInputMode();
+  touchControls.unmount();
   renderer?.destroy();
 });
 </script>
