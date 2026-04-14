@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import vue from '@vitejs/plugin-vue';
 import { execSync } from 'node:child_process';
 import { defineConfig, type Plugin } from 'vite';
@@ -28,7 +29,7 @@ function wgslFullReload(): Plugin {
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/Fractr/' : undefined,
-  plugins: [tailwindcss(), vue(), wgslFullReload()],
+  plugins: [tailwindcss(), vue(), wgslFullReload(), basicSsl()],
   define: {
     __COMMIT_SHA__: JSON.stringify(mode === 'production' ? getCommitSha() : 'dev'),
   },
