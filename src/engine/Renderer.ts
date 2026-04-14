@@ -23,6 +23,10 @@ export class Renderer {
   private blitBindGroup: GPUBindGroup | null = null;
   private _sampleCount = 0;
 
+  // Frame pacing: track in-flight GPU work to avoid stalling on getCurrentTexture
+  private framesInFlight = 0;
+  private static readonly MAX_FRAMES_IN_FLIGHT = 2;
+
   get sampleCount(): number {
     return this._sampleCount;
   }
@@ -169,6 +173,11 @@ export class Renderer {
   }
 
   render(accumulate = false): void {
+    // Skip frame if GPU is saturated — prevents getCurrentTexture() stalls
+    // that cause frame-pacing judder at sub-vsync FPS.
+    if (this.framesInFlight >= Renderer.MAX_FRAMES_IN_FLIGHT) return;
+    this.framesInFlight++;
+
     this.ensureAccumulationTexture();
     const commandEncoder = this.ctx.device.createCommandEncoder();
     const canvasView = this.ctx.context.getCurrentTexture().createView();
@@ -245,6 +254,13 @@ export class Renderer {
     }
 
     this.ctx.device.queue.submit([commandEncoder.finish()]);
+    // onSubmittedWorkDone resolves when the GPU finishes processing all
+    // commands submitted up to this point. Decrementing here lets the next
+    // render() call know there's a free slot in the pipeline, avoiding
+    // getCurrentTexture() stalls that cause frame-pacing judder.
+    this.ctx.device.queue.onSubmittedWorkDone().then(() => {
+      this.framesInFlight--;
+    });
   }
 
   destroy(): void {

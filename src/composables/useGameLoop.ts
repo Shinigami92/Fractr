@@ -12,6 +12,10 @@ export function useGameLoop(callbacks: { update: (dt: number) => void; render: (
   function loop(now: number): void {
     if (!isRunning.value) return;
 
+    // Schedule next frame FIRST — gives the browser maximum lead time to
+    // hit the next vsync, reducing frame-pacing jitter at sub-60fps.
+    rafId = requestAnimationFrame(loop);
+
     const dt = Math.min((now - lastTime) / 1000, 0.1); // Cap at 100ms
     lastTime = now;
 
@@ -26,8 +30,6 @@ export function useGameLoop(callbacks: { update: (dt: number) => void; render: (
 
     callbacks.update(dt);
     callbacks.render();
-
-    rafId = requestAnimationFrame(loop);
   }
 
   function start(): void {
