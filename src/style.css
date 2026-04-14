@@ -28,4 +28,11 @@ body,
   background: var(--color-surface);
   color: white;
   font-family: var(--font-sans);
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+canvas {
+  touch-action: none;
 }

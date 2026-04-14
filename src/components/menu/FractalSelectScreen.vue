@@ -40,7 +40,7 @@ function onImgError(key: string): void {
       </h2>
 
       <div class="min-h-0 w-full flex-1 overflow-y-auto">
-        <div class="grid w-full grid-cols-4 gap-2.5">
+        <div class="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
           <button
             v-for="[key, cfg] in fractalEntries"
             :key="key"

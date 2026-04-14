@@ -17,7 +17,11 @@ export function usePointerLock(canvas: Ref<HTMLCanvasElement | null>) {
   }
 
   function requestLock(): void {
-    canvas.value?.requestPointerLock();
+    try {
+      canvas.value?.requestPointerLock();
+    } catch {
+      // Pointer Lock API not available (e.g. mobile browsers)
+    }
   }
 
   function exitLock(): void {

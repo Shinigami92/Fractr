@@ -969,6 +969,7 @@ onUnmounted(() => {
         :camera="cameraPos"
         :effective-iterations="currentIterations"
         :sample-count="sampleCount"
+        @pause="appState.pause()"
       />
 
       <RadialMenu

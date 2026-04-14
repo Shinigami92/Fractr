@@ -167,14 +167,20 @@ onMounted(loadSaves);
     <div class="absolute inset-0 bg-black/80" />
 
     <div class="relative z-10 flex h-full w-full max-w-7xl flex-col gap-4 p-6">
-      <div class="flex shrink-0 items-center justify-between">
+      <div class="flex shrink-0 flex-wrap items-center justify-between gap-2">
         <h2
           class="text-2xl font-bold tracking-[0.15em] text-white/90"
           style="text-shadow: 0 0 20px rgba(124, 58, 237, 0.4)"
         >
           SAVED LOCATIONS
         </h2>
-        <div class="flex gap-2">
+        <button
+          class="cursor-pointer border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wider text-white/90 uppercase transition-all hover:border-accent-bright/40 hover:bg-accent/20 sm:order-last"
+          @click="onBack"
+        >
+          Back
+        </button>
+        <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <select
             v-model="filterFractal"
             class="border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white"
@@ -203,12 +209,6 @@ onMounted(loadSaves);
           <span v-if="importStatus" class="px-2 py-1.5 text-xs text-accent-bright">
             {{ importStatus }}
           </span>
-          <button
-            class="cursor-pointer border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wider text-white/90 uppercase transition-all hover:border-accent-bright/40 hover:bg-accent/20"
-            @click="onBack"
-          >
-            Back
-          </button>
         </div>
       </div>
 
