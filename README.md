@@ -20,6 +20,8 @@ Ultra-performant 3D fractal explorer powered by WebGPU. Fly through infinite mat
 - **Dynamic iterations** — detail level adapts based on proximity to fractal surface
 - **Adaptive quality** — resolution scales with FPS for smooth performance on any GPU
 - **Shareable URLs** — URL updates live with your camera position; press P to copy
+- **Mobile touch controls** — dual-joystick (left = move, right = look), auto-detected on touch devices
+- **F1 controls overlay** — in-game keybinding reference; shows touch controls on mobile
 - **Game-style UI** — title screen, fractal selection, pause menu, settings, HUD
 
 ## Gallery
@@ -63,12 +65,22 @@ Ultra-performant 3D fractal explorer powered by WebGPU. Fly through infinite mat
 | Scroll wheel   | Adjust max iterations            |
 | F3             | Toggle HUD                       |
 | H              | Toggle crosshair                 |
+| F1             | Controls overlay                 |
 | P              | Copy share URL                   |
+
+### Mobile / Touch
+
+| Gesture         | Action           |
+| --------------- | ---------------- |
+| Left half drag  | Move (analog)    |
+| Right half drag | Look around      |
+| Pause button    | Open pause menu  |
+| ? button        | Controls overlay |
 
 ## Requirements
 
 - A browser with **[WebGPU support](https://caniuse.com/webgpu)** (Chrome 113+, Edge 113+)
-- Tested on MacBook Pro M1 and Nvidia RTX 4080 Super
+- Tested on MacBook Pro M1, Nvidia RTX 4080 Super, and iPhone 15
 
 ## Development
 
