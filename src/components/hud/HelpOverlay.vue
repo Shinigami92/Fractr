@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useInputMode } from '../../composables/useInputMode';
 import { useControlSettings } from '../../stores/controlSettings';
 
+const emit = defineEmits<{ close: [] }>();
 const controls = useControlSettings();
+const { isTouchActive } = useInputMode();
 
 interface KeyEntry {
   key: string;
@@ -105,15 +109,46 @@ const groups: KeyGroup[] = [
     ],
   },
 ];
+
+const touchGroups: KeyGroup[] = [
+  {
+    title: 'Movement',
+    entries: [
+      { key: 'Left half drag', label: 'Move (analog)' },
+      { key: 'Right half drag', label: 'Look around' },
+    ],
+  },
+  {
+    title: 'Actions',
+    entries: [
+      { key: 'Pause button', label: 'Open pause menu' },
+      { key: '? button', label: 'Toggle this overlay' },
+    ],
+  },
+  {
+    title: 'Via Pause Menu',
+    entries: [
+      { key: 'Settings', label: 'Graphics, controls, keybindings' },
+      { key: 'Saved Locations', label: 'Load, save, export' },
+      { key: 'Resume', label: 'Back to exploring' },
+    ],
+  },
+];
+
+const activeGroups = computed(() => (isTouchActive.value ? touchGroups : groups));
 </script>
 
 <template>
-  <div class="pointer-events-none fixed inset-0 z-30 flex items-center justify-center">
+  <div
+    :class="isTouchActive ? 'pointer-events-auto' : 'pointer-events-none'"
+    class="fixed inset-0 z-30 flex items-center justify-center"
+    @touchstart.prevent
+  >
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" />
     <div
       class="relative grid max-h-[90vh] max-w-5xl grid-cols-1 gap-x-8 gap-y-6 overflow-auto p-8 sm:grid-cols-2 lg:grid-cols-3"
     >
-      <div v-for="group in groups" :key="group.title" class="flex flex-col gap-2">
+      <div v-for="group in activeGroups" :key="group.title" class="flex flex-col gap-2">
         <h3
           class="border-b border-white/10 pb-1 text-xs font-medium tracking-[0.2em] text-accent-bright/80 uppercase"
         >
@@ -135,7 +170,15 @@ const groups: KeyGroup[] = [
         </div>
       </div>
       <div class="col-span-full pt-2 text-center text-xs text-white/40">
-        Press F1 or Esc to close
+        <button
+          v-if="isTouchActive"
+          class="pointer-events-auto cursor-pointer border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wider text-white/70 uppercase transition-colors active:bg-white/20"
+          @touchstart.stop.prevent="emit('close')"
+          @click.stop="emit('close')"
+        >
+          Close
+        </button>
+        <template v-else>Press F1 or Esc to close</template>
       </div>
     </div>
   </div>

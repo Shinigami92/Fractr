@@ -1003,19 +1003,32 @@ onUnmounted(() => {
         :sample-count="sampleCount"
       />
 
-      <!-- Pause button: rendered outside GameHud's pointer-events-none container
-           so mobile touch hit-testing isn't blocked by the parent. -->
-      <button
+      <!-- Touch-only action buttons: rendered outside GameHud's pointer-events-none
+           container so mobile touch hit-testing isn't blocked by the parent. -->
+      <div
         v-if="isTouchActive && appState.mode === 'playing'"
-        class="fixed top-3 right-3 z-20 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/60 backdrop-blur-sm transition-colors active:bg-white/20"
-        @touchstart.stop.prevent="appState.pause()"
-        @click.stop="appState.pause()"
+        class="fixed top-3 right-3 z-20 flex gap-2"
       >
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-          <rect x="3" y="2" width="4" height="14" rx="1" />
-          <rect x="11" y="2" width="4" height="14" rx="1" />
-        </svg>
-      </button>
+        <button
+          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/60 backdrop-blur-sm transition-colors active:bg-white/20"
+          @touchstart.stop.prevent="showHelpOverlay = !showHelpOverlay"
+          @click.stop="showHelpOverlay = !showHelpOverlay"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+            <text x="9" y="14" text-anchor="middle" font-size="14" font-weight="bold">?</text>
+          </svg>
+        </button>
+        <button
+          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/60 backdrop-blur-sm transition-colors active:bg-white/20"
+          @touchstart.stop.prevent="appState.pause()"
+          @click.stop="appState.pause()"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+            <rect x="3" y="2" width="4" height="14" rx="1" />
+            <rect x="11" y="2" width="4" height="14" rx="1" />
+          </svg>
+        </button>
+      </div>
 
       <RadialMenu
         v-if="radialMenuType"
@@ -1026,7 +1039,7 @@ onUnmounted(() => {
         :cursor-y="radialCursorY"
       />
 
-      <HelpOverlay v-if="showHelpOverlay" />
+      <HelpOverlay v-if="showHelpOverlay" @close="showHelpOverlay = false" />
 
       <Transition name="fade">
         <div

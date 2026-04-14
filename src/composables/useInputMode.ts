@@ -2,14 +2,25 @@ import { computed, ref } from 'vue';
 
 export type InputMode = 'pointer' | 'touch';
 
-const inputMode = ref<InputMode>('pointer');
+// Detect initial mode: coarse primary pointer = touch device (phone/tablet),
+// fine = desktop/laptop (even if it has a touchscreen, trackpad is primary).
+const initialMode: InputMode =
+  typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches
+    ? 'touch'
+    : 'pointer';
+const inputMode = ref<InputMode>(initialMode);
 let mounted = false;
+// Mobile browsers synthesize mousemove after touch events; ignore those.
+let lastTouchTime = 0;
+const TOUCH_COOLDOWN = 1000;
 
 function onTouchStart(): void {
+  lastTouchTime = performance.now();
   inputMode.value = 'touch';
 }
 
 function onMouseMove(): void {
+  if (performance.now() - lastTouchTime < TOUCH_COOLDOWN) return;
   if (inputMode.value !== 'pointer') {
     inputMode.value = 'pointer';
   }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useInputMode } from '../../composables/useInputMode';
 import {
   COLOR_MODE_OPTIONS,
   FRACTAL_CONFIGS,
@@ -37,6 +38,7 @@ const props = defineProps<{
 }>();
 
 const hud = useHudSettings();
+const { isTouchActive } = useInputMode();
 const fractal = useFractalParams();
 const graphics = useGraphicsSettings();
 
@@ -82,7 +84,7 @@ function toDeg(rad: number): string {
     </div>
     <Crosshair v-if="hud.showCrosshair" />
     <div
-      v-if="hud.showFps || hud.showCoordinates"
+      v-if="!isTouchActive && (hud.showFps || hud.showCoordinates)"
       class="fixed bottom-3 left-3 font-mono text-xs text-white/40"
     >
       <kbd class="border border-white/10 bg-white/5 px-1.5 py-0.5 text-white/60">F1</kbd>
