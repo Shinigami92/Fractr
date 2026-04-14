@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useInputMode } from '../../composables/useInputMode';
 import {
   COLOR_MODE_OPTIONS,
   FRACTAL_CONFIGS,
@@ -9,10 +8,6 @@ import {
 import { useGraphicsSettings } from '../../stores/graphicsSettings';
 import { useHudSettings } from '../../stores/hudSettings';
 import Crosshair from './Crosshair.vue';
-
-const emit = defineEmits<{
-  pause: [];
-}>();
 
 const RENDER_MODE_LABELS: Record<RenderMode, string> = {
   ray: 'ray march',
@@ -42,7 +37,6 @@ const props = defineProps<{
 }>();
 
 const hud = useHudSettings();
-const { isTouchActive } = useInputMode();
 const fractal = useFractalParams();
 const graphics = useGraphicsSettings();
 
@@ -94,15 +88,5 @@ function toDeg(rad: number): string {
       <kbd class="border border-white/10 bg-white/5 px-1.5 py-0.5 text-white/60">F1</kbd>
       <span class="ml-2">controls</span>
     </div>
-    <button
-      v-if="isTouchActive"
-      class="pointer-events-auto fixed top-3 right-3 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/60 backdrop-blur-sm transition-colors active:bg-white/20"
-      @click.stop="emit('pause')"
-    >
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-        <rect x="3" y="2" width="4" height="14" rx="1" />
-        <rect x="11" y="2" width="4" height="14" rx="1" />
-      </svg>
-    </button>
   </div>
 </template>
