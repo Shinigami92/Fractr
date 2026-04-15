@@ -517,9 +517,10 @@ const gameLoop = useGameLoop({
     // Dynamic iterations: more detail when close, fewer when far
     let effectiveIterations = fractal.maxIterations;
     if (graphics.dynamicIterations) {
+      const dynMax = Math.min(fractal.maxIterations, fractal.config.dynMaxIterations ?? fractal.maxIterations);
       const iterScale = Math.max(0, Math.min(1, -Math.log10(Math.max(absDist, 0.0001)) / 4));
-      const minIter = Math.max(4, Math.ceil(fractal.maxIterations * 0.3));
-      effectiveIterations = Math.ceil(minIter + (fractal.maxIterations - minIter) * iterScale);
+      const minIter = Math.max(4, Math.ceil(dynMax * 0.3));
+      effectiveIterations = Math.ceil(minIter + (dynMax - minIter) * iterScale);
     }
     currentIterations.value = effectiveIterations;
 

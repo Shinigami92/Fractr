@@ -174,8 +174,16 @@ function kleinianSDF(x: number, y: number, z: number, params: SDFParams): number
   let zz = z;
   let dr = 1;
   const box = [1, 1, 0.5];
+  // Track minimum |DE| across iterations for safe camera-speed estimation.
+  // Detecting walls requires deeper iterations (macro-shape fold is too loose),
+  // but past a certain `dr` the DE degrades into chaotic noise. Bail out when
+  // `dr` suggests precision has collapsed — before that, tighter iteration
+  // values win; after, trust the last known good estimate.
+  const iter = Math.min(16, params.maxIterations);
+  let minAbsDist = Infinity;
+  let bestSigned = 0;
 
-  for (let i = 0; i < params.maxIterations; i++) {
+  for (let i = 0; i < iter; i++) {
     zx = Math.max(-box[0]!, Math.min(box[0]!, zx)) * 2 - zx;
     zy = Math.max(-box[1]!, Math.min(box[1]!, zy)) * 2 - zy;
     zz = Math.max(-box[2]!, Math.min(box[2]!, zz)) * 2 - zz;
@@ -188,9 +196,16 @@ function kleinianSDF(x: number, y: number, z: number, params: SDFParams): number
     zx += 0.2;
     zy += 0.3;
     zz += -0.4;
+    const d = (Math.sqrt(zx * zx + zy * zy + zz * zz) - 0.5) / dr;
+    const ad = Math.abs(d);
+    if (ad < minAbsDist) {
+      minAbsDist = ad;
+      bestSigned = d;
+    }
+    if (dr > 1e6) break;
   }
 
-  return (Math.sqrt(zx * zx + zy * zy + zz * zz) - 0.5) / dr;
+  return bestSigned;
 }
 
 function koch3dSDF(x: number, y: number, z: number, params: SDFParams): number {

@@ -82,6 +82,8 @@ export interface FractalConfig {
   stepFactor?: number;
   /** Spatial period for coordinate re-centering (only for translation-invariant SDFs). Returns the period in world units; undefined disables re-centering. */
   periodOffset?: (power: number) => number;
+  /** Ceiling for effective iterations in dynamic-iteration mode. Lets the slider max stay high for forced high-quality static renders (dyn off) while keeping navigation responsive. Defaults to maxIterations.max. */
+  dynMaxIterations?: number;
 }
 
 export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
@@ -214,6 +216,7 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     maxIterations: { label: 'Max Iterations', min: 1, max: 100, step: 1, default: 64 },
     camera: { x: 0, y: 0, z: 5, yaw: -Math.PI / 2, pitch: 0 },
     stepFactor: 0.2,
+    dynMaxIterations: 40,
   },
   gyroid: {
     label: 'Gyroid',
