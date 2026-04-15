@@ -92,12 +92,12 @@ export function buildShareURL(state: SharedState): string {
   params.set('b', state.bailout.toFixed(2));
   params.set('c', state.colorMode);
   params.set('dyn', state.dynamicIterations ? '1' : '0');
-  params.set('x', state.x.toFixed(4));
-  params.set('y', state.y.toFixed(4));
-  params.set('z', state.z.toFixed(4));
-  params.set('yaw', state.yaw.toFixed(4));
-  params.set('pitch', state.pitch.toFixed(4));
-  params.set('roll', state.roll.toFixed(4));
+  params.set('x', state.x.toFixed(6));
+  params.set('y', state.y.toFixed(6));
+  params.set('z', state.z.toFixed(6));
+  params.set('yaw', state.yaw.toFixed(5));
+  params.set('pitch', state.pitch.toFixed(5));
+  params.set('roll', state.roll.toFixed(5));
 
   const base = `${window.location.origin}${window.location.pathname}`;
   return `${base}?${params.toString()}`;
