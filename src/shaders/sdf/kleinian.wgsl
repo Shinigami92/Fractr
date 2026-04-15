@@ -11,7 +11,12 @@ fn sceneSDF(pos: vec3f) -> SDFResult {
   var iterations = 0u;
   var minDist = length(z);
   var dr = 1.0;
-  let maxIter = uniforms.maxIterations;
+  // For >= 8 iterations, round up to a multiple of 4 to suppress period-N attractor flicker
+  // (orbit enters short cycles; since there's no bailout, every ray's final state depends
+  // on maxIter mod N, causing DE to oscillate as iterations change by 1). Below 8 we keep
+  // per-iteration fidelity so users exploring low-detail variants see every step.
+  let rawIter = uniforms.maxIterations;
+  let maxIter = select(rawIter, (rawIter + 3u) & ~3u, rawIter >= 8u);
   let boxSize = vec3f(1.0, 1.0, 0.5);
   let foldPlane = 1.2;
 

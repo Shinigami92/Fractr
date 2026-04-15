@@ -15,6 +15,13 @@ fn sceneSDF(pos: vec3f) -> SDFResult {
   let bailout = uniforms.bailout;
   let maxIter = uniforms.maxIterations;
 
+  // Track max r across all iterations AND the paired dr at that peak, to suppress
+  // period-N attractor flicker (z enters cycles near the surface; using the final r
+  // makes DE depend on cycle phase, causing parity/period flicker as maxIter changes).
+  // Taking the running max is period-invariant for any N.
+  var rMax = r;
+  var drAtMax = dr;
+
   for (var i = 0u; i < maxIter; i++) {
     if (r > bailout) { break; }
     iterations = i + 1u;
@@ -39,10 +46,15 @@ fn sceneSDF(pos: vec3f) -> SDFResult {
 
     r = length(z);
     minDist = min(minDist, r);
+    if (r > rMax) {
+      rMax = r;
+      drAtMax = dr;
+    }
   }
 
-  // Distance estimator
-  let dist = 0.5 * log(r) * r / dr;
+  // Use the running max r (and dr at that moment) for the DE — period-invariant
+  // regardless of cycle length. For bailed-out rays, rMax == final r so DE is unchanged.
+  let dist = 0.5 * log(rMax) * rMax / drAtMax;
 
   return SDFResult(dist, iterations, z, minDist);
 }

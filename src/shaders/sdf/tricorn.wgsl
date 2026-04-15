@@ -16,6 +16,10 @@ fn sceneSDF(pos: vec3f) -> SDFResult {
   let bailout = uniforms.bailout;
   let maxIter = uniforms.maxIterations;
 
+  // Track max r and paired dr to suppress period-N attractor flicker at deep zoom.
+  var rMax = r;
+  var drAtMax = dr;
+
   for (var i = 0u; i < maxIter; i++) {
     if (r > bailout) { break; }
     iterations = i + 1u;
@@ -37,8 +41,12 @@ fn sceneSDF(pos: vec3f) -> SDFResult {
 
     r = length(z);
     minDist = min(minDist, r);
+    if (r > rMax) {
+      rMax = r;
+      drAtMax = dr;
+    }
   }
 
-  let dist = 0.5 * log(r) * r / dr;
+  let dist = 0.5 * log(rMax) * rMax / drAtMax;
   return SDFResult(dist, iterations, z, minDist);
 }

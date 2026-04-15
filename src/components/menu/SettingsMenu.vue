@@ -176,7 +176,7 @@ function resetAll(): void {
               v-model.number="graphics.maxRaySteps"
               type="range"
               min="64"
-              max="512"
+              max="1024"
               step="16"
               class="accent-accent"
             />
