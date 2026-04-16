@@ -349,6 +349,25 @@ function computeOriginOffset(): [number, number, number] | undefined {
   ];
 }
 
+/**
+ * Assemble the parameter bag passed to `renderer.updateUniforms` for a live
+ * scene (main gameplay loop + title-screen preview loop). Overrides let the
+ * caller substitute the effective iteration count (dynamic iterations) or
+ * cap cost for the low-quality title preview.
+ */
+function buildLiveSceneParams(overrides?: { maxIterations?: number; maxRaySteps?: number }) {
+  return {
+    power: fractal.power,
+    maxIterations: overrides?.maxIterations ?? fractal.maxIterations,
+    bailout: fractal.bailout,
+    maxRaySteps: overrides?.maxRaySteps ?? graphics.maxRaySteps,
+    resolutionScale: graphics.resolutionScale,
+    animatedColors: graphics.animatedColors,
+    stepFactor: fractal.config.stepFactor ?? 1,
+    originOffset: computeOriginOffset(),
+  };
+}
+
 const { isPressed } = useInput();
 const pointerLock = usePointerLock(canvasRef);
 const { isTouchActive, mount: mountInputMode, unmount: unmountInputMode } = useInputMode();
@@ -474,16 +493,7 @@ const gameLoop = useGameLoop({
     // Update renderer uniforms
     renderer?.updateUniforms(
       camera,
-      {
-        power: fractal.power,
-        maxIterations: effectiveIterations,
-        bailout: fractal.bailout,
-        maxRaySteps: graphics.maxRaySteps,
-        resolutionScale: graphics.resolutionScale,
-        animatedColors: graphics.animatedColors,
-        stepFactor: fractal.config.stepFactor ?? 1,
-        originOffset: computeOriginOffset(),
-      },
+      buildLiveSceneParams({ maxIterations: effectiveIterations }),
       (performance.now() - startTime) / 1000,
     );
   },
@@ -518,16 +528,7 @@ const previewLoop = useGameLoop({
     const lowQuality = appState.mode === 'title' && !previewMode;
     renderer?.updateUniforms(
       camera,
-      {
-        power: fractal.power,
-        maxIterations: lowQuality ? 8 : fractal.maxIterations,
-        bailout: fractal.bailout,
-        maxRaySteps: lowQuality ? 64 : graphics.maxRaySteps,
-        resolutionScale: graphics.resolutionScale,
-        animatedColors: graphics.animatedColors,
-        stepFactor: fractal.config.stepFactor ?? 1,
-        originOffset: computeOriginOffset(),
-      },
+      buildLiveSceneParams(lowQuality ? { maxIterations: 8, maxRaySteps: 64 } : undefined),
       (performance.now() - startTime) / 1000,
     );
   },
