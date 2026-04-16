@@ -3,6 +3,8 @@ import {
   type ColorMode,
   FRACTAL_TYPES,
   type FractalType,
+  RENDER_MODES,
+  type RenderMode,
 } from '../stores/fractalParams';
 
 export interface SharedState {
@@ -11,6 +13,7 @@ export interface SharedState {
   maxIterations: number;
   bailout: number;
   colorMode: ColorMode;
+  renderMode: RenderMode;
   dynamicIterations: boolean;
   x: number;
   y: number;
@@ -23,6 +26,7 @@ export interface SharedState {
 
 const FRACTAL_TYPE_SET = new Set<string>(FRACTAL_TYPES);
 const COLOR_MODE_SET = new Set<string>(COLOR_MODES);
+const RENDER_MODE_SET = new Set<string>(RENDER_MODES);
 
 export function readStateFromURL(): SharedState | null {
   const params = new URLSearchParams(window.location.search);
@@ -37,6 +41,7 @@ export function readStateFromURL(): SharedState | null {
   };
 
   const color = params.get('c') ?? 'distance';
+  const render = params.get('r') ?? 'ray';
 
   return {
     fractalType: f as FractalType,
@@ -44,6 +49,7 @@ export function readStateFromURL(): SharedState | null {
     maxIterations: get('i', 20),
     bailout: get('b', 2),
     colorMode: COLOR_MODE_SET.has(color) ? (color as ColorMode) : 'distance',
+    renderMode: RENDER_MODE_SET.has(render) ? (render as RenderMode) : 'ray',
     x: get('x', 0),
     y: get('y', 0),
     z: get('z', 3),
@@ -62,6 +68,7 @@ export function buildShareURL(state: SharedState): string {
   params.set('i', String(state.maxIterations));
   params.set('b', state.bailout.toFixed(2));
   params.set('c', state.colorMode);
+  params.set('r', state.renderMode);
   params.set('dyn', state.dynamicIterations ? '1' : '0');
   params.set('x', state.x.toFixed(6));
   params.set('y', state.y.toFixed(6));
