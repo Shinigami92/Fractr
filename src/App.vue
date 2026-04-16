@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useEventListener } from '@vueuse/core';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import GameHud from './components/hud/GameHud.vue';
 import HelpOverlay from './components/hud/HelpOverlay.vue';
 import RadialMenu from './components/hud/RadialMenu.vue';
@@ -956,22 +957,14 @@ function onWheel(e: WheelEvent): void {
   fractal.adjustIterations(e.deltaY < 0 ? 1 : -1);
 }
 
-onMounted(() => {
-  window.addEventListener('keydown', onKeyDown);
-  window.addEventListener('keyup', onKeyUp);
-  window.addEventListener('mousedown', onMouseDown);
-  window.addEventListener('mousemove', onRadialMouseMove);
-  window.addEventListener('contextmenu', onContextMenu);
-  window.addEventListener('wheel', onWheel, { passive: false });
-});
+useEventListener(window, 'keydown', onKeyDown);
+useEventListener(window, 'keyup', onKeyUp);
+useEventListener(window, 'mousedown', onMouseDown);
+useEventListener(window, 'mousemove', onRadialMouseMove);
+useEventListener(window, 'contextmenu', onContextMenu);
+useEventListener(window, 'wheel', onWheel, { passive: false });
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', onKeyDown);
-  window.removeEventListener('keyup', onKeyUp);
-  window.removeEventListener('mousedown', onMouseDown);
-  window.removeEventListener('mousemove', onRadialMouseMove);
-  window.removeEventListener('contextmenu', onContextMenu);
-  window.removeEventListener('wheel', onWheel);
   gameLoop.stop();
   previewLoop.stop();
   pointerLock.unmount();

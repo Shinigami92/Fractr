@@ -47,6 +47,7 @@
     "preflight": "pnpm install && run-s format lint ts-check build"
   },
   "dependencies": {
+    "@vueuse/core": "14.2.1",
     "pinia": "3.0.4",
     "vue": "3.5.32"
   },
