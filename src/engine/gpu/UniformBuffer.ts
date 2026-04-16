@@ -18,6 +18,21 @@
 
 const BUFFER_SIZE = 128;
 
+// Offsets in 4-byte words (Float32Array / Uint32Array indices). Keep in sync
+// with the WGSL struct documented above — each value is (byte offset) / 4.
+const IDX_VIEW_PROJ_INVERSE = 0; // mat4x4f occupies indices 0..15
+const IDX_CAMERA_POSITION = 16; // vec3f occupies indices 16..18
+const IDX_TIME = 19;
+const IDX_RESOLUTION = 20; // vec2f occupies indices 20..21
+const IDX_POWER = 22;
+const IDX_MAX_ITERATIONS = 23;
+const IDX_BAILOUT = 24;
+const IDX_MAX_RAY_STEPS = 25;
+const IDX_RESOLUTION_SCALE = 26;
+const IDX_FRAME_COUNT = 27;
+const IDX_ANIMATED_COLORS = 28;
+const IDX_STEP_FACTOR = 29;
+
 export class UniformBuffer {
   readonly buffer: GPUBuffer;
   private readonly data: ArrayBuffer;
@@ -36,54 +51,54 @@ export class UniformBuffer {
   }
 
   setViewProjectionInverse(m: Float32Array): void {
-    this.floatView.set(m, 0);
+    this.floatView.set(m, IDX_VIEW_PROJ_INVERSE);
   }
 
   setCameraPosition(x: number, y: number, z: number): void {
-    this.floatView[16] = x;
-    this.floatView[17] = y;
-    this.floatView[18] = z;
+    this.floatView[IDX_CAMERA_POSITION] = x;
+    this.floatView[IDX_CAMERA_POSITION + 1] = y;
+    this.floatView[IDX_CAMERA_POSITION + 2] = z;
   }
 
   setTime(t: number): void {
-    this.floatView[19] = t;
+    this.floatView[IDX_TIME] = t;
   }
 
   setResolution(w: number, h: number): void {
-    this.floatView[20] = w;
-    this.floatView[21] = h;
+    this.floatView[IDX_RESOLUTION] = w;
+    this.floatView[IDX_RESOLUTION + 1] = h;
   }
 
   setPower(p: number): void {
-    this.floatView[22] = p;
+    this.floatView[IDX_POWER] = p;
   }
 
   setMaxIterations(n: number): void {
-    this.uintView[23] = n;
+    this.uintView[IDX_MAX_ITERATIONS] = n;
   }
 
   setBailout(b: number): void {
-    this.floatView[24] = b;
+    this.floatView[IDX_BAILOUT] = b;
   }
 
   setMaxRaySteps(steps: number): void {
-    this.uintView[25] = steps;
+    this.uintView[IDX_MAX_RAY_STEPS] = steps;
   }
 
   setResolutionScale(scale: number): void {
-    this.floatView[26] = scale;
+    this.floatView[IDX_RESOLUTION_SCALE] = scale;
   }
 
   setFrameCount(count: number): void {
-    this.uintView[27] = count;
+    this.uintView[IDX_FRAME_COUNT] = count;
   }
 
   setAnimatedColors(enabled: boolean): void {
-    this.uintView[28] = enabled ? 1 : 0;
+    this.uintView[IDX_ANIMATED_COLORS] = enabled ? 1 : 0;
   }
 
   setStepFactor(f: number): void {
-    this.floatView[29] = f;
+    this.floatView[IDX_STEP_FACTOR] = f;
   }
 
   upload(device: GPUDevice): void {
