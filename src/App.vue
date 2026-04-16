@@ -195,28 +195,6 @@ function resetCamera(): void {
 
 let wasMoving = false;
 
-function syncURLState(): void {
-  if (appState.mode !== 'playing') return;
-  const url = buildShareURL({
-    fractalType: fractal.fractalType,
-    power: fractal.power,
-    maxIterations: fractal.maxIterations,
-    bailout: fractal.bailout,
-    colorMode: fractal.colorMode,
-    renderMode: fractal.renderMode,
-    dynamicIterations: graphics.dynamicIterations,
-    x: camera.position[0]!,
-    y: camera.position[1]!,
-    z: camera.position[2]!,
-    yaw: camera.yaw,
-    pitch: camera.pitch,
-    roll: camera.roll,
-    preview: false,
-  });
-  const params = url.split('?')[1] ?? '';
-  window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
-}
-
 function getCurrentState(): SavedState {
   return {
     fractalType: fractal.fractalType,
@@ -233,6 +211,18 @@ function getCurrentState(): SavedState {
     pitch: camera.pitch,
     roll: camera.roll,
   };
+}
+
+/** Build a share URL for the current live camera + fractal state. */
+function buildCurrentShareURL(): string {
+  return buildShareURL({ ...getCurrentState(), preview: false });
+}
+
+function syncURLState(): void {
+  if (appState.mode !== 'playing') return;
+  const url = buildCurrentShareURL();
+  const params = url.split('?')[1] ?? '';
+  window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
 }
 
 async function quickSave(): Promise<void> {
@@ -743,23 +733,7 @@ function onKeyDown(e: KeyboardEvent): void {
       appState.openSaves();
     }
     if (e.code === controls.keybindings.copyShareURL) {
-      const url = buildShareURL({
-        fractalType: fractal.fractalType,
-        power: fractal.power,
-        maxIterations: fractal.maxIterations,
-        bailout: fractal.bailout,
-        colorMode: fractal.colorMode,
-        renderMode: fractal.renderMode,
-        dynamicIterations: graphics.dynamicIterations,
-        x: camera.position[0]!,
-        y: camera.position[1]!,
-        z: camera.position[2]!,
-        yaw: camera.yaw,
-        pitch: camera.pitch,
-        roll: camera.roll,
-        preview: false,
-      });
-      navigator.clipboard.writeText(url);
+      navigator.clipboard.writeText(buildCurrentShareURL());
       showNotification('Share URL copied to clipboard');
     }
 
