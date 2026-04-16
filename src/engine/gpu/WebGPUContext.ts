@@ -48,17 +48,6 @@ export class WebGPUContext {
     return new WebGPUContext(adapter, device, context, format);
   }
 
-  configure(width: number, height: number): void {
-    this.context.configure({
-      device: this.device,
-      format: this.format,
-      alphaMode: 'opaque',
-    });
-    // Canvas dimensions are set externally via canvas.width/height
-    void width;
-    void height;
-  }
-
   destroy(): void {
     this.device.destroy();
   }
