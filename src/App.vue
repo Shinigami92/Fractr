@@ -14,6 +14,22 @@ import { useInput } from './composables/useInput';
 import { useInputMode } from './composables/useInputMode';
 import { usePointerLock } from './composables/usePointerLock';
 import { useTouchControls } from './composables/useTouchControls';
+import {
+  ADAPTIVE_QUALITY_CRITICAL_DROP_MULTIPLIER,
+  ADAPTIVE_QUALITY_CRITICAL_THRESHOLD,
+  ADAPTIVE_QUALITY_DROP_INTERVAL_SEC,
+  ADAPTIVE_QUALITY_DROP_THRESHOLD,
+  ADAPTIVE_QUALITY_MIN_SCALE,
+  ADAPTIVE_QUALITY_MOVEMENT_PENALTY,
+  ADAPTIVE_QUALITY_RISE_INTERVAL_SEC,
+  ADAPTIVE_QUALITY_RISE_THRESHOLD,
+  ADAPTIVE_QUALITY_SCALE_STEP,
+  DYN_ITER_DIST_FLOOR,
+  DYN_ITER_LOG_SCALE_DIVISOR,
+  DYN_ITER_MIN_ABSOLUTE,
+  DYN_ITER_MIN_FACTOR,
+  RADIAL_MENU_HOLD_DELAY_MS,
+} from './constants/game';
 import { FPSCamera } from './engine/camera/FPSCamera';
 import { evaluateSDF } from './engine/fractals/sdf';
 import { WebGPUContext } from './engine/gpu/WebGPUContext';
@@ -62,7 +78,6 @@ const radialCursorX = ref(0);
 const radialCursorY = ref(0);
 let radialHoldTimer: ReturnType<typeof setTimeout> | null = null;
 let radialKeyCode: string | null = null;
-const HOLD_DELAY = 200;
 
 const fractalOptions = computed(() =>
   Object.entries(FRACTAL_CONFIGS).map(([key, cfg]) => ({
@@ -435,10 +450,6 @@ let adaptiveScale = 1.0;
 let appliedScale = 1.0;
 let adaptTimer = 0;
 let isMoving = false;
-const SCALE_STEP = 0.05;
-const DROP_INTERVAL = 0.2; // React fast when FPS drops
-const RISE_INTERVAL = 0.8; // Recover slowly to avoid oscillation
-
 function adaptQuality(dt: number, currentFps: number, moving: boolean): void {
   if (!graphics.adaptiveQuality) return;
 
@@ -446,27 +457,36 @@ function adaptQuality(dt: number, currentFps: number, moving: boolean): void {
   adaptTimer += dt;
 
   const target = graphics.targetFps;
-  const belowTarget = currentFps < target * 0.85;
-  const interval = belowTarget ? DROP_INTERVAL : RISE_INTERVAL;
+  const belowTarget = currentFps < target * ADAPTIVE_QUALITY_DROP_THRESHOLD;
+  const interval = belowTarget
+    ? ADAPTIVE_QUALITY_DROP_INTERVAL_SEC
+    : ADAPTIVE_QUALITY_RISE_INTERVAL_SEC;
 
   if (adaptTimer < interval) return;
   adaptTimer = 0;
 
   // Movement penalty: reduce target scale while moving for smoother experience
-  const movementPenalty = isMoving ? 0.1 : 0;
+  const movementPenalty = isMoving ? ADAPTIVE_QUALITY_MOVEMENT_PENALTY : 0;
   const maxScale = 1.0 - movementPenalty;
 
-  if (belowTarget && adaptiveScale > 0.3) {
+  if (belowTarget && adaptiveScale > ADAPTIVE_QUALITY_MIN_SCALE) {
     // Drop faster when far below target
-    const urgency = currentFps < target * 0.5 ? 3 : 1;
-    adaptiveScale = Math.max(0.3, adaptiveScale - SCALE_STEP * urgency);
-  } else if (currentFps > target * 0.95 && adaptiveScale < maxScale) {
-    adaptiveScale = Math.min(maxScale, adaptiveScale + SCALE_STEP);
+    const urgency =
+      currentFps < target * ADAPTIVE_QUALITY_CRITICAL_THRESHOLD
+        ? ADAPTIVE_QUALITY_CRITICAL_DROP_MULTIPLIER
+        : 1;
+    adaptiveScale = Math.max(
+      ADAPTIVE_QUALITY_MIN_SCALE,
+      adaptiveScale - ADAPTIVE_QUALITY_SCALE_STEP * urgency,
+    );
+  } else if (currentFps > target * ADAPTIVE_QUALITY_RISE_THRESHOLD && adaptiveScale < maxScale) {
+    adaptiveScale = Math.min(maxScale, adaptiveScale + ADAPTIVE_QUALITY_SCALE_STEP);
   }
 
   // Only resize when quantized scale actually changed
-  const quantized = Math.round(adaptiveScale / SCALE_STEP) * SCALE_STEP;
-  if (Math.abs(quantized - appliedScale) >= SCALE_STEP) {
+  const quantized =
+    Math.round(adaptiveScale / ADAPTIVE_QUALITY_SCALE_STEP) * ADAPTIVE_QUALITY_SCALE_STEP;
+  if (Math.abs(quantized - appliedScale) >= ADAPTIVE_QUALITY_SCALE_STEP) {
     appliedScale = quantized;
     applyCanvasResolution(quantized);
   }
@@ -505,8 +525,14 @@ const gameLoop = useGameLoop({
         fractal.maxIterations,
         fractal.config.dynMaxIterations ?? fractal.maxIterations,
       );
-      const iterScale = Math.max(0, Math.min(1, -Math.log10(Math.max(absDist, 0.0001)) / 4));
-      const minIter = Math.max(4, Math.ceil(dynMax * 0.3));
+      const iterScale = Math.max(
+        0,
+        Math.min(
+          1,
+          -Math.log10(Math.max(absDist, DYN_ITER_DIST_FLOOR)) / DYN_ITER_LOG_SCALE_DIVISOR,
+        ),
+      );
+      const minIter = Math.max(DYN_ITER_MIN_ABSOLUTE, Math.ceil(dynMax * DYN_ITER_MIN_FACTOR));
       effectiveIterations = Math.ceil(minIter + (dynMax - minIter) * iterScale);
     }
     currentIterations.value = effectiveIterations;
@@ -879,7 +905,7 @@ function onKeyDown(e: KeyboardEvent): void {
       radialHoldTimer = setTimeout(() => {
         radialHoldTimer = null;
         openRadialMenu(menuType);
-      }, HOLD_DELAY);
+      }, RADIAL_MENU_HOLD_DELAY_MS);
     }
   }
 }
