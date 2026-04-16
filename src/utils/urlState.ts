@@ -1,4 +1,9 @@
-import type { ColorMode, FractalType } from '../stores/fractalParams';
+import {
+  COLOR_MODES,
+  type ColorMode,
+  FRACTAL_TYPES,
+  type FractalType,
+} from '../stores/fractalParams';
 
 export interface SharedState {
   fractalType: FractalType;
@@ -16,47 +21,13 @@ export interface SharedState {
   preview: boolean;
 }
 
-const FRACTAL_TYPES = new Set([
-  'mandelbulb',
-  'mandelbox',
-  'menger',
-  'sierpinski',
-  'quatjulia',
-  'kleinian',
-  'koch3d',
-  'apollonian',
-  'juliabulb',
-  'octahedron',
-  'cantordust',
-  'burningship',
-  'tricorn',
-  'cospower2',
-  'kaleidobox',
-  'spudsville',
-  'bristorbrot',
-  'xenodreambuie',
-  'gyroid',
-]);
-const COLOR_MODES = new Set([
-  'distance',
-  'orbit_trap',
-  'iteration',
-  'ao',
-  'normal',
-  'curvature',
-  'glow',
-  'stripe',
-  'fresnel',
-  'depth',
-  'triplanar',
-  'temperature',
-  'chromatic',
-]);
+const FRACTAL_TYPE_SET = new Set<string>(FRACTAL_TYPES);
+const COLOR_MODE_SET = new Set<string>(COLOR_MODES);
 
 export function readStateFromURL(): SharedState | null {
   const params = new URLSearchParams(window.location.search);
   const f = params.get('f');
-  if (!f || !FRACTAL_TYPES.has(f)) return null;
+  if (!f || !FRACTAL_TYPE_SET.has(f)) return null;
 
   const get = (key: string, fallback: number) => {
     const v = params.get(key);
@@ -72,7 +43,7 @@ export function readStateFromURL(): SharedState | null {
     power: get('p', 8),
     maxIterations: get('i', 20),
     bailout: get('b', 2),
-    colorMode: COLOR_MODES.has(color) ? (color as ColorMode) : 'distance',
+    colorMode: COLOR_MODE_SET.has(color) ? (color as ColorMode) : 'distance',
     x: get('x', 0),
     y: get('y', 0),
     z: get('z', 3),
