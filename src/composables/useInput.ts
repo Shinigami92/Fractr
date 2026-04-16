@@ -1,4 +1,5 @@
-import { onMounted, onUnmounted } from 'vue';
+import { useEventListener } from '@vueuse/core';
+import { onScopeDispose } from 'vue';
 
 const pressedKeys = new Set<string>();
 
@@ -27,20 +28,13 @@ export function useInput() {
     return pressedKeys.has(code);
   }
 
-  onMounted(() => {
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
-    window.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('blur', onBlur);
-  });
+  useEventListener(window, 'keydown', onKeyDown);
+  useEventListener(window, 'keyup', onKeyUp);
+  useEventListener(window, 'mousedown', onMouseDown);
+  useEventListener(window, 'mouseup', onMouseUp);
+  useEventListener(window, 'blur', onBlur);
 
-  onUnmounted(() => {
-    window.removeEventListener('keydown', onKeyDown);
-    window.removeEventListener('keyup', onKeyUp);
-    window.removeEventListener('mousedown', onMouseDown);
-    window.removeEventListener('mouseup', onMouseUp);
-    window.removeEventListener('blur', onBlur);
+  onScopeDispose(() => {
     pressedKeys.clear();
   });
 
