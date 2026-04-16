@@ -58,7 +58,7 @@
     "@vitejs/plugin-vue": "6.0.6",
     "@webgpu/types": "0.1.69",
     "npm-run-all2": "8.0.4",
-    "oxfmt": "0.44.0",
+    "oxfmt": "0.45.0",
     "oxlint": "1.60.0",
     "tailwindcss": "4.2.2",
     "tsx": "4.21.0",
