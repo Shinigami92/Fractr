@@ -10,9 +10,12 @@ export class Renderer {
   private readonly pipelineManager: PipelineManager;
   private readonly uniformBuffer: UniformBuffer;
   private bindGroup: GPUBindGroup;
-  private currentFractal: FractalType = 'mandelbulb';
-  private currentColor: ColorMode = 'distance';
-  private currentRenderMode: RenderMode = 'ray';
+  // Set by App.vue via setFractalType/setColorMode/setRenderMode before the
+  // first render. Kept uninitialized here so stale defaults can't mask a
+  // missed bootstrap call.
+  private currentFractal!: FractalType;
+  private currentColor!: ColorMode;
+  private currentRenderMode!: RenderMode;
   private width = 1;
   private height = 1;
 
