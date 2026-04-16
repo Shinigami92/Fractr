@@ -1,59 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
-export type FractalType =
-  | 'mandelbulb'
-  | 'mandelbox'
-  | 'menger'
-  | 'sierpinski'
-  | 'quatjulia'
-  | 'kleinian'
-  | 'koch3d'
-  | 'apollonian'
-  | 'juliabulb'
-  | 'octahedron'
-  | 'cantordust'
-  | 'burningship'
-  | 'tricorn'
-  | 'cospower2'
-  | 'kaleidobox'
-  | 'spudsville'
-  | 'bristorbrot'
-  | 'xenodreambuie'
-  | 'gyroid';
-export type RenderMode =
-  | 'ray'
-  | 'cone'
-  | 'pathtrace'
-  | 'volume'
-  | 'softshadow'
-  | 'reflection'
-  | 'dof'
-  | 'ao_render'
-  | 'sss'
-  | 'cel'
-  | 'wireframe'
-  | 'duallighting'
-  | 'fog'
-  | 'multibounce'
-  | 'radiosity'
-  | 'bidir'
-  | 'whitted';
-export type ColorMode =
-  | 'distance'
-  | 'orbit_trap'
-  | 'iteration'
-  | 'ao'
-  | 'normal'
-  | 'curvature'
-  | 'glow'
-  | 'stripe'
-  | 'fresnel'
-  | 'depth'
-  | 'triplanar'
-  | 'temperature'
-  | 'chromatic';
-
 export interface ParamSliderConfig {
   label: string;
   min: number;
@@ -86,7 +33,12 @@ export interface FractalConfig {
   dynMaxIterations?: number;
 }
 
-export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
+// Single source of truth for fractals: adding an entry here is enough — the
+// FractalType union and FRACTAL_TYPES list are derived from this object's keys.
+// The `satisfies` clause validates shape; the public `FRACTAL_CONFIGS` is
+// re-typed below as Record<FractalType, FractalConfig> so consumers can read
+// optional fields (power, bailout, …) without narrowing per variant.
+const _FRACTAL_CONFIGS = {
   // Organic bulbs
   mandelbulb: {
     label: 'Mandelbulb',
@@ -233,71 +185,11 @@ export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = {
     stepFactor: 0.2,
     periodOffset: (power) => (2 * Math.PI) / power,
   },
-};
+} satisfies Record<string, FractalConfig>;
 
-const FRACTAL_TYPES: FractalType[] = [
-  // Organic bulbs
-  'mandelbulb',
-  'burningship',
-  'tricorn',
-  'xenodreambuie',
-  'juliabulb',
-  'cospower2',
-  'bristorbrot',
-  'quatjulia',
-  // Architectural boxes
-  'mandelbox',
-  'kaleidobox',
-  'spudsville',
-  // Geometric IFS
-  'menger',
-  'sierpinski',
-  'koch3d',
-  'octahedron',
-  'cantordust',
-  'apollonian',
-  // Exotic
-  'kleinian',
-  'gyroid',
-];
-const COLOR_MODES: ColorMode[] = [
-  // Visually striking
-  'glow',
-  'distance',
-  'chromatic',
-  'temperature',
-  'orbit_trap',
-  'stripe',
-  // Lighting-focused
-  'ao',
-  'fresnel',
-  'curvature',
-  'iteration',
-  // Analytical
-  'triplanar',
-  'normal',
-  'depth',
-];
-
-const RENDER_MODES: RenderMode[] = [
-  'ray',
-  'softshadow',
-  'reflection',
-  'whitted',
-  'duallighting',
-  'ao_render',
-  'cel',
-  'wireframe',
-  'sss',
-  'cone',
-  'pathtrace',
-  'multibounce',
-  'radiosity',
-  'bidir',
-  'dof',
-  'fog',
-  'volume',
-];
+export type FractalType = keyof typeof _FRACTAL_CONFIGS;
+export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = _FRACTAL_CONFIGS;
+export const FRACTAL_TYPES = Object.keys(FRACTAL_CONFIGS) as FractalType[];
 
 export interface ModeOption {
   value: string;
@@ -305,7 +197,9 @@ export interface ModeOption {
   short: string;
 }
 
-export const COLOR_MODE_OPTIONS: ModeOption[] = [
+// Single source of truth for color modes (order = UI cycle order).
+// ColorMode union and COLOR_MODES list are derived below.
+export const COLOR_MODE_OPTIONS = [
   { value: 'glow', label: 'Glow', short: 'Glow' },
   { value: 'distance', label: 'Distance Estimation', short: 'Distance' },
   { value: 'chromatic', label: 'Chromatic', short: 'Chromatic' },
@@ -319,9 +213,14 @@ export const COLOR_MODE_OPTIONS: ModeOption[] = [
   { value: 'triplanar', label: 'Triplanar', short: 'Triplanar' },
   { value: 'normal', label: 'Normal', short: 'Normal' },
   { value: 'depth', label: 'Depth', short: 'Depth' },
-];
+] as const satisfies readonly ModeOption[];
 
-export const RENDER_MODE_OPTIONS: ModeOption[] = [
+export type ColorMode = (typeof COLOR_MODE_OPTIONS)[number]['value'];
+export const COLOR_MODES: ColorMode[] = COLOR_MODE_OPTIONS.map((o) => o.value);
+
+// Single source of truth for render modes (order = UI cycle order).
+// RenderMode union and RENDER_MODES list are derived below.
+export const RENDER_MODE_OPTIONS = [
   { value: 'ray', label: 'Ray Marching', short: 'Ray' },
   { value: 'softshadow', label: 'Soft Shadows', short: 'Shadows' },
   { value: 'reflection', label: 'Reflections', short: 'Reflect' },
@@ -339,7 +238,10 @@ export const RENDER_MODE_OPTIONS: ModeOption[] = [
   { value: 'dof', label: 'Depth of Field', short: 'DoF' },
   { value: 'fog', label: 'Volumetric Fog', short: 'Fog' },
   { value: 'volume', label: 'Volume Rendering', short: 'Volume' },
-];
+] as const satisfies readonly ModeOption[];
+
+export type RenderMode = (typeof RENDER_MODE_OPTIONS)[number]['value'];
+export const RENDER_MODES: RenderMode[] = RENDER_MODE_OPTIONS.map((o) => o.value);
 
 export const useFractalParams = defineStore('fractalParams', () => {
   const fractalType = ref<FractalType>('mandelbulb');

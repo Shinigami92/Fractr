@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 const props = defineProps<{
-  options: { value: string; short: string }[];
+  options: readonly { readonly value: string; readonly short: string }[];
   selectedIndex: number;
   currentValue: string;
   cursorX: number;
