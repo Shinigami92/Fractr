@@ -13,7 +13,7 @@ import WebGPUCanvas from './components/WebGPUCanvas.vue';
 import { useAdaptiveQuality } from './composables/useAdaptiveQuality';
 import { useGameLoop } from './composables/useGameLoop';
 import { useInput } from './composables/useInput';
-import { useInputMode } from './composables/useInputMode';
+import { installInputModeDetection, useInputMode } from './composables/useInputMode';
 import { usePointerLock } from './composables/usePointerLock';
 import { useRadialMenu } from './composables/useRadialMenu';
 import { useTouchControls } from './composables/useTouchControls';
@@ -364,7 +364,8 @@ function buildLiveSceneParams(overrides?: { maxIterations?: number; maxRaySteps?
 
 const { isPressed } = useInput();
 const pointerLock = usePointerLock(canvasRef);
-const { isTouchActive, mount: mountInputMode, unmount: unmountInputMode } = useInputMode();
+installInputModeDetection();
+const { isTouchActive } = useInputMode();
 const touchControls = useTouchControls();
 
 let isMovingThisFrame = false;
@@ -537,7 +538,6 @@ const previewLoop = useGameLoop({
 
 async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
   canvasRef.value = canvas;
-  mountInputMode();
   touchControls.mount(canvas);
 
   try {
@@ -797,7 +797,6 @@ useEventListener(window, 'wheel', onWheel, { passive: false });
 onUnmounted(() => {
   gameLoop.stop();
   previewLoop.stop();
-  unmountInputMode();
   touchControls.unmount();
   renderer?.destroy();
 });

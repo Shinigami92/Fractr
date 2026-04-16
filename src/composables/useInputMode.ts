@@ -1,3 +1,4 @@
+import { useEventListener } from '@vueuse/core';
 import { computed, ref } from 'vue';
 
 export type InputMode = 'pointer' | 'touch';
@@ -9,7 +10,6 @@ const initialMode: InputMode =
     ? 'touch'
     : 'pointer';
 const inputMode = ref<InputMode>(initialMode);
-let mounted = false;
 // Mobile browsers synthesize mousemove after touch events; ignore those.
 let lastTouchTime = 0;
 const TOUCH_COOLDOWN = 1000;
@@ -32,26 +32,20 @@ function onKeyDown(): void {
   }
 }
 
+/**
+ * Install global input-mode detection listeners. Call once from the root
+ * component (App.vue). Other consumers should call `useInputMode()` to
+ * read the reactive mode without re-attaching listeners.
+ */
+export function installInputModeDetection(): void {
+  useEventListener(window, 'touchstart', onTouchStart, { passive: true });
+  useEventListener(window, 'mousemove', onMouseMove, { passive: true });
+  useEventListener(window, 'keydown', onKeyDown, { passive: true });
+}
+
 export function useInputMode() {
-  function mount(): void {
-    if (mounted) return;
-    mounted = true;
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    window.addEventListener('keydown', onKeyDown, { passive: true });
-  }
-
-  function unmount(): void {
-    mounted = false;
-    window.removeEventListener('touchstart', onTouchStart);
-    window.removeEventListener('mousemove', onMouseMove);
-    window.removeEventListener('keydown', onKeyDown);
-  }
-
   return {
     inputMode,
     isTouchActive: computed(() => inputMode.value === 'touch'),
-    mount,
-    unmount,
   };
 }
