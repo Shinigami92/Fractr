@@ -366,7 +366,7 @@ const { isPressed } = useInput();
 const pointerLock = usePointerLock(canvasRef);
 installInputModeDetection();
 const { isTouchActive } = useInputMode();
-const touchControls = useTouchControls();
+const touchControls = useTouchControls(canvasRef);
 
 let isMovingThisFrame = false;
 const adaptiveQuality = useAdaptiveQuality({ onScaleChange: applyCanvasResolution });
@@ -538,7 +538,6 @@ const previewLoop = useGameLoop({
 
 async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
   canvasRef.value = canvas;
-  touchControls.mount(canvas);
 
   try {
     const ctx = await WebGPUContext.create(canvas);
@@ -797,7 +796,6 @@ useEventListener(window, 'wheel', onWheel, { passive: false });
 onUnmounted(() => {
   gameLoop.stop();
   previewLoop.stop();
-  touchControls.unmount();
   renderer?.destroy();
 });
 </script>

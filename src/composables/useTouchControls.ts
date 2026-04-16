@@ -1,4 +1,5 @@
-import { ref } from 'vue';
+import { useEventListener } from '@vueuse/core';
+import { type Ref, ref } from 'vue';
 
 export interface TouchState {
   active: boolean;
@@ -11,7 +12,7 @@ export interface TouchState {
 const DEAD_ZONE = 0.05;
 const MAX_RADIUS = 80;
 
-export function useTouchControls() {
+export function useTouchControls(canvas: Ref<HTMLCanvasElement | null>) {
   const leftTouch = ref<TouchState | null>(null);
   const rightTouch = ref<TouchState | null>(null);
 
@@ -25,8 +26,6 @@ export function useTouchControls() {
   // Previous position for right-touch delta calculation
   let rightPrevX = 0;
   let rightPrevY = 0;
-
-  let canvas: HTMLCanvasElement | null = null;
 
   function screenMidX(): number {
     return window.innerWidth / 2;
@@ -126,29 +125,15 @@ export function useTouchControls() {
     return { dx, dy };
   }
 
-  function mount(el: HTMLCanvasElement): void {
-    canvas = el;
-    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
-    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
-    canvas.addEventListener('touchend', onTouchEnd, { passive: false });
-    canvas.addEventListener('touchcancel', onTouchEnd, { passive: false });
-  }
-
-  function unmount(): void {
-    if (!canvas) return;
-    canvas.removeEventListener('touchstart', onTouchStart);
-    canvas.removeEventListener('touchmove', onTouchMove);
-    canvas.removeEventListener('touchend', onTouchEnd);
-    canvas.removeEventListener('touchcancel', onTouchEnd);
-    canvas = null;
-  }
+  useEventListener(canvas, 'touchstart', onTouchStart, { passive: false });
+  useEventListener(canvas, 'touchmove', onTouchMove, { passive: false });
+  useEventListener(canvas, 'touchend', onTouchEnd, { passive: false });
+  useEventListener(canvas, 'touchcancel', onTouchEnd, { passive: false });
 
   return {
     leftTouch,
     rightTouch,
     getMovementVector,
     consumeLookDelta,
-    mount,
-    unmount,
   };
 }
