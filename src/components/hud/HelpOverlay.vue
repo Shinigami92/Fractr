@@ -27,88 +27,88 @@ function display(code: string): string {
   return code;
 }
 
-const groups: KeyGroup[] = [
-  {
-    title: 'Movement',
-    entries: [
-      {
-        key: `${display(controls.keybindings.moveForward)} ${display(controls.keybindings.moveLeft)} ${display(controls.keybindings.moveBackward)} ${display(controls.keybindings.moveRight)}`,
-        label: 'Move',
-      },
-      { key: 'Mouse', label: 'Look' },
-      {
-        key: `${display(controls.keybindings.rollLeft)} / ${display(controls.keybindings.rollRight)}`,
-        label: 'Roll',
-      },
-      {
-        key: `Shift+${display(controls.keybindings.rollLeft)} / Shift+${display(controls.keybindings.rollRight)}`,
-        label: 'Up / Down',
-      },
-      { key: 'Shift', label: 'Sprint (2x)' },
-      { key: 'Left click', label: 'Move forward' },
-      { key: 'Right click', label: 'Move backward' },
-    ],
-  },
-  {
-    title: 'Modes',
-    entries: [
-      {
-        key: `${display(controls.keybindings.cycleColorMode)} / Shift+${display(controls.keybindings.cycleColorMode)}`,
-        label: 'Cycle color mode',
-      },
-      {
-        key: `${display(controls.keybindings.cycleRenderMode)} / Shift+${display(controls.keybindings.cycleRenderMode)}`,
-        label: 'Cycle render mode',
-      },
-      {
-        key: `${display(controls.keybindings.cycleFractalType)} / Shift+${display(controls.keybindings.cycleFractalType)}`,
-        label: 'Cycle fractal',
-      },
-      {
-        key: `Hold ${display(controls.keybindings.cycleColorMode)} / ${display(controls.keybindings.cycleRenderMode)} / ${display(controls.keybindings.cycleFractalType)}`,
-        label: 'Open radial menu',
-      },
-    ],
-  },
-  {
-    title: 'Fractal Parameters',
-    entries: [
-      {
-        key: display(controls.keybindings.toggleDynamicIterations),
-        label: 'Toggle dynamic iterations',
-      },
-      {
-        key: `${display(controls.keybindings.increaseIterations)} / ${display(controls.keybindings.decreaseIterations)}`,
-        label: 'Iterations +/-',
-      },
-      {
-        key: `${display(controls.keybindings.increaseBailout)} / ${display(controls.keybindings.decreaseBailout)}`,
-        label: 'Bailout +/-',
-      },
-      { key: display(controls.keybindings.toggleAnimatedColors), label: 'Toggle animated colors' },
-      { key: 'Scroll wheel', label: 'Adjust max iterations' },
-    ],
-  },
-  {
-    title: 'Saves & Sharing',
-    entries: [
-      { key: display(controls.keybindings.quickSave), label: 'Quick save location' },
-      { key: display(controls.keybindings.screenshot), label: 'Screenshot to clipboard' },
-      { key: display(controls.keybindings.openSaves), label: 'Browse saved locations' },
-      { key: display(controls.keybindings.copyShareURL), label: 'Copy share URL' },
-    ],
-  },
-  {
-    title: 'UI',
-    entries: [
-      { key: 'F1', label: 'Toggle this overlay' },
-      { key: display(controls.keybindings.toggleHud), label: 'Toggle HUD' },
-      { key: display(controls.keybindings.toggleCrosshair), label: 'Toggle crosshair' },
-      { key: 'Esc', label: 'Pause / back' },
-      { key: 'Ctrl', label: 'Unlock cursor (no pause)' },
-    ],
-  },
-];
+const keyboardGroups = computed<KeyGroup[]>(() => {
+  const kb = controls.keybindings;
+  return [
+    {
+      title: 'Movement',
+      entries: [
+        {
+          key: `${display(kb.moveForward)} ${display(kb.moveLeft)} ${display(kb.moveBackward)} ${display(kb.moveRight)}`,
+          label: 'Move',
+        },
+        { key: 'Mouse', label: 'Look' },
+        {
+          key: `${display(kb.rollLeft)} / ${display(kb.rollRight)}`,
+          label: 'Roll',
+        },
+        {
+          key: `Shift+${display(kb.rollLeft)} / Shift+${display(kb.rollRight)}`,
+          label: 'Up / Down',
+        },
+        { key: 'Shift', label: 'Sprint (2x)' },
+        { key: 'Left click', label: 'Move forward' },
+        { key: 'Right click', label: 'Move backward' },
+      ],
+    },
+    {
+      title: 'Modes',
+      entries: [
+        {
+          key: `${display(kb.cycleColorMode)} / Shift+${display(kb.cycleColorMode)}`,
+          label: 'Cycle color mode',
+        },
+        {
+          key: `${display(kb.cycleRenderMode)} / Shift+${display(kb.cycleRenderMode)}`,
+          label: 'Cycle render mode',
+        },
+        {
+          key: `${display(kb.cycleFractalType)} / Shift+${display(kb.cycleFractalType)}`,
+          label: 'Cycle fractal',
+        },
+        {
+          key: `Hold ${display(kb.cycleColorMode)} / ${display(kb.cycleRenderMode)} / ${display(kb.cycleFractalType)}`,
+          label: 'Open radial menu',
+        },
+      ],
+    },
+    {
+      title: 'Fractal Parameters',
+      entries: [
+        { key: display(kb.toggleDynamicIterations), label: 'Toggle dynamic iterations' },
+        {
+          key: `${display(kb.increaseIterations)} / ${display(kb.decreaseIterations)}`,
+          label: 'Iterations +/-',
+        },
+        {
+          key: `${display(kb.increaseBailout)} / ${display(kb.decreaseBailout)}`,
+          label: 'Bailout +/-',
+        },
+        { key: display(kb.toggleAnimatedColors), label: 'Toggle animated colors' },
+        { key: 'Scroll wheel', label: 'Adjust max iterations' },
+      ],
+    },
+    {
+      title: 'Saves & Sharing',
+      entries: [
+        { key: display(kb.quickSave), label: 'Quick save location' },
+        { key: display(kb.screenshot), label: 'Screenshot to clipboard' },
+        { key: display(kb.openSaves), label: 'Browse saved locations' },
+        { key: display(kb.copyShareURL), label: 'Copy share URL' },
+      ],
+    },
+    {
+      title: 'UI',
+      entries: [
+        { key: 'F1', label: 'Toggle this overlay' },
+        { key: display(kb.toggleHud), label: 'Toggle HUD' },
+        { key: display(kb.toggleCrosshair), label: 'Toggle crosshair' },
+        { key: 'Esc', label: 'Pause / back' },
+        { key: 'Ctrl', label: 'Unlock cursor (no pause)' },
+      ],
+    },
+  ];
+});
 
 const touchGroups: KeyGroup[] = [
   {
@@ -135,7 +135,7 @@ const touchGroups: KeyGroup[] = [
   },
 ];
 
-const activeGroups = computed(() => (isTouchActive.value ? touchGroups : groups));
+const activeGroups = computed(() => (isTouchActive.value ? touchGroups : keyboardGroups.value));
 </script>
 
 <template>
