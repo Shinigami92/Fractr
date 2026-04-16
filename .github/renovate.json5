@@ -1,0 +1,67 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    "schedule:earlyMondays",
+    "group:allNonMajor",
+    ":prHourlyLimitNone",
+    "helpers:disableTypesNodeMajor"
+  ],
+  "timezone": "Europe/Berlin",
+  "labels": ["dependencies"],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "reviewersFromCodeOwners": true,
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "groupName": "devDependencies",
+      "matchDepTypes": ["devDependencies"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "groupName": "dependencies",
+      "matchDepTypes": ["dependencies"],
+      "rangeStrategy": "replace"
+    },
+    {
+      "groupName": "peerDependencies",
+      "matchDepTypes": ["peerDependencies"],
+      "rangeStrategy": "widen"
+    },
+    {
+      "groupName": "engines",
+      "matchDepTypes": ["engines"],
+      "rangeStrategy": "replace"
+    },
+    {
+      "groupName": "oxlint",
+      "matchPackageNames": ["oxlint", "oxlint-tsgolint"]
+    },
+    {
+      "groupName": "oxfmt",
+      "matchPackageNames": ["oxfmt"]
+    },
+    {
+      "groupName": "typescript",
+      "matchPackageNames": ["typescript"]
+    },
+    {
+      "groupName": "vue",
+      "matchPackageNames": ["vue", "vue-tsc", "@vitejs/plugin-vue"]
+    },
+    {
+      "groupName": "tailwindcss",
+      "matchPackageNames": ["tailwindcss", "@tailwindcss/**"]
+    },
+    {
+      "groupName": "playwright",
+      "matchPackageNames": ["@playwright/test", "playwright"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "assignees": ["@Shinigami92"]
+  }
+}
