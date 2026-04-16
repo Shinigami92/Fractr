@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, onUnmounted, ref, reactive } from 'vue';
 import {
   type SaveEntry,
   deleteSave,
@@ -160,6 +160,13 @@ function fractalLabel(type: FractalType): string {
 }
 
 onMounted(loadSaves);
+
+onUnmounted(() => {
+  for (const url of Object.values(thumbnailUrls.value)) {
+    URL.revokeObjectURL(url);
+  }
+  thumbnailUrls.value = {};
+});
 </script>
 
 <template>
