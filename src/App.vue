@@ -329,7 +329,6 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
         power: s.power,
         maxIterations: s.maxIterations,
         bailout: s.bailout,
-        colorMode: COLOR_MODE_MAP[s.colorMode],
         maxRaySteps: graphics.maxRaySteps,
         resolutionScale: 1,
         animatedColors: false,
@@ -346,7 +345,6 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
       power: s.power,
       maxIterations: s.maxIterations,
       bailout: s.bailout,
-      colorMode: COLOR_MODE_MAP[s.colorMode],
       maxRaySteps: graphics.maxRaySteps,
       resolutionScale: 1,
       animatedColors: false,
@@ -424,22 +422,6 @@ function computeOriginOffset(): [number, number, number] | undefined {
     Math.round(camera.position[2]! / period) * period,
   ];
 }
-
-const COLOR_MODE_MAP: Record<ColorMode, number> = {
-  distance: 0,
-  orbit_trap: 1,
-  iteration: 2,
-  ao: 3,
-  normal: 4,
-  curvature: 5,
-  glow: 6,
-  stripe: 7,
-  fresnel: 8,
-  depth: 9,
-  triplanar: 10,
-  temperature: 11,
-  chromatic: 12,
-};
 
 const { isPressed } = useInput();
 const pointerLock = usePointerLock(canvasRef);
@@ -603,7 +585,6 @@ const gameLoop = useGameLoop({
         power: fractal.power,
         maxIterations: effectiveIterations,
         bailout: fractal.bailout,
-        colorMode: COLOR_MODE_MAP[fractal.colorMode],
         maxRaySteps: graphics.maxRaySteps,
         resolutionScale: graphics.resolutionScale,
         animatedColors: graphics.animatedColors,
@@ -648,7 +629,6 @@ const previewLoop = useGameLoop({
         power: fractal.power,
         maxIterations: lowQuality ? 8 : fractal.maxIterations,
         bailout: fractal.bailout,
-        colorMode: COLOR_MODE_MAP[fractal.colorMode],
         maxRaySteps: lowQuality ? 64 : graphics.maxRaySteps,
         resolutionScale: graphics.resolutionScale,
         animatedColors: graphics.animatedColors,

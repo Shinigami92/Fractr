@@ -8,13 +8,12 @@
  * offset 88: power                  f32      (4 bytes)
  * offset 92: maxIterations          u32      (4 bytes)
  * offset 96: bailout                f32      (4 bytes)
- * offset 100: colorMode             u32      (4 bytes)
- * offset 104: maxRaySteps           u32      (4 bytes)
- * offset 108: resolutionScale       f32      (4 bytes)
- * offset 112: frameCount            u32      (4 bytes)
- * offset 116: animatedColors        u32      (4 bytes)
- * offset 120: stepFactor            f32      (4 bytes)
- * Total: 128 bytes (aligned to 16 = 128, padded from 124)
+ * offset 100: maxRaySteps           u32      (4 bytes)
+ * offset 104: resolutionScale       f32      (4 bytes)
+ * offset 108: frameCount            u32      (4 bytes)
+ * offset 112: animatedColors        u32      (4 bytes)
+ * offset 116: stepFactor            f32      (4 bytes)
+ * Total: 128 bytes (struct aligns to 16; 120 padded to 128)
  */
 
 const BUFFER_SIZE = 128;
@@ -67,28 +66,24 @@ export class UniformBuffer {
     this.floatView[24] = b;
   }
 
-  setColorMode(mode: number): void {
-    this.uintView[25] = mode;
-  }
-
   setMaxRaySteps(steps: number): void {
-    this.uintView[26] = steps;
+    this.uintView[25] = steps;
   }
 
   setResolutionScale(scale: number): void {
-    this.floatView[27] = scale;
+    this.floatView[26] = scale;
   }
 
   setFrameCount(count: number): void {
-    this.uintView[28] = count;
+    this.uintView[27] = count;
   }
 
   setAnimatedColors(enabled: boolean): void {
-    this.uintView[29] = enabled ? 1 : 0;
+    this.uintView[28] = enabled ? 1 : 0;
   }
 
   setStepFactor(f: number): void {
-    this.floatView[30] = f;
+    this.floatView[29] = f;
   }
 
   upload(device: GPUDevice): void {

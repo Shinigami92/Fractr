@@ -139,7 +139,6 @@ export class Renderer {
       power: number;
       maxIterations: number;
       bailout: number;
-      colorMode: number;
       maxRaySteps: number;
       resolutionScale: number;
       animatedColors: boolean;
@@ -163,7 +162,6 @@ export class Renderer {
     this.uniformBuffer.setPower(params.power);
     this.uniformBuffer.setMaxIterations(params.maxIterations);
     this.uniformBuffer.setBailout(params.bailout);
-    this.uniformBuffer.setColorMode(params.colorMode);
     this.uniformBuffer.setMaxRaySteps(params.maxRaySteps);
     this.uniformBuffer.setResolutionScale(params.resolutionScale);
     this.uniformBuffer.setFrameCount(this._sampleCount);

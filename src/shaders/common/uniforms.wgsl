@@ -6,7 +6,6 @@ struct Uniforms {
   power: f32,
   maxIterations: u32,
   bailout: f32,
-  colorMode: u32,
   maxRaySteps: u32,
   resolutionScale: f32,
   frameCount: u32,
