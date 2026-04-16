@@ -537,7 +537,6 @@ const previewLoop = useGameLoop({
 
 async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
   canvasRef.value = canvas;
-  pointerLock.mount();
   mountInputMode();
   touchControls.mount(canvas);
 
@@ -798,7 +797,6 @@ useEventListener(window, 'wheel', onWheel, { passive: false });
 onUnmounted(() => {
   gameLoop.stop();
   previewLoop.stop();
-  pointerLock.unmount();
   unmountInputMode();
   touchControls.unmount();
   renderer?.destroy();

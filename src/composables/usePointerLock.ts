@@ -1,3 +1,4 @@
+import { useEventListener } from '@vueuse/core';
 import { type Ref, ref } from 'vue';
 
 export function usePointerLock(canvas: Ref<HTMLCanvasElement | null>) {
@@ -38,15 +39,8 @@ export function usePointerLock(canvas: Ref<HTMLCanvasElement | null>) {
     return { dx, dy };
   }
 
-  function mount(): void {
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('pointerlockchange', onLockChange);
-  }
+  useEventListener(document, 'mousemove', onMouseMove);
+  useEventListener(document, 'pointerlockchange', onLockChange);
 
-  function unmount(): void {
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('pointerlockchange', onLockChange);
-  }
-
-  return { isLocked, requestLock, exitLock, consumeMovement, mount, unmount };
+  return { isLocked, requestLock, exitLock, consumeMovement };
 }
