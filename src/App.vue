@@ -10,21 +10,13 @@ import SavesBrowser from './components/menu/SavesBrowser.vue';
 import SettingsMenu from './components/menu/SettingsMenu.vue';
 import TitleScreen from './components/menu/TitleScreen.vue';
 import WebGPUCanvas from './components/WebGPUCanvas.vue';
+import { useAdaptiveQuality } from './composables/useAdaptiveQuality';
 import { useGameLoop } from './composables/useGameLoop';
 import { useInput } from './composables/useInput';
 import { useInputMode } from './composables/useInputMode';
 import { usePointerLock } from './composables/usePointerLock';
 import { useTouchControls } from './composables/useTouchControls';
 import {
-  ADAPTIVE_QUALITY_CRITICAL_DROP_MULTIPLIER,
-  ADAPTIVE_QUALITY_CRITICAL_THRESHOLD,
-  ADAPTIVE_QUALITY_DROP_INTERVAL_SEC,
-  ADAPTIVE_QUALITY_DROP_THRESHOLD,
-  ADAPTIVE_QUALITY_MIN_SCALE,
-  ADAPTIVE_QUALITY_MOVEMENT_PENALTY,
-  ADAPTIVE_QUALITY_RISE_INTERVAL_SEC,
-  ADAPTIVE_QUALITY_RISE_THRESHOLD,
-  ADAPTIVE_QUALITY_SCALE_STEP,
   DYN_ITER_DIST_FLOOR,
   DYN_ITER_LOG_SCALE_DIVISOR,
   DYN_ITER_MIN_ABSOLUTE,
@@ -447,51 +439,7 @@ const { isTouchActive, mount: mountInputMode, unmount: unmountInputMode } = useI
 const touchControls = useTouchControls();
 
 let isMovingThisFrame = false;
-let adaptiveScale = 1.0;
-let appliedScale = 1.0;
-let adaptTimer = 0;
-let isMoving = false;
-function adaptQuality(dt: number, currentFps: number, moving: boolean): void {
-  if (!graphics.adaptiveQuality) return;
-
-  isMoving = moving;
-  adaptTimer += dt;
-
-  const target = graphics.targetFps;
-  const belowTarget = currentFps < target * ADAPTIVE_QUALITY_DROP_THRESHOLD;
-  const interval = belowTarget
-    ? ADAPTIVE_QUALITY_DROP_INTERVAL_SEC
-    : ADAPTIVE_QUALITY_RISE_INTERVAL_SEC;
-
-  if (adaptTimer < interval) return;
-  adaptTimer = 0;
-
-  // Movement penalty: reduce target scale while moving for smoother experience
-  const movementPenalty = isMoving ? ADAPTIVE_QUALITY_MOVEMENT_PENALTY : 0;
-  const maxScale = 1.0 - movementPenalty;
-
-  if (belowTarget && adaptiveScale > ADAPTIVE_QUALITY_MIN_SCALE) {
-    // Drop faster when far below target
-    const urgency =
-      currentFps < target * ADAPTIVE_QUALITY_CRITICAL_THRESHOLD
-        ? ADAPTIVE_QUALITY_CRITICAL_DROP_MULTIPLIER
-        : 1;
-    adaptiveScale = Math.max(
-      ADAPTIVE_QUALITY_MIN_SCALE,
-      adaptiveScale - ADAPTIVE_QUALITY_SCALE_STEP * urgency,
-    );
-  } else if (currentFps > target * ADAPTIVE_QUALITY_RISE_THRESHOLD && adaptiveScale < maxScale) {
-    adaptiveScale = Math.min(maxScale, adaptiveScale + ADAPTIVE_QUALITY_SCALE_STEP);
-  }
-
-  // Only resize when quantized scale actually changed
-  const quantized =
-    Math.round(adaptiveScale / ADAPTIVE_QUALITY_SCALE_STEP) * ADAPTIVE_QUALITY_SCALE_STEP;
-  if (Math.abs(quantized - appliedScale) >= ADAPTIVE_QUALITY_SCALE_STEP) {
-    appliedScale = quantized;
-    applyCanvasResolution(quantized);
-  }
-}
+const adaptiveQuality = useAdaptiveQuality({ onScaleChange: applyCanvasResolution });
 
 const gameLoop = useGameLoop({
   update(dt) {
@@ -560,7 +508,7 @@ const gameLoop = useGameLoop({
       touchActive;
 
     // Adaptive quality
-    adaptQuality(dt, gameLoop.fps.value, moving);
+    adaptiveQuality.update(dt, gameLoop.fps.value, moving);
 
     if (isPressed(bindings.moveForward) || isPressed('Mouse0')) camera.moveForward(speed);
     if (isPressed(bindings.moveBackward) || isPressed('Mouse2')) camera.moveForward(-speed);
@@ -749,9 +697,7 @@ watch(
         resetCamera();
       }
       startFromURL = false;
-      adaptiveScale = 1.0;
-      appliedScale = 1.0;
-      adaptTimer = 0;
+      adaptiveQuality.reset();
       applyCanvasResolution(1);
       previewLoop.stop();
       gameLoop.start();
