@@ -52,6 +52,7 @@ import volumeSrc from '../../shaders/volume.wgsl?raw';
 import whittedSrc from '../../shaders/whitted.wgsl?raw';
 import wireframeSrc from '../../shaders/wireframe.wgsl?raw';
 import type { ColorMode, FractalType, RenderMode } from '../../stores/fractalParams';
+import type { WebGPUContext } from './WebGPUContext';
 
 const MARCHER_SOURCES: Record<RenderMode, string> = {
   ray: raymarcherSrc,
@@ -72,7 +73,6 @@ const MARCHER_SOURCES: Record<RenderMode, string> = {
   bidir: bidirSrc,
   whitted: whittedSrc,
 };
-import type { WebGPUContext } from './WebGPUContext';
 
 const SDF_SOURCES: Record<FractalType, string> = {
   mandelbulb: mandelbulbSrc,
