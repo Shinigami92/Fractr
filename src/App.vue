@@ -253,7 +253,12 @@ async function takeScreenshot(): Promise<void> {
   }
 }
 
-function loadSavedState(state: SavedState): void {
+/**
+ * Apply a saved state to the live scene: fractal/graphics store fields,
+ * camera pose, and renderer mode state. Triggers a fresh accumulation.
+ * Does not transition appState.
+ */
+function applyState(state: SavedState): void {
   fractal.fractalType = state.fractalType;
   fractal.power = state.power;
   fractal.maxIterations = state.maxIterations;
@@ -269,6 +274,10 @@ function loadSavedState(state: SavedState): void {
   renderer?.setColorMode(state.colorMode);
   renderer?.setRenderMode(state.renderMode);
   renderer?.resetAccumulation();
+}
+
+function loadSavedState(state: SavedState): void {
+  applyState(state);
   startFromURL = true; // prevent camera reset on loading → playing transition
   appState.startGame();
 }
@@ -297,14 +306,7 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
   }
 
   // Restore previous state
-  renderer.setFractalType(prevState.fractalType);
-  renderer.setColorMode(prevState.colorMode);
-  renderer.setRenderMode(prevState.renderMode);
-  camera.position[0] = prevState.x;
-  camera.position[1] = prevState.y;
-  camera.position[2] = prevState.z;
-  camera.setFromEuler(prevState.yaw, prevState.pitch, prevState.roll);
-  renderer.resetAccumulation();
+  applyState(prevState);
 
   // Restart preview loop and refresh thumbnails in the browser
   previewLoop.start();
