@@ -254,33 +254,13 @@ function resetAll(): void {
               controls.mouseSensitivity.toFixed(4)
             }}</span>
           </label>
-          <div v-if="isTouchActive" class="mt-2 text-xs text-white/30">
-            <p>Left half drag — Move</p>
-            <p>Right half drag — Look around</p>
-            <p>Pause button — Open menu</p>
-            <p>? button — Controls overlay</p>
-          </div>
-          <div v-else class="mt-2 text-xs text-white/30">
-            <p>W/A/S/D — Move</p>
-            <p>Q/E — Roll</p>
-            <p>Shift+Q/E — Up/Down</p>
-            <p>Mouse — Look</p>
-            <p>Escape — Pause</p>
-            <p>F1 — Controls Overlay</p>
-            <p>F3 — Toggle HUD</p>
-            <p>H — Toggle Crosshair</p>
-            <p>C — Cycle Color Mode</p>
-            <p>V — Cycle Fractal Type</p>
-            <p>I — Toggle Dynamic Iterations</p>
-            <p>. / , — Increase/Decrease Max Iterations</p>
-            <p>K / J — Increase/Decrease Bailout</p>
-            <p>G — Toggle Animated Colors</p>
-            <p>R — Cycle Render Mode</p>
-            <p>F5 — Quick Save Location</p>
-            <p>F6 — Screenshot to Clipboard</p>
-            <p>B — Saved Locations</p>
-            <p>P — Copy Share URL</p>
-          </div>
+          <p class="mt-2 text-xs text-white/30">
+            {{
+              isTouchActive
+                ? 'Tap ? in-game for the full control reference.'
+                : 'Press F1 in-game for the full control reference. Rebinding UI coming later.'
+            }}
+          </p>
         </div>
       </div>
 
