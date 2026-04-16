@@ -28,6 +28,11 @@ import { evaluateSDF } from './engine/fractals/sdf';
 import { WebGPUContext } from './engine/gpu/WebGPUContext';
 import { Renderer } from './engine/Renderer';
 import { type SaveEntry, type SavedState, saveState, saveThumbnail } from './services/savesDB';
+import {
+  captureCanvasPng,
+  captureCanvasThumbnail,
+  renderSavedStateToBlob,
+} from './services/thumbnailGenerator';
 import { useAppState } from './stores/appState';
 import { useControlSettings } from './stores/controlSettings';
 import {
@@ -228,28 +233,16 @@ function getCurrentState(): SavedState {
 
 async function quickSave(): Promise<void> {
   const state = getCurrentState();
-  // Capture thumbnail from current canvas
   const canvas = canvasRef.value;
-  let thumbnail: Blob | undefined;
-  if (canvas) {
-    thumbnail = await new Promise<Blob | undefined>((resolve) => {
-      canvas.toBlob((blob) => resolve(blob ?? undefined), 'image/webp', 0.7);
-    });
-  }
+  const thumbnail = canvas ? await captureCanvasThumbnail(canvas) : undefined;
   const saved = await saveState(state, thumbnail);
-  if (saved) {
-    showNotification('Location saved');
-  } else {
-    showNotification('Already saved');
-  }
+  showNotification(saved ? 'Location saved' : 'Already saved');
 }
 
 async function takeScreenshot(): Promise<void> {
   const canvas = canvasRef.value;
   if (!canvas) return;
-  const blob = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob((b) => resolve(b), 'image/png');
-  });
+  const blob = await captureCanvasPng(canvas);
   if (!blob) return;
   try {
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
@@ -296,79 +289,15 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
 
   // Save current state to restore after
   const prevState = getCurrentState();
+  const deps = { renderer, camera, canvas, maxRaySteps: graphics.maxRaySteps };
 
   for (const save of saves) {
-    const s = save.state;
-    // Temporarily set renderer state
-    renderer.setFractalType(s.fractalType);
-    renderer.setColorMode(s.colorMode);
-    renderer.setRenderMode(s.renderMode);
-    camera.position[0] = s.x;
-    camera.position[1] = s.y;
-    camera.position[2] = s.z;
-    camera.setFromEuler(s.yaw, s.pitch, s.roll);
-
-    const saveCfg = FRACTAL_CONFIGS[s.fractalType];
-    const saveStepFactor = saveCfg.stepFactor ?? 1;
-    let saveOriginOffset: [number, number, number] | undefined;
-    const savePeriodFn = saveCfg.periodOffset;
-    if (savePeriodFn) {
-      const period = savePeriodFn(s.power);
-      saveOriginOffset = [
-        Math.round(s.x / period) * period,
-        Math.round(s.y / period) * period,
-        Math.round(s.z / period) * period,
-      ];
-    }
-    renderer.updateUniforms(
-      camera,
-      {
-        power: s.power,
-        maxIterations: s.maxIterations,
-        bailout: s.bailout,
-        maxRaySteps: graphics.maxRaySteps,
-        resolutionScale: 1,
-        animatedColors: false,
-        stepFactor: saveStepFactor,
-        originOffset: saveOriginOffset,
-      },
-      0,
-    );
-    renderer.resetAccumulation();
-
-    // Time-based rendering: keep rendering until enough time has passed
-    const renderTimeMs = Math.max(300, s.maxIterations * 30);
-    const params = {
-      power: s.power,
-      maxIterations: s.maxIterations,
-      bailout: s.bailout,
-      maxRaySteps: graphics.maxRaySteps,
-      resolutionScale: 1,
-      animatedColors: false,
-      stepFactor: saveStepFactor,
-      originOffset: saveOriginOffset,
-    };
-
-    const startMs = performance.now();
-    while (performance.now() - startMs < renderTimeMs) {
-      renderer.updateUniforms(camera, params, 0);
-      renderer.render(false);
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-    }
-
-    // Extra settle for GPU flush
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    const blob = await new Promise<Blob | undefined>((resolve) => {
-      canvas.toBlob((b) => resolve(b ?? undefined), 'image/webp', 0.7);
-    });
-
+    const blob = await renderSavedStateToBlob(deps, save.state);
     if (blob) {
       await saveThumbnail(save.stateHash, blob);
       // Show thumbnail immediately in the browser
       savesBrowserRef.value?.setThumbnail(save.stateHash, blob);
     }
-
     // Delay between captures
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
