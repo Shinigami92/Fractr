@@ -278,7 +278,7 @@ function applyState(state: SavedState): void {
 
 function loadSavedState(state: SavedState): void {
   applyState(state);
-  startFromURL = true; // prevent camera reset on loading → playing transition
+  startFromURL = true; // suppress the camera reset that would otherwise fire on entering 'playing'
   appState.startGame();
 }
 
@@ -608,7 +608,10 @@ watch(
   () => appState.mode,
   (mode, oldMode) => {
     if (mode === 'playing') {
-      if (oldMode === 'loading' && !startFromURL) {
+      // Reset camera for fresh starts (title/select/saves); resume from
+      // pause keeps current pose. startFromURL suppresses reset when a
+      // caller has already positioned the camera (URL deep-link, save load).
+      if (oldMode !== 'paused' && !startFromURL) {
         resetCamera();
       }
       startFromURL = false;
@@ -619,8 +622,6 @@ watch(
       if (!isTouchActive.value) {
         pointerLock.requestLock();
       }
-    } else if (mode === 'loading') {
-      appState.onLoaded();
     } else {
       gameLoop.stop();
       if (mode === 'title' || mode === 'select') {
