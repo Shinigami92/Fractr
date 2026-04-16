@@ -22,6 +22,10 @@ import {
   DYN_ITER_LOG_SCALE_DIVISOR,
   DYN_ITER_MIN_ABSOLUTE,
   DYN_ITER_MIN_FACTOR,
+  MOUSE_BUTTON_BROWSER_FORWARD,
+  PREVIEW_MAX_ITERATIONS,
+  PREVIEW_MAX_RAY_STEPS,
+  PREVIEW_RESOLUTION_SCALE,
 } from './constants/game';
 import { FPSCamera } from './engine/camera/FPSCamera';
 import { evaluateSDF } from './engine/fractals/sdf';
@@ -322,8 +326,6 @@ let startTime = 0;
 let displayWidth = 1;
 let displayHeight = 1;
 
-const PREVIEW_SCALE = 0.25;
-
 function applyCanvasResolution(scale: number): void {
   const canvas = canvasRef.value;
   if (!canvas) return;
@@ -528,7 +530,11 @@ const previewLoop = useGameLoop({
     const lowQuality = appState.mode === 'title' && !previewMode;
     renderer?.updateUniforms(
       camera,
-      buildLiveSceneParams(lowQuality ? { maxIterations: 8, maxRaySteps: 64 } : undefined),
+      buildLiveSceneParams(
+        lowQuality
+          ? { maxIterations: PREVIEW_MAX_ITERATIONS, maxRaySteps: PREVIEW_MAX_RAY_STEPS }
+          : undefined,
+      ),
       (performance.now() - startTime) / 1000,
     );
   },
@@ -569,7 +575,7 @@ async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
 function onResize(width: number, height: number): void {
   displayWidth = width;
   displayHeight = height;
-  const scale = appState.mode === 'playing' ? 1 : PREVIEW_SCALE;
+  const scale = appState.mode === 'playing' ? 1 : PREVIEW_RESOLUTION_SCALE;
   applyCanvasResolution(scale);
 }
 
@@ -626,14 +632,14 @@ watch(
     } else {
       gameLoop.stop();
       if (mode === 'title' || mode === 'select') {
-        applyCanvasResolution(PREVIEW_SCALE);
+        applyCanvasResolution(PREVIEW_RESOLUTION_SCALE);
         previewLoop.start();
         window.history.replaceState({}, '', window.location.pathname);
       } else if (mode === 'paused' || mode === 'settings' || mode === 'saves') {
         // Keep current resolution when pausing from gameplay
         const fromGame = oldMode === 'playing' || oldMode === 'paused';
         if (!fromGame) {
-          applyCanvasResolution(PREVIEW_SCALE);
+          applyCanvasResolution(PREVIEW_RESOLUTION_SCALE);
         }
         previewLoop.start();
       }
@@ -786,8 +792,8 @@ function onKeyUp(e: KeyboardEvent): void {
 
 function onMouseDown(e: MouseEvent): void {
   if (appState.mode !== 'playing') return;
-  // Mouse button 5 (browser forward, e.button=4) = toggle dynamic iterations
-  if (e.button === 4) {
+  // Mouse button 5 (browser forward) = toggle dynamic iterations
+  if (e.button === MOUSE_BUTTON_BROWSER_FORWARD) {
     e.preventDefault();
     graphics.dynamicIterations = !graphics.dynamicIterations;
   }

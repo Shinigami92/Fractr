@@ -43,3 +43,17 @@ export const DYN_ITER_LOG_SCALE_DIVISOR = 4;
 export const DYN_ITER_MIN_FACTOR = 0.3;
 /** Absolute lower bound on iterations regardless of ratio. */
 export const DYN_ITER_MIN_ABSOLUTE = 4;
+
+// Title/select-screen preview loop: renders at a reduced canvas resolution
+// and with drastically capped iteration / ray-step counts so the idle preview
+// doesn't pin the GPU before gameplay begins.
+
+/** Canvas resolution scale applied outside of active gameplay. */
+export const PREVIEW_RESOLUTION_SCALE = 0.25;
+/** Max fractal iterations while the title preview is active. */
+export const PREVIEW_MAX_ITERATIONS = 8;
+/** Max ray-march steps while the title preview is active. */
+export const PREVIEW_MAX_RAY_STEPS = 64;
+
+/** MouseEvent.button for the "browser forward" side button. */
+export const MOUSE_BUTTON_BROWSER_FORWARD = 4;
