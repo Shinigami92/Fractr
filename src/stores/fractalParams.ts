@@ -243,6 +243,13 @@ export const RENDER_MODE_OPTIONS = [
 export type RenderMode = (typeof RENDER_MODE_OPTIONS)[number]['value'];
 export const RENDER_MODES: RenderMode[] = RENDER_MODE_OPTIONS.map((o) => o.value);
 
+/** Returns the next value in a cyclic list (wraps at both ends). */
+function nextInCycle<T>(list: readonly T[], current: T, reverse: boolean): T {
+  const idx = list.indexOf(current);
+  const delta = reverse ? list.length - 1 : 1;
+  return list[(idx + delta) % list.length]!;
+}
+
 export const useFractalParams = defineStore('fractalParams', () => {
   const fractalType = ref<FractalType>('mandelbulb');
   const power = ref(8);
@@ -260,22 +267,15 @@ export const useFractalParams = defineStore('fractalParams', () => {
   }
 
   function cycleRenderMode(reverse = false): void {
-    const idx = RENDER_MODES.indexOf(renderMode.value);
-    const delta = reverse ? RENDER_MODES.length - 1 : 1;
-    renderMode.value = RENDER_MODES[(idx + delta) % RENDER_MODES.length]!;
+    renderMode.value = nextInCycle(RENDER_MODES, renderMode.value, reverse);
   }
 
   function cycleColorMode(reverse = false): void {
-    const idx = COLOR_MODES.indexOf(colorMode.value);
-    const delta = reverse ? COLOR_MODES.length - 1 : 1;
-    colorMode.value = COLOR_MODES[(idx + delta) % COLOR_MODES.length]!;
+    colorMode.value = nextInCycle(COLOR_MODES, colorMode.value, reverse);
   }
 
   function cycleFractalType(reverse = false): void {
-    const idx = FRACTAL_TYPES.indexOf(fractalType.value);
-    const delta = reverse ? FRACTAL_TYPES.length - 1 : 1;
-    const next = FRACTAL_TYPES[(idx + delta) % FRACTAL_TYPES.length]!;
-    setFractalType(next);
+    setFractalType(nextInCycle(FRACTAL_TYPES, fractalType.value, reverse));
   }
 
   function setFractalType(type: FractalType): void {
