@@ -212,8 +212,4 @@ export class PipelineManager {
     this.cache.set(key, pipeline);
     return pipeline;
   }
-
-  invalidateCache(): void {
-    this.cache.clear();
-  }
 }
