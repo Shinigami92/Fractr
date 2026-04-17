@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useInputMode } from '../../composables/useInputMode';
 import type { ActionId } from '../../input/actions';
+import { displayKeyboardCode } from '../../input/actions';
 import { useControlSettings } from '../../stores/controlSettings';
 
 const emit = defineEmits<{ close: [] }>();
@@ -18,19 +19,9 @@ interface KeyGroup {
   entries: KeyEntry[];
 }
 
-// Maps a KeyboardEvent.code to a display string ("KeyW" → "W", "F5" → "F5")
-function display(code: string): string {
-  if (code.startsWith('Key')) return code.slice(3);
-  if (code.startsWith('Digit')) return code.slice(5);
-  if (code === 'Comma') return ',';
-  if (code === 'Period') return '.';
-  if (code === 'Space') return 'Space';
-  return code;
-}
-
 function key(id: ActionId): string {
   const code = controls.getBinding(id, 'keyboard');
-  return code ? display(code) : '?';
+  return code ? displayKeyboardCode(code) : '?';
 }
 
 const keyboardGroups = computed<KeyGroup[]>(() => [

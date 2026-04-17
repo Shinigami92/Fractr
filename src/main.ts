@@ -1,6 +1,7 @@
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import App from './App.vue';
+import { initKeyboardLayout } from './input/keyboardLayout';
 import { piniaPersistPlugin } from './plugins/piniaPersist';
 import './style.css';
 
@@ -9,6 +10,8 @@ console.log(`Fractr ${__COMMIT_SHA__}`);
 
 const pinia = createPinia();
 pinia.use(piniaPersistPlugin);
+
+void initKeyboardLayout();
 
 const app = createApp(App);
 app.use(pinia);

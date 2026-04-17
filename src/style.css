@@ -36,3 +36,33 @@ body,
 canvas {
   touch-action: none;
 }
+
+/* Dark scrollbars matching the surface/accent palette.
+   Firefox uses the two-keyword `scrollbar-color: <thumb> <track>` form;
+   WebKit/Chromium uses the pseudo-elements below. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 139, 250, 0.35) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.3);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.55);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}

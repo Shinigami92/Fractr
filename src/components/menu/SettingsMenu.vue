@@ -12,6 +12,7 @@ import {
 } from '../../stores/fractalParams';
 import { useGraphicsSettings } from '../../stores/graphicsSettings';
 import { useHudSettings } from '../../stores/hudSettings';
+import KeybindingsEditor from './KeybindingsEditor.vue';
 
 const appState = useAppState();
 const fractal = useFractalParams();
@@ -258,9 +259,10 @@ function resetAll(): void {
             {{
               isTouchActive
                 ? 'Tap ? in-game for the full control reference.'
-                : 'Press F1 in-game for the full control reference. Rebinding UI coming later.'
+                : 'Press F1 in-game for the full control reference.'
             }}
           </p>
+          <KeybindingsEditor v-if="!isTouchActive" class="mt-4" />
         </div>
       </div>
 

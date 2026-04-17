@@ -12,6 +12,8 @@
  * Gamepad + touch binding strings are placeholders for future work — only the
  * keyboard column is populated right now.
  */
+import { getKeycapLabel } from './keyboardLayout';
+
 export type InputMode = 'keyboard' | 'gamepad' | 'touch';
 
 export interface ActionBindings {
@@ -34,7 +36,7 @@ export interface ActionDefinition {
   rebindable?: boolean;
 }
 
-export const ACTIONS = {
+const ACTIONS_RAW = {
   // Movement
   moveForward: {
     id: 'moveForward',
@@ -172,6 +174,62 @@ export const ACTIONS = {
   },
 } as const satisfies Record<string, ActionDefinition>;
 
-export type ActionId = keyof typeof ACTIONS;
+export type ActionId = keyof typeof ACTIONS_RAW;
 
-export const ACTION_IDS = Object.keys(ACTIONS) as ActionId[];
+/**
+ * Widened view of the registry so indexed access returns `ActionDefinition`
+ * instead of each entry's literal-typed shape. This keeps optional fields
+ * (`rebindable`) visible and lets `defaultBindings` be keyed by `InputMode`.
+ */
+export const ACTIONS: Readonly<Record<ActionId, ActionDefinition>> = ACTIONS_RAW;
+
+export const ACTION_IDS = Object.keys(ACTIONS_RAW) as ActionId[];
+
+/**
+ * KeyboardEvent.code values that cannot be assigned to user actions because
+ * they are wired directly into the app shell (see useAppShortcuts.ts). The
+ * rebind UI rejects capture attempts on these; the help overlay shows them
+ * under "UI" as fixed bindings.
+ */
+export const RESERVED_KEYBOARD_CODES: ReadonlySet<string> = new Set([
+  'F1', // Toggle help overlay
+  'Escape', // Pause / back
+  'ControlLeft', // Unlock cursor (no pause)
+  'ControlRight',
+]);
+
+/**
+ * Human-readable label for a KeyboardEvent.code ("KeyW" → "W", "F5" → "F5").
+ *
+ * When the browser exposes `navigator.keyboard.getLayoutMap()`, we prefer the
+ * label printed on the user's physical keycap — so German QWERTZ users see
+ * "Y"/"Z" matching their keyboard rather than the US-layout positions. Falls
+ * back to code-slicing for writing-system keys the layout map doesn't cover
+ * and for browsers without the API (Firefox, Safari).
+ */
+export function displayKeyboardCode(code: string): string {
+  const layoutLabel = getKeycapLabel(code);
+  if (layoutLabel) {
+    if (/^[a-z]$/.test(layoutLabel)) return layoutLabel.toUpperCase();
+    if (layoutLabel.length === 1) return layoutLabel;
+  }
+  if (code.startsWith('Key')) return code.slice(3);
+  if (code.startsWith('Digit')) return code.slice(5);
+  if (code === 'Comma') return ',';
+  if (code === 'Period') return '.';
+  if (code === 'Space') return 'Space';
+  if (code === 'ArrowUp') return '↑';
+  if (code === 'ArrowDown') return '↓';
+  if (code === 'ArrowLeft') return '←';
+  if (code === 'ArrowRight') return '→';
+  if (code === 'Slash') return '/';
+  if (code === 'Backslash') return '\\';
+  if (code === 'Semicolon') return ';';
+  if (code === 'Quote') return "'";
+  if (code === 'Backquote') return '`';
+  if (code === 'Minus') return '-';
+  if (code === 'Equal') return '=';
+  if (code === 'BracketLeft') return '[';
+  if (code === 'BracketRight') return ']';
+  return code;
+}
