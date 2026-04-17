@@ -1,9 +1,17 @@
 import type { ShallowRef } from 'vue';
-import { PREVIEW_MAX_ITERATIONS, PREVIEW_MAX_RAY_STEPS } from '../constants/game';
 import type { Renderer } from '../engine/Renderer';
 import { useAppState } from '../stores/appState';
 import { useGameLoop } from './useGameLoop';
 import type { SceneState } from './useSceneState';
+
+// Title/select-screen preview loop: renders at a reduced canvas resolution
+// and with drastically capped iteration / ray-step counts so the idle preview
+// doesn't pin the GPU before gameplay begins.
+
+/** Max fractal iterations while the title preview is active. */
+const PREVIEW_MAX_ITERATIONS = 8;
+/** Max ray-march steps while the title preview is active. */
+const PREVIEW_MAX_RAY_STEPS = 64;
 
 export interface UsePreviewLoopDeps {
   rendererRef: ShallowRef<Renderer | null>;

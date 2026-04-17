@@ -1,7 +1,6 @@
 import { useEventListener } from '@vueuse/core';
 import type { Ref } from 'vue';
 import { watch } from 'vue';
-import { MOUSE_BUTTON_BROWSER_FORWARD } from '../constants/game';
 import { useAppState } from '../stores/appState';
 import { useControlSettings } from '../stores/controlSettings';
 import { useFractalParams } from '../stores/fractalParams';
@@ -11,6 +10,9 @@ import type { usePointerLock } from './usePointerLock';
 import type { RadialMenuController } from './useRadialMenuController';
 import type { useSaveActions } from './useSaveActions';
 import type { URLStateController } from './useURLState';
+
+/** MouseEvent.button for the "browser forward" side button. */
+const MOUSE_BUTTON_BROWSER_FORWARD = 4;
 
 export interface UseAppShortcutsDeps {
   pointerLock: ReturnType<typeof usePointerLock>;

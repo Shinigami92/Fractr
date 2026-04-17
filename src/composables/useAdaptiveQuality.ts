@@ -1,15 +1,30 @@
-import {
-  ADAPTIVE_QUALITY_CRITICAL_DROP_MULTIPLIER,
-  ADAPTIVE_QUALITY_CRITICAL_THRESHOLD,
-  ADAPTIVE_QUALITY_DROP_INTERVAL_SEC,
-  ADAPTIVE_QUALITY_DROP_THRESHOLD,
-  ADAPTIVE_QUALITY_MIN_SCALE,
-  ADAPTIVE_QUALITY_MOVEMENT_PENALTY,
-  ADAPTIVE_QUALITY_RISE_INTERVAL_SEC,
-  ADAPTIVE_QUALITY_RISE_THRESHOLD,
-  ADAPTIVE_QUALITY_SCALE_STEP,
-} from '../constants/game';
 import { useGraphicsSettings } from '../stores/graphicsSettings';
+
+// Adaptive quality: resolution scale is quantized to SCALE_STEP buckets. It
+// drops when FPS falls below target*DROP_THRESHOLD and rises when FPS exceeds
+// target*RISE_THRESHOLD. The drop is reevaluated faster than the rise to
+// react quickly to stutter without oscillating.
+
+const ADAPTIVE_QUALITY_SCALE_STEP = 0.05;
+const ADAPTIVE_QUALITY_MIN_SCALE = 0.3;
+
+/** Seconds between drop-checks when FPS is below target. */
+const ADAPTIVE_QUALITY_DROP_INTERVAL_SEC = 0.2;
+/** Seconds between rise-checks when FPS is above target. */
+const ADAPTIVE_QUALITY_RISE_INTERVAL_SEC = 0.8;
+
+/** FPS ratio under which adaptive quality starts dropping. */
+const ADAPTIVE_QUALITY_DROP_THRESHOLD = 0.85;
+/** FPS ratio above which adaptive quality starts rising. */
+const ADAPTIVE_QUALITY_RISE_THRESHOLD = 0.95;
+
+/** FPS ratio under which drops become aggressive (multiplied). */
+const ADAPTIVE_QUALITY_CRITICAL_THRESHOLD = 0.5;
+/** Multiplier applied to SCALE_STEP when FPS is critically low. */
+const ADAPTIVE_QUALITY_CRITICAL_DROP_MULTIPLIER = 3;
+
+/** Extra penalty to max scale while the camera is moving (0..1). */
+const ADAPTIVE_QUALITY_MOVEMENT_PENALTY = 0.1;
 
 export interface UseAdaptiveQualityOptions {
   /** Called with the quantized scale whenever it actually changes. */

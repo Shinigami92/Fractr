@@ -1,8 +1,10 @@
 import { useTimeoutFn } from '@vueuse/core';
 import type { Ref } from 'vue';
 import { computed, ref } from 'vue';
-import { RADIAL_MENU_HOLD_DELAY_MS } from '../constants/game';
 import { radialSelectedIndex } from '../utils/radialGeometry';
+
+/** Hold duration in milliseconds before a radial menu opens. */
+const RADIAL_MENU_HOLD_DELAY_MS = 200;
 
 export interface RadialOption {
   readonly value: string;

@@ -1,6 +1,5 @@
 import type { Ref, ShallowRef } from 'vue';
 import { onUnmounted, ref, watch } from 'vue';
-import { PREVIEW_RESOLUTION_SCALE } from '../constants/game';
 import { WebGPUContext } from '../engine/gpu/WebGPUContext';
 import { Renderer } from '../engine/Renderer';
 import { useAppState } from '../stores/appState';
@@ -11,6 +10,9 @@ import type { useGameLoop } from './useGameLoop';
 import type { usePointerLock } from './usePointerLock';
 import type { SceneState } from './useSceneState';
 import type { URLStateController } from './useURLState';
+
+/** Canvas resolution scale applied outside of active gameplay. */
+const PREVIEW_RESOLUTION_SCALE = 0.25;
 
 type LoopHandle = ReturnType<typeof useGameLoop>;
 

@@ -1,11 +1,5 @@
 import type { ShallowRef } from 'vue';
 import { ref } from 'vue';
-import {
-  DYN_ITER_DIST_FLOOR,
-  DYN_ITER_LOG_SCALE_DIVISOR,
-  DYN_ITER_MIN_ABSOLUTE,
-  DYN_ITER_MIN_FACTOR,
-} from '../constants/game';
 import { evaluateSDF } from '../engine/fractals/sdf';
 import type { Renderer } from '../engine/Renderer';
 import { useAppState } from '../stores/appState';
@@ -20,6 +14,19 @@ import type { RadialMenuController } from './useRadialMenuController';
 import type { SceneState } from './useSceneState';
 import type { useTouchControls } from './useTouchControls';
 import type { URLStateController } from './useURLState';
+
+// Dynamic iterations: when enabled, the iteration count ramps logarithmically
+// between a minimum factor (near-surface, max detail would saturate anyway)
+// and the full configured max as the camera moves further from the surface.
+
+/** Distance floor fed to log10 to avoid -Infinity near the surface. */
+const DYN_ITER_DIST_FLOOR = 0.0001;
+/** Divisor applied to -log10(dist); larger = slower ramp to max iterations. */
+const DYN_ITER_LOG_SCALE_DIVISOR = 4;
+/** Minimum iteration count as a fraction of dynMax. */
+const DYN_ITER_MIN_FACTOR = 0.3;
+/** Absolute lower bound on iterations regardless of ratio. */
+const DYN_ITER_MIN_ABSOLUTE = 4;
 
 export interface UseGameplayLoopDeps {
   rendererRef: ShallowRef<Renderer | null>;
