@@ -35,6 +35,21 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
     })),
   );
 
+  function triggerQuickTap(id: RadialMenuId, shiftKey: boolean): void {
+    switch (id) {
+      case 'color':
+        fractal.cycleColorMode(shiftKey);
+        break;
+      case 'render':
+        fractal.cycleRenderMode(shiftKey);
+        break;
+      case 'fractal':
+        fractal.cycleFractalType(shiftKey);
+        options.onResetCamera();
+        break;
+    }
+  }
+
   const menu = useRadialMenu<RadialMenuId>({
     getOptions(id) {
       switch (id) {
@@ -60,20 +75,7 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
           break;
       }
     },
-    onQuickTap(id, shiftKey) {
-      switch (id) {
-        case 'color':
-          fractal.cycleColorMode(shiftKey);
-          break;
-        case 'render':
-          fractal.cycleRenderMode(shiftKey);
-          break;
-        case 'fractal':
-          fractal.cycleFractalType(shiftKey);
-          options.onResetCamera();
-          break;
-      }
-    },
+    onQuickTap: triggerQuickTap,
   });
 
   const currentValue = computed(() => {
@@ -129,6 +131,7 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
     currentValue,
     tryBeginHoldFromKey,
     tryEndHoldFromKey,
+    triggerQuickTap,
   };
 }
 

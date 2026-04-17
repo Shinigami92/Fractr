@@ -8,6 +8,7 @@ import { useFractalParams } from '../stores/fractalParams';
 import { useGraphicsSettings } from '../stores/graphicsSettings';
 import type { useAdaptiveQuality } from './useAdaptiveQuality';
 import { useGameLoop } from './useGameLoop';
+import { useGamepadInput } from './useGamepadInput';
 import type { useInput } from './useInput';
 import type { usePointerLock } from './usePointerLock';
 import type { RadialMenuController } from './useRadialMenuController';
@@ -27,6 +28,11 @@ const DYN_ITER_LOG_SCALE_DIVISOR = 4;
 const DYN_ITER_MIN_FACTOR = 0.3;
 /** Absolute lower bound on iterations regardless of ratio. */
 const DYN_ITER_MIN_ABSOLUTE = 4;
+
+/** Right-stick look speed in radians/second at full deflection. */
+const GAMEPAD_LOOK_SPEED = 2.5;
+/** Axis magnitude below which gamepad stick input is ignored for movement flags. */
+const GAMEPAD_ACTIVE_EPS = 0.01;
 
 export interface UseGameplayLoopDeps {
   rendererRef: ShallowRef<Renderer | null>;
@@ -50,6 +56,7 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
   const fractal = useFractalParams();
   const graphics = useGraphicsSettings();
   const controls = useControlSettings();
+  const gamepad = useGamepadInput();
 
   const currentIterations = ref(0);
   const sampleCount = ref(0);
@@ -66,10 +73,15 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
       // Camera rotation from mouse + touch (disabled while radial menu is open)
       const { dx, dy } = deps.pointerLock.consumeMovement();
       const touchLook = deps.touchControls.consumeLookDelta();
+      const { x: lx, y: ly } = gamepad.leftStick.value;
+      const { x: rx, y: ry } = gamepad.rightStick.value;
       const totalDx = dx + touchLook.dx;
       const totalDy = dy + touchLook.dy;
       if (!deps.radial.activeId.value) {
         camera.rotate(totalDx * controls.mouseSensitivity, -totalDy * controls.mouseSensitivity);
+        if (rx !== 0 || ry !== 0) {
+          camera.rotate(rx * GAMEPAD_LOOK_SPEED * dt, -ry * GAMEPAD_LOOK_SPEED * dt);
+        }
       }
 
       // Distance-based camera speed: slow near surfaces, fast in open space
@@ -116,6 +128,17 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
         const code = controls.getBinding(id, 'keyboard');
         return code !== undefined && isPressed(code);
       };
+      const gp = (id: Parameters<typeof controls.getBinding>[0]): boolean => {
+        const code = controls.getBinding(id, 'gamepad');
+        return code !== undefined && gamepad.pressedButtons.value.has(code);
+      };
+      const gamepadActive =
+        Math.abs(lx) > GAMEPAD_ACTIVE_EPS ||
+        Math.abs(ly) > GAMEPAD_ACTIVE_EPS ||
+        Math.abs(rx) > GAMEPAD_ACTIVE_EPS ||
+        Math.abs(ry) > GAMEPAD_ACTIVE_EPS ||
+        gp('rollLeft') ||
+        gp('rollRight');
       const moving =
         kb('moveForward') ||
         kb('moveBackward') ||
@@ -127,7 +150,8 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
         isPressed('Mouse2') ||
         Math.abs(dx) > 1 ||
         Math.abs(dy) > 1 ||
-        touchActive;
+        touchActive ||
+        gamepadActive;
 
       // Adaptive quality
       deps.adaptiveQuality.update(dt, gameLoop.fps.value, moving);
@@ -151,11 +175,19 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
           camera.rollCamera(rollSpeed);
         }
       }
+      if (gp('rollLeft')) camera.rollCamera(-rollSpeed);
+      if (gp('rollRight')) camera.rollCamera(rollSpeed);
 
       // Touch analog movement (additive to keyboard)
       if (Math.abs(touchMove.x) > 0.05 || Math.abs(touchMove.y) > 0.05) {
         camera.moveForward(-touchMove.y * speed);
         camera.moveRight(touchMove.x * speed);
+      }
+
+      // Gamepad left-stick analog movement (additive to keyboard/touch)
+      if (lx !== 0 || ly !== 0) {
+        camera.moveForward(-ly * speed);
+        camera.moveRight(lx * speed);
       }
 
       // Track movement for render path selection

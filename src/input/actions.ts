@@ -66,13 +66,13 @@ const ACTIONS_RAW = {
     id: 'rollLeft',
     category: 'Movement',
     label: 'Roll left (Shift: move down)',
-    defaultBindings: { keyboard: 'KeyQ' },
+    defaultBindings: { keyboard: 'KeyQ', gamepad: 'Button4' },
   },
   rollRight: {
     id: 'rollRight',
     category: 'Movement',
     label: 'Roll right (Shift: move up)',
-    defaultBindings: { keyboard: 'KeyE' },
+    defaultBindings: { keyboard: 'KeyE', gamepad: 'Button5' },
   },
 
   // Modes (press to cycle, hold to open radial menu)
@@ -80,19 +80,19 @@ const ACTIONS_RAW = {
     id: 'cycleColorMode',
     category: 'Modes',
     label: 'Cycle color mode (hold: radial)',
-    defaultBindings: { keyboard: 'KeyC' },
+    defaultBindings: { keyboard: 'KeyC', gamepad: 'Button0' },
   },
   cycleRenderMode: {
     id: 'cycleRenderMode',
     category: 'Modes',
     label: 'Cycle render mode (hold: radial)',
-    defaultBindings: { keyboard: 'KeyR' },
+    defaultBindings: { keyboard: 'KeyR', gamepad: 'Button1' },
   },
   cycleFractalType: {
     id: 'cycleFractalType',
     category: 'Modes',
     label: 'Cycle fractal (hold: radial)',
-    defaultBindings: { keyboard: 'KeyV' },
+    defaultBindings: { keyboard: 'KeyV', gamepad: 'Button3' },
   },
 
   // Fractal parameters
@@ -100,37 +100,37 @@ const ACTIONS_RAW = {
     id: 'toggleDynamicIterations',
     category: 'Fractal',
     label: 'Toggle dynamic iterations',
-    defaultBindings: { keyboard: 'KeyI' },
+    defaultBindings: { keyboard: 'KeyI', gamepad: 'Button2' },
   },
   increaseIterations: {
     id: 'increaseIterations',
     category: 'Fractal',
     label: 'Iterations +',
-    defaultBindings: { keyboard: 'Period' },
+    defaultBindings: { keyboard: 'Period', gamepad: 'Button12' },
   },
   decreaseIterations: {
     id: 'decreaseIterations',
     category: 'Fractal',
     label: 'Iterations -',
-    defaultBindings: { keyboard: 'Comma' },
+    defaultBindings: { keyboard: 'Comma', gamepad: 'Button13' },
   },
   increaseBailout: {
     id: 'increaseBailout',
     category: 'Fractal',
     label: 'Bailout +',
-    defaultBindings: { keyboard: 'KeyK' },
+    defaultBindings: { keyboard: 'KeyK', gamepad: 'Button15' },
   },
   decreaseBailout: {
     id: 'decreaseBailout',
     category: 'Fractal',
     label: 'Bailout -',
-    defaultBindings: { keyboard: 'KeyJ' },
+    defaultBindings: { keyboard: 'KeyJ', gamepad: 'Button14' },
   },
   toggleAnimatedColors: {
     id: 'toggleAnimatedColors',
     category: 'Fractal',
     label: 'Toggle animated colors',
-    defaultBindings: { keyboard: 'KeyG' },
+    defaultBindings: { keyboard: 'KeyG', gamepad: 'Button11' },
   },
 
   // Saves & sharing
@@ -138,13 +138,13 @@ const ACTIONS_RAW = {
     id: 'quickSave',
     category: 'Saves',
     label: 'Quick save location',
-    defaultBindings: { keyboard: 'F5' },
+    defaultBindings: { keyboard: 'F5', gamepad: 'Button6' },
   },
   screenshot: {
     id: 'screenshot',
     category: 'Saves',
     label: 'Screenshot to clipboard',
-    defaultBindings: { keyboard: 'F6' },
+    defaultBindings: { keyboard: 'F6', gamepad: 'Button7' },
   },
   openSaves: {
     id: 'openSaves',
@@ -160,17 +160,23 @@ const ACTIONS_RAW = {
   },
 
   // UI
+  togglePause: {
+    id: 'togglePause',
+    category: 'UI',
+    label: 'Pause / resume',
+    defaultBindings: { gamepad: 'Button9' },
+  },
   toggleHud: {
     id: 'toggleHud',
     category: 'UI',
     label: 'Toggle HUD',
-    defaultBindings: { keyboard: 'F3' },
+    defaultBindings: { keyboard: 'F3', gamepad: 'Button8' },
   },
   toggleCrosshair: {
     id: 'toggleCrosshair',
     category: 'UI',
     label: 'Toggle crosshair',
-    defaultBindings: { keyboard: 'KeyH' },
+    defaultBindings: { keyboard: 'KeyH', gamepad: 'Button10' },
   },
 } as const satisfies Record<string, ActionDefinition>;
 

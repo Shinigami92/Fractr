@@ -1,11 +1,14 @@
 import { useEventListener } from '@vueuse/core';
 import type { Ref } from 'vue';
 import { watch } from 'vue';
+import type { ActionId } from '../input/actions';
+import { ACTION_IDS } from '../input/actions';
 import { useAppState } from '../stores/appState';
 import { useControlSettings } from '../stores/controlSettings';
 import { useFractalParams } from '../stores/fractalParams';
 import { useGraphicsSettings } from '../stores/graphicsSettings';
 import { useHudSettings } from '../stores/hudSettings';
+import { useGamepadInput } from './useGamepadInput';
 import type { usePointerLock } from './usePointerLock';
 import type { RadialMenuController } from './useRadialMenuController';
 import type { useSaveActions } from './useSaveActions';
@@ -179,6 +182,61 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
   useEventListener(window, 'mousedown', onMouseDown);
   useEventListener(window, 'contextmenu', onContextMenu);
   useEventListener(window, 'wheel', onWheel, { passive: false });
+
+  // Gamepad button dispatch: fire the matching action handler on rising-edge
+  // press. Held/continuous inputs (movement, roll) are polled from the
+  // gameplay loop instead. Cycle actions quick-tap only — no hold-to-radial
+  // on gamepad yet.
+  const actionHandlers: Partial<Record<ActionId, () => void>> = {
+    toggleHud: () => hudSettings.toggleHud(),
+    toggleCrosshair: () => hudSettings.toggleCrosshair(),
+    toggleDynamicIterations: () => {
+      graphics.dynamicIterations = !graphics.dynamicIterations;
+    },
+    toggleAnimatedColors: () => {
+      graphics.animatedColors = !graphics.animatedColors;
+    },
+    increaseIterations: () => fractal.adjustIterations(1),
+    decreaseIterations: () => fractal.adjustIterations(-1),
+    increaseBailout: () => fractal.adjustBailout(1),
+    decreaseBailout: () => fractal.adjustBailout(-1),
+    quickSave: () => {
+      void deps.saveActions.quickSave();
+    },
+    screenshot: () => {
+      void deps.saveActions.takeScreenshot();
+    },
+    openSaves: () => {
+      cursorUnlocked = true;
+      deps.pointerLock.exitLock();
+      appState.openSaves();
+    },
+    copyShareURL: () => {
+      void navigator.clipboard.writeText(deps.urlState.buildCurrentShareURL());
+      deps.notify('Share URL copied to clipboard');
+    },
+    cycleColorMode: () => deps.radial.triggerQuickTap('color', false),
+    cycleRenderMode: () => deps.radial.triggerQuickTap('render', false),
+    cycleFractalType: () => deps.radial.triggerQuickTap('fractal', false),
+  };
+
+  const gamepad = useGamepadInput();
+  gamepad.onButtonPress((e) => {
+    // togglePause works in playing/paused alike — handle before the
+    // playing-only gate so gamepad users can resume without touching keyboard.
+    if (e.code === controls.getBinding('togglePause', 'gamepad')) {
+      if (appState.mode === 'playing') appState.pause();
+      else if (appState.mode === 'paused') appState.resume();
+      return;
+    }
+    if (appState.mode !== 'playing') return;
+    for (const id of ACTION_IDS) {
+      if (controls.getBinding(id, 'gamepad') === e.code) {
+        actionHandlers[id]?.();
+        break;
+      }
+    }
+  });
 
   return { onCanvasClick };
 }
