@@ -112,11 +112,11 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
       }
       if (e.code === b.quickSave) {
         e.preventDefault();
-        deps.saveActions.quickSave();
+        void deps.saveActions.quickSave();
       }
       if (e.code === b.screenshot) {
         e.preventDefault();
-        deps.saveActions.takeScreenshot();
+        void deps.saveActions.takeScreenshot();
       }
       if (e.code === b.openSaves) {
         cursorUnlocked = true;
@@ -124,7 +124,7 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
         appState.openSaves();
       }
       if (e.code === b.copyShareURL) {
-        navigator.clipboard.writeText(deps.urlState.buildCurrentShareURL());
+        void navigator.clipboard.writeText(deps.urlState.buildCurrentShareURL());
         deps.notify('Share URL copied to clipboard');
       }
 

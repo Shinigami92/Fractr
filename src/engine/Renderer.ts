@@ -259,7 +259,7 @@ export class Renderer {
     // commands submitted up to this point. Decrementing here lets the next
     // render() call know there's a free slot in the pipeline, avoiding
     // getCurrentTexture() stalls that cause frame-pacing judder.
-    this.ctx.device.queue.onSubmittedWorkDone().then(() => {
+    void this.ctx.device.queue.onSubmittedWorkDone().then(() => {
       this.framesInFlight--;
     });
   }

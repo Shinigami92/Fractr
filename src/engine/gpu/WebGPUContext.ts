@@ -29,7 +29,7 @@ export class WebGPUContext {
     }
 
     const device = await adapter.requestDevice();
-    device.lost.then((info) => {
+    void device.lost.then((info) => {
       console.error('WebGPU device lost:', info.message);
     });
 
