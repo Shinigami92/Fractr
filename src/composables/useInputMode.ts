@@ -1,15 +1,12 @@
-import { useEventListener } from '@vueuse/core';
+import { useEventListener, useMediaQuery } from '@vueuse/core';
 import { computed, ref } from 'vue';
 
 export type InputMode = 'pointer' | 'touch';
 
 // Detect initial mode: coarse primary pointer = touch device (phone/tablet),
 // fine = desktop/laptop (even if it has a touchscreen, trackpad is primary).
-const initialMode: InputMode =
-  typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches
-    ? 'touch'
-    : 'pointer';
-const inputMode = ref<InputMode>(initialMode);
+const isCoarsePointer = useMediaQuery('(pointer: coarse)');
+const inputMode = ref<InputMode>(isCoarsePointer.value ? 'touch' : 'pointer');
 // Mobile browsers synthesize mousemove after touch events; ignore those.
 let lastTouchTime = 0;
 const TOUCH_COOLDOWN = 1000;
