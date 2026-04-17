@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { promiseTimeout, useEventListener, useTimeoutFn } from '@vueuse/core';
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { ref, shallowRef } from 'vue';
+import GpuErrorScreen from './components/GpuErrorScreen.vue';
 import GameHud from './components/hud/GameHud.vue';
 import HelpOverlay from './components/hud/HelpOverlay.vue';
 import RadialMenu from './components/hud/RadialMenu.vue';
+import ShareToast from './components/hud/ShareToast.vue';
+import TouchActionButtons from './components/hud/TouchActionButtons.vue';
 import FractalSelectScreen from './components/menu/FractalSelectScreen.vue';
 import PauseMenu from './components/menu/PauseMenu.vue';
 import SavesBrowser from './components/menu/SavesBrowser.vue';
@@ -11,811 +13,134 @@ import SettingsMenu from './components/menu/SettingsMenu.vue';
 import TitleScreen from './components/menu/TitleScreen.vue';
 import WebGPUCanvas from './components/WebGPUCanvas.vue';
 import { useAdaptiveQuality } from './composables/useAdaptiveQuality';
-import { useGameLoop } from './composables/useGameLoop';
+import { useAppShortcuts } from './composables/useAppShortcuts';
+import { useGameplayLoop } from './composables/useGameplayLoop';
 import { useInput } from './composables/useInput';
 import { installInputModeDetection, useInputMode } from './composables/useInputMode';
+import { useNotification } from './composables/useNotification';
 import { usePointerLock } from './composables/usePointerLock';
-import { useRadialMenu } from './composables/useRadialMenu';
+import { usePreviewLoop } from './composables/usePreviewLoop';
+import { useRadialMenuController } from './composables/useRadialMenuController';
+import { useRendererLifecycle } from './composables/useRendererLifecycle';
+import { useSaveActions } from './composables/useSaveActions';
+import { useSceneState } from './composables/useSceneState';
 import { useTouchControls } from './composables/useTouchControls';
-import {
-  DYN_ITER_DIST_FLOOR,
-  DYN_ITER_LOG_SCALE_DIVISOR,
-  DYN_ITER_MIN_ABSOLUTE,
-  DYN_ITER_MIN_FACTOR,
-  MOUSE_BUTTON_BROWSER_FORWARD,
-  PREVIEW_MAX_ITERATIONS,
-  PREVIEW_MAX_RAY_STEPS,
-  PREVIEW_RESOLUTION_SCALE,
-} from './constants/game';
-import { FPSCamera } from './engine/camera/FPSCamera';
-import { evaluateSDF } from './engine/fractals/sdf';
-import { WebGPUContext } from './engine/gpu/WebGPUContext';
-import { Renderer } from './engine/Renderer';
-import { type SaveEntry, type SavedState, saveState, saveThumbnail } from './services/savesDB';
-import {
-  captureCanvasPng,
-  captureCanvasThumbnail,
-  renderSavedStateToBlob,
-} from './services/thumbnailGenerator';
+import { useURLState } from './composables/useURLState';
+import type { Renderer } from './engine/Renderer';
 import { useAppState } from './stores/appState';
-import { useControlSettings } from './stores/controlSettings';
-import {
-  COLOR_MODE_OPTIONS,
-  type ColorMode,
-  FRACTAL_CONFIGS,
-  type FractalType,
-  RENDER_MODE_OPTIONS,
-  type RenderMode,
-  useFractalParams,
-} from './stores/fractalParams';
-import { useGraphicsSettings } from './stores/graphicsSettings';
-import { useHudSettings } from './stores/hudSettings';
-import { buildShareURL, readStateFromURL } from './utils/urlState';
 
 const appState = useAppState();
-const fractal = useFractalParams();
-const graphics = useGraphicsSettings();
-const controls = useControlSettings();
-const hudSettings = useHudSettings();
 
+// Core reactive refs owned by the root component so composables can share them.
 const canvasRef = ref<HTMLCanvasElement | null>(null);
-const gpuError = ref<string | null>(null);
+const rendererRef = shallowRef<Renderer | null>(null);
 const savesBrowserRef = ref<InstanceType<typeof SavesBrowser> | null>(null);
-const shareNotification = ref(false);
-const notificationText = ref('');
-
-const notificationDurationMs = ref(2000);
-const { start: startNotificationHide } = useTimeoutFn(
-  () => {
-    shareNotification.value = false;
-  },
-  notificationDurationMs,
-  { immediate: false },
-);
-
-function showNotification(text: string, duration = 2000): void {
-  notificationText.value = text;
-  shareNotification.value = true;
-  notificationDurationMs.value = duration;
-  startNotificationHide();
-}
-
-// Radial menu
-type RadialMenuId = 'color' | 'render' | 'fractal';
 const showHelpOverlay = ref(false);
 
-const fractalOptions = computed(() =>
-  Object.entries(FRACTAL_CONFIGS).map(([key, cfg]) => ({
-    value: key,
-    label: cfg.label,
-    short: cfg.short,
-  })),
-);
+// Start time for renderer `time` uniform. Set to `performance.now()` once the
+// renderer is constructed (inside useRendererLifecycle.onCanvasReady).
+const startTime = ref(performance.now());
+const getTimeSeconds = (): number => (performance.now() - startTime.value) / 1000;
 
-const {
-  activeId: radialActiveId,
-  cursorX: radialCursorX,
-  cursorY: radialCursorY,
-  currentOptions: radialMenuOptions,
-  selectedIndex: radialSelectedIndex,
-  beginHold: beginRadialHold,
-  endHold: endRadialHold,
-  onMouseMove: onRadialMouseMove,
-} = useRadialMenu<RadialMenuId>({
-  getOptions(id) {
-    switch (id) {
-      case 'color':
-        return COLOR_MODE_OPTIONS;
-      case 'render':
-        return RENDER_MODE_OPTIONS;
-      case 'fractal':
-        return fractalOptions.value;
-    }
-  },
-  onApply(id, value) {
-    switch (id) {
-      case 'color':
-        fractal.colorMode = value as ColorMode;
-        break;
-      case 'render':
-        fractal.renderMode = value as RenderMode;
-        break;
-      case 'fractal':
-        fractal.setFractalType(value as FractalType);
-        resetCamera();
-        break;
-    }
-  },
-  onQuickTap(id, shiftKey) {
-    switch (id) {
-      case 'color':
-        fractal.cycleColorMode(shiftKey);
-        break;
-      case 'render':
-        fractal.cycleRenderMode(shiftKey);
-        break;
-      case 'fractal':
-        fractal.cycleFractalType(shiftKey);
-        resetCamera();
-        break;
-    }
-  },
-});
+// Transient toast notifications (share URL copied, save, screenshot, …).
+const { text: toastText, visible: toastVisible, show: notify } = useNotification();
 
-const radialCurrentValue = computed(() => {
-  switch (radialActiveId.value) {
-    case 'color':
-      return fractal.colorMode;
-    case 'render':
-      return fractal.renderMode;
-    case 'fractal':
-      return fractal.fractalType;
-    default:
-      return '';
-  }
-});
+// Scene state: owns the FPSCamera instance + state snapshot helpers.
+const scene = useSceneState();
+const { cameraPos } = scene;
 
-function radialIdForKey(code: string): RadialMenuId | undefined {
-  const bindings = controls.keybindings;
-  if (code === bindings.cycleColorMode) return 'color';
-  if (code === bindings.cycleRenderMode) return 'render';
-  if (code === bindings.cycleFractalType) return 'fractal';
-  return undefined;
-}
+// URL state: read on boot, restore fractal + camera pose, expose share helpers.
+const urlState = useURLState(scene);
+const { previewMode } = urlState;
 
-let radialHeldKey: string | null = null;
-
-const camera = new FPSCamera(0, 0, 3);
-const cameraPos = ref({ x: 0, y: 0, z: 3, yaw: 0, pitch: 0, roll: 0 });
-const currentIterations = ref(0);
-const sampleCount = ref(0);
-
-// Restore state from URL or default to Mandelbulb
-const urlState = readStateFromURL();
-let startFromURL = false;
-const previewMode = urlState?.preview ?? false;
-if (urlState) {
-  fractal.fractalType = urlState.fractalType;
-  fractal.power = urlState.power;
-  fractal.maxIterations = urlState.maxIterations;
-  fractal.bailout = urlState.bailout;
-  fractal.colorMode = urlState.colorMode;
-  fractal.renderMode = urlState.renderMode;
-  graphics.dynamicIterations = urlState.dynamicIterations;
-  camera.position[0] = urlState.x;
-  camera.position[1] = urlState.y;
-  camera.position[2] = urlState.z;
-  camera.setFromEuler(urlState.yaw, urlState.pitch, urlState.roll);
-  startFromURL = true;
-} else {
-  fractal.setFractalType('mandelbulb');
-}
-
-function resetCamera(): void {
-  const cam = fractal.config.camera;
-  camera.position[0] = cam?.x ?? 0;
-  camera.position[1] = cam?.y ?? 0;
-  camera.position[2] = cam?.z ?? 3;
-  camera.yaw = cam?.yaw ?? -Math.PI / 2;
-  camera.pitch = cam?.pitch ?? 0;
-  camera.roll = 0;
-}
-
-let wasMoving = false;
-
-function getCurrentState(): SavedState {
-  return {
-    fractalType: fractal.fractalType,
-    power: fractal.power,
-    maxIterations: fractal.maxIterations,
-    bailout: fractal.bailout,
-    colorMode: fractal.colorMode,
-    renderMode: fractal.renderMode,
-    dynamicIterations: graphics.dynamicIterations,
-    x: camera.position[0]!,
-    y: camera.position[1]!,
-    z: camera.position[2]!,
-    yaw: camera.yaw,
-    pitch: camera.pitch,
-    roll: camera.roll,
-  };
-}
-
-/** Build a share URL for the current live camera + fractal state. */
-function buildCurrentShareURL(): string {
-  return buildShareURL({ ...getCurrentState(), preview: false });
-}
-
-function syncURLState(): void {
-  if (appState.mode !== 'playing') return;
-  const url = buildCurrentShareURL();
-  const params = url.split('?')[1] ?? '';
-  window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
-}
-
-async function quickSave(): Promise<void> {
-  const state = getCurrentState();
-  const canvas = canvasRef.value;
-  const thumbnail = canvas ? await captureCanvasThumbnail(canvas) : undefined;
-  const saved = await saveState(state, thumbnail);
-  showNotification(saved ? 'Location saved' : 'Already saved');
-}
-
-async function takeScreenshot(): Promise<void> {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-  const blob = await captureCanvasPng(canvas);
-  if (!blob) return;
-  try {
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-    showNotification('Screenshot copied to clipboard');
-  } catch {
-    // Fallback: download the file
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `fractr-${Date.now()}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showNotification('Screenshot saved as file');
-  }
-}
-
-/**
- * Apply a saved state to the live scene: fractal/graphics store fields,
- * camera pose, and renderer mode state. Triggers a fresh accumulation.
- * Does not transition appState.
- */
-function applyState(state: SavedState): void {
-  fractal.fractalType = state.fractalType;
-  fractal.power = state.power;
-  fractal.maxIterations = state.maxIterations;
-  fractal.bailout = state.bailout;
-  fractal.colorMode = state.colorMode;
-  fractal.renderMode = state.renderMode;
-  graphics.dynamicIterations = state.dynamicIterations;
-  camera.position[0] = state.x;
-  camera.position[1] = state.y;
-  camera.position[2] = state.z;
-  camera.setFromEuler(state.yaw, state.pitch, state.roll);
-  renderer?.setFractalType(state.fractalType);
-  renderer?.setColorMode(state.colorMode);
-  renderer?.setRenderMode(state.renderMode);
-  renderer?.resetAccumulation();
-}
-
-function loadSavedState(state: SavedState): void {
-  applyState(state);
-  startFromURL = true; // suppress the camera reset that would otherwise fire on entering 'playing'
-  appState.startGame();
-}
-
-async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
-  if (!renderer) return;
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-
-  // Stop preview loop so it doesn't overwrite our renders
-  previewLoop.stop();
-
-  // Save current state to restore after
-  const prevState = getCurrentState();
-  const deps = { renderer, camera, canvas, maxRaySteps: graphics.maxRaySteps };
-
-  for (const save of saves) {
-    const blob = await renderSavedStateToBlob(deps, save.state);
-    if (blob) {
-      await saveThumbnail(save.stateHash, blob);
-      // Show thumbnail immediately in the browser
-      savesBrowserRef.value?.setThumbnail(save.stateHash, blob);
-    }
-    // Delay between captures
-    await promiseTimeout(100);
-  }
-
-  // Restore previous state
-  applyState(prevState);
-
-  // Restart preview loop and refresh thumbnails in the browser
-  previewLoop.start();
-  savesBrowserRef.value?.refreshThumbnails();
-}
-
-let renderer: Renderer | null = null;
-let startTime = 0;
-let displayWidth = 1;
-let displayHeight = 1;
-
-function applyCanvasResolution(scale: number): void {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-  const w = Math.floor(displayWidth * scale);
-  const h = Math.floor(displayHeight * scale);
-  canvas.width = w;
-  canvas.height = h;
-  renderer?.resize(w, h);
-}
-
-// For periodic SDFs (declared via FractalConfig.periodOffset), snap the camera
-// position to a multiple of the SDF's period so the GPU sees small coordinates
-// with full f32 precision. Subtraction is done here in JS f64, so no
-// cancellation loss.
-function computeOriginOffset(): [number, number, number] | undefined {
-  const periodFn = fractal.config.periodOffset;
-  if (!periodFn) return undefined;
-  const period = periodFn(fractal.power);
-  return [
-    Math.round(camera.position[0]! / period) * period,
-    Math.round(camera.position[1]! / period) * period,
-    Math.round(camera.position[2]! / period) * period,
-  ];
-}
-
-/**
- * Assemble the parameter bag passed to `renderer.updateUniforms` for a live
- * scene (main gameplay loop + title-screen preview loop). Overrides let the
- * caller substitute the effective iteration count (dynamic iterations) or
- * cap cost for the low-quality title preview.
- */
-function buildLiveSceneParams(overrides?: { maxIterations?: number; maxRaySteps?: number }) {
-  return {
-    power: fractal.power,
-    maxIterations: overrides?.maxIterations ?? fractal.maxIterations,
-    bailout: fractal.bailout,
-    maxRaySteps: overrides?.maxRaySteps ?? graphics.maxRaySteps,
-    resolutionScale: graphics.resolutionScale,
-    animatedColors: graphics.animatedColors,
-    stepFactor: fractal.config.stepFactor ?? 1,
-    originOffset: computeOriginOffset(),
-  };
-}
-
-const { isPressed } = useInput();
+// Input primitives.
+const input = useInput();
 const pointerLock = usePointerLock(canvasRef);
+const touchControls = useTouchControls(canvasRef);
 installInputModeDetection();
 const { isTouchActive } = useInputMode();
-const touchControls = useTouchControls(canvasRef);
 
-let isMovingThisFrame = false;
-const adaptiveQuality = useAdaptiveQuality({ onScaleChange: applyCanvasResolution });
+// Radial menu (press-and-hold cycle). `scene.resetCamera` fires when the
+// fractal type changes via this UI so the view snaps to a sensible default.
+const radial = useRadialMenuController({ onResetCamera: scene.resetCamera });
+const {
+  activeId: radialActiveId,
+  currentOptions: radialOptions,
+  selectedIndex: radialSelectedIndex,
+  currentValue: radialCurrentValue,
+  cursorX: radialCursorX,
+  cursorY: radialCursorY,
+} = radial;
 
-const gameLoop = useGameLoop({
-  update(dt) {
-    if (appState.mode !== 'playing') return;
-
-    // Camera rotation from mouse + touch (disabled while radial menu is open)
-    const { dx, dy } = pointerLock.consumeMovement();
-    const touchLook = touchControls.consumeLookDelta();
-    const totalDx = dx + touchLook.dx;
-    const totalDy = dy + touchLook.dy;
-    if (!radialActiveId.value) {
-      camera.rotate(totalDx * controls.mouseSensitivity, -totalDy * controls.mouseSensitivity);
-    }
-
-    // Distance-based camera speed: slow near surfaces, fast in open space
-    const dist = evaluateSDF(
-      fractal.fractalType,
-      camera.position[0]!,
-      camera.position[1]!,
-      camera.position[2]!,
-      { power: fractal.power, maxIterations: fractal.maxIterations, bailout: fractal.bailout },
-    );
-    const absDist = Math.abs(dist);
-    const speedScale = Math.max(1e-6, Math.min(1, absDist));
-    const sprint = isPressed('ShiftLeft') || isPressed('ShiftRight') ? 2 : 1;
-    const speed = controls.cameraSpeed * speedScale * sprint * dt;
-
-    // Dynamic iterations: more detail when close, fewer when far
-    let effectiveIterations = fractal.maxIterations;
-    if (graphics.dynamicIterations) {
-      const dynMax = Math.min(
-        fractal.maxIterations,
-        fractal.config.dynMaxIterations ?? fractal.maxIterations,
-      );
-      const iterScale = Math.max(
-        0,
-        Math.min(
-          1,
-          -Math.log10(Math.max(absDist, DYN_ITER_DIST_FLOOR)) / DYN_ITER_LOG_SCALE_DIVISOR,
-        ),
-      );
-      const minIter = Math.max(DYN_ITER_MIN_ABSOLUTE, Math.ceil(dynMax * DYN_ITER_MIN_FACTOR));
-      effectiveIterations = Math.ceil(minIter + (dynMax - minIter) * iterScale);
-    }
-    currentIterations.value = effectiveIterations;
-
-    const bindings = controls.keybindings;
-    const rollSpeed = 1.5 * dt;
-    const touchMove = touchControls.getMovementVector();
-    const touchActive =
-      Math.abs(touchMove.x) > 0.05 ||
-      Math.abs(touchMove.y) > 0.05 ||
-      Math.abs(touchLook.dx) > 1 ||
-      Math.abs(touchLook.dy) > 1;
-    const moving =
-      isPressed(bindings.moveForward) ||
-      isPressed(bindings.moveBackward) ||
-      isPressed(bindings.moveRight) ||
-      isPressed(bindings.moveLeft) ||
-      isPressed(bindings.rollLeft) ||
-      isPressed(bindings.rollRight) ||
-      isPressed('Mouse0') ||
-      isPressed('Mouse2') ||
-      Math.abs(dx) > 1 ||
-      Math.abs(dy) > 1 ||
-      touchActive;
-
-    // Adaptive quality
-    adaptiveQuality.update(dt, gameLoop.fps.value, moving);
-
-    if (isPressed(bindings.moveForward) || isPressed('Mouse0')) camera.moveForward(speed);
-    if (isPressed(bindings.moveBackward) || isPressed('Mouse2')) camera.moveForward(-speed);
-    if (isPressed(bindings.moveRight)) camera.moveRight(speed);
-    if (isPressed(bindings.moveLeft)) camera.moveRight(-speed);
-    const shifting = isPressed('ShiftLeft') || isPressed('ShiftRight');
-    if (isPressed(bindings.rollLeft)) {
-      if (shifting) {
-        camera.moveUp(-speed);
-      } else {
-        camera.rollCamera(-rollSpeed);
-      }
-    }
-    if (isPressed(bindings.rollRight)) {
-      if (shifting) {
-        camera.moveUp(speed);
-      } else {
-        camera.rollCamera(rollSpeed);
-      }
-    }
-
-    // Touch analog movement (additive to keyboard)
-    if (Math.abs(touchMove.x) > 0.05 || Math.abs(touchMove.y) > 0.05) {
-      camera.moveForward(-touchMove.y * speed);
-      camera.moveRight(touchMove.x * speed);
-    }
-
-    // Track movement for render path selection
-    isMovingThisFrame = moving;
-    if (moving) {
-      renderer?.resetAccumulation();
-    } else if (wasMoving) {
-      syncURLState();
-    }
-    wasMoving = moving;
-
-    // Update reactive camera position for HUD
-    cameraPos.value = {
-      x: camera.position[0]!,
-      y: camera.position[1]!,
-      z: camera.position[2]!,
-      yaw: camera.yaw,
-      pitch: camera.pitch,
-      roll: camera.roll,
-    };
-
-    // Update renderer uniforms
-    renderer?.updateUniforms(
-      camera,
-      buildLiveSceneParams({ maxIterations: effectiveIterations }),
-      (performance.now() - startTime) / 1000,
-    );
-  },
-  render() {
-    renderer?.render(!isMovingThisFrame && !graphics.animatedColors);
-    sampleCount.value = renderer?.sampleCount ?? 0;
-  },
+// Adaptive resolution scaling tied to live FPS.
+let applyCanvasResolution: ((scale: number) => void) | null = null;
+const adaptiveQuality = useAdaptiveQuality({
+  onScaleChange: (scale) => applyCanvasResolution?.(scale),
 });
 
-// Handle title screen preview rendering
-const previewLoop = useGameLoop({
-  update() {
-    // Only auto-orbit on title/select screen (and settings opened from title)
-    // In preview mode, camera stays fixed at URL position
-    const shouldOrbit =
-      !previewMode &&
-      (appState.mode === 'title' ||
-        appState.mode === 'select' ||
-        (appState.mode === 'settings' && appState.settingsSource === 'title'));
-
-    if (shouldOrbit) {
-      const t = performance.now() / 5000;
-      camera.position[0] = Math.cos(t) * 3;
-      camera.position[1] = Math.sin(t * 0.3) * 0.5;
-      camera.position[2] = Math.sin(t) * 3;
-      camera.yaw = t + Math.PI;
-      camera.pitch = -Math.sin(t * 0.3) * 0.15;
-    }
-    // Paused / settings-from-pause: keep current camera position (frozen frame)
-
-    // Use low quality only on title screen, not in settings or preview mode
-    const lowQuality = appState.mode === 'title' && !previewMode;
-    renderer?.updateUniforms(
-      camera,
-      buildLiveSceneParams(
-        lowQuality
-          ? { maxIterations: PREVIEW_MAX_ITERATIONS, maxRaySteps: PREVIEW_MAX_RAY_STEPS }
-          : undefined,
-      ),
-      (performance.now() - startTime) / 1000,
-    );
-  },
-  render() {
-    renderer?.render();
-  },
+// Gameplay + title-preview render loops.
+const { gameLoop, currentIterations, sampleCount } = useGameplayLoop({
+  rendererRef,
+  scene,
+  pointerLock,
+  touchControls,
+  adaptiveQuality,
+  radial,
+  input,
+  urlState,
+  getTimeSeconds,
+});
+const { fps } = gameLoop;
+const { previewLoop } = usePreviewLoop({
+  rendererRef,
+  scene,
+  previewMode,
+  getTimeSeconds,
 });
 
-async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
-  canvasRef.value = canvas;
-
-  try {
-    const ctx = await WebGPUContext.create(canvas);
-    renderer = new Renderer(ctx);
-    renderer.resize(canvas.width, canvas.height);
-    renderer.setFractalType(fractal.fractalType);
-    renderer.setColorMode(fractal.colorMode);
-    renderer.setRenderMode(fractal.renderMode);
-    startTime = performance.now();
-
-    if (previewMode) {
-      // Screenshot mode: render continuously at full quality, no UI
-      previewLoop.start();
-    } else if (startFromURL) {
-      // Jump directly into 3D view from shared URL
-      appState.startGame();
-    } else {
-      previewLoop.start();
-    }
-  } catch (e) {
-    gpuError.value = e instanceof Error ? e.message : 'Unknown WebGPU error';
-  }
-}
-
-function onResize(width: number, height: number): void {
-  displayWidth = width;
-  displayHeight = height;
-  const scale = appState.mode === 'playing' ? 1 : PREVIEW_RESOLUTION_SCALE;
-  applyCanvasResolution(scale);
-}
-
-// Watch for fractal/color mode changes
-watch(
-  () => fractal.fractalType,
-  (type) => {
-    renderer?.setFractalType(type);
-    if (!startFromURL) {
-      resetCamera();
-      graphics.dynamicIterations = fractal.config.defaultDynamicIterations !== false;
-    }
-  },
-);
-watch(
-  () => fractal.colorMode,
-  (mode) => {
-    renderer?.setColorMode(mode);
-    renderer?.resetAccumulation();
-    syncURLState();
-  },
-);
-watch(
-  () => fractal.renderMode,
-  (mode) => {
-    renderer?.setRenderMode(mode);
-    renderer?.resetAccumulation();
-    syncURLState();
-  },
-);
-watch([() => fractal.power, () => fractal.maxIterations, () => fractal.bailout], () => {
-  renderer?.resetAccumulation();
-  syncURLState();
+// High-level user actions (save / screenshot / load / regenerate thumbnails).
+const saveActions = useSaveActions({
+  canvasRef,
+  rendererRef,
+  savesBrowserRef,
+  previewLoop,
+  scene,
+  urlState,
+  notify,
 });
+const { loadSavedState, regenerateThumbnails } = saveActions;
 
-// Handle game state transitions
-watch(
-  () => appState.mode,
-  (mode, oldMode) => {
-    if (mode === 'playing') {
-      // Reset camera for fresh starts (title/select/saves); resume from
-      // pause keeps current pose. startFromURL suppresses reset when a
-      // caller has already positioned the camera (URL deep-link, save load).
-      if (oldMode !== 'paused' && !startFromURL) {
-        resetCamera();
-      }
-      startFromURL = false;
-      adaptiveQuality.reset();
-      applyCanvasResolution(1);
-      previewLoop.stop();
-      gameLoop.start();
-      if (!isTouchActive.value) {
-        pointerLock.requestLock();
-      }
-    } else {
-      gameLoop.stop();
-      if (mode === 'title' || mode === 'select') {
-        applyCanvasResolution(PREVIEW_RESOLUTION_SCALE);
-        previewLoop.start();
-        window.history.replaceState({}, '', window.location.pathname);
-      } else if (mode === 'paused' || mode === 'settings' || mode === 'saves') {
-        // Keep current resolution when pausing from gameplay
-        const fromGame = oldMode === 'playing' || oldMode === 'paused';
-        if (!fromGame) {
-          applyCanvasResolution(PREVIEW_RESOLUTION_SCALE);
-        }
-        previewLoop.start();
-      }
-    }
-  },
-);
+// Renderer creation + resize + mode-transition watchers.
+const lifecycle = useRendererLifecycle({
+  canvasRef,
+  rendererRef,
+  startTime,
+  scene,
+  urlState,
+  gameLoop,
+  previewLoop,
+  adaptiveQuality,
+  pointerLock,
+  isTouchActive,
+});
+const { gpuError, onCanvasReady, onResize } = lifecycle;
+applyCanvasResolution = lifecycle.applyCanvasResolution;
 
-// Handle pointer lock loss → pause (unless intentionally unlocked via Ctrl)
-let cursorUnlocked = false;
-
-watch(
-  () => pointerLock.isLocked.value,
-  (locked) => {
-    if (
-      !locked &&
-      appState.mode === 'playing' &&
-      !cursorUnlocked &&
-      !showHelpOverlay.value &&
-      !isTouchActive.value
-    ) {
-      appState.pause();
-    }
-  },
-);
-
-// Handle keyboard shortcuts
-function onKeyDown(e: KeyboardEvent): void {
-  // F1 toggles the help overlay during gameplay (closing also allowed if open)
-  if (e.code === 'F1') {
-    e.preventDefault();
-    if (appState.mode === 'playing' || showHelpOverlay.value) {
-      showHelpOverlay.value = !showHelpOverlay.value;
-    }
-    return;
-  }
-
-  // Ctrl to unlock cursor without pausing
-  if (
-    (e.code === 'ControlLeft' || e.code === 'ControlRight') &&
-    appState.mode === 'playing' &&
-    pointerLock.isLocked.value
-  ) {
-    cursorUnlocked = true;
-    pointerLock.exitLock();
-    return;
-  }
-
-  if (e.code === 'Escape') {
-    if (showHelpOverlay.value) {
-      showHelpOverlay.value = false;
-      return;
-    }
-    if (appState.mode === 'select') {
-      appState.backToTitle();
-    } else if (appState.mode === 'paused') {
-      appState.resume();
-    } else if (appState.mode === 'settings') {
-      appState.closeSettings();
-    } else if (appState.mode === 'saves') {
-      appState.closeSaves();
-    }
-    // 'playing' → pointer lock exit triggers pause via watcher above
-  }
-
-  if (appState.mode === 'playing' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-    if (e.code === controls.keybindings.toggleHud) {
-      hudSettings.toggleHud();
-    }
-    if (e.code === controls.keybindings.toggleCrosshair) {
-      hudSettings.toggleCrosshair();
-    }
-    if (e.code === controls.keybindings.toggleDynamicIterations) {
-      graphics.dynamicIterations = !graphics.dynamicIterations;
-    }
-    if (e.code === controls.keybindings.increaseIterations) {
-      fractal.adjustIterations(1);
-    }
-    if (e.code === controls.keybindings.decreaseIterations) {
-      fractal.adjustIterations(-1);
-    }
-    if (e.code === controls.keybindings.increaseBailout) {
-      fractal.adjustBailout(1);
-    }
-    if (e.code === controls.keybindings.decreaseBailout) {
-      fractal.adjustBailout(-1);
-    }
-    if (e.code === controls.keybindings.toggleAnimatedColors) {
-      graphics.animatedColors = !graphics.animatedColors;
-    }
-    if (e.code === controls.keybindings.quickSave) {
-      e.preventDefault();
-      quickSave();
-    }
-    if (e.code === controls.keybindings.screenshot) {
-      e.preventDefault();
-      takeScreenshot();
-    }
-    if (e.code === controls.keybindings.openSaves) {
-      cursorUnlocked = true;
-      pointerLock.exitLock();
-      appState.openSaves();
-    }
-    if (e.code === controls.keybindings.copyShareURL) {
-      navigator.clipboard.writeText(buildCurrentShareURL());
-      showNotification('Share URL copied to clipboard');
-    }
-
-    // Radial menu hold detection for cycle keys
-    const menuId = radialIdForKey(e.code);
-    if (menuId && !e.repeat && radialHeldKey === null) {
-      radialHeldKey = e.code;
-      beginRadialHold(menuId);
-    }
-  }
-}
-
-function onCanvasClick(): void {
-  if (appState.mode === 'playing' && !pointerLock.isLocked.value && !isTouchActive.value) {
-    cursorUnlocked = false;
-    pointerLock.requestLock();
-  }
-}
-
-// Key up: close radial menu (apply selection) or quick-tap cycle
-function onKeyUp(e: KeyboardEvent): void {
-  if (appState.mode !== 'playing' || e.ctrlKey || e.metaKey || e.altKey) return;
-
-  if (e.code === radialHeldKey) {
-    const menuId = radialIdForKey(e.code);
-    if (menuId) endRadialHold(menuId, e.shiftKey);
-    radialHeldKey = null;
-  }
-}
-
-function onMouseDown(e: MouseEvent): void {
-  if (appState.mode !== 'playing') return;
-  // Mouse button 5 (browser forward) = toggle dynamic iterations
-  if (e.button === MOUSE_BUTTON_BROWSER_FORWARD) {
-    e.preventDefault();
-    graphics.dynamicIterations = !graphics.dynamicIterations;
-  }
-}
-
-function onContextMenu(e: MouseEvent): void {
-  if (appState.mode === 'playing') {
-    e.preventDefault();
-  }
-}
-
-function onWheel(e: WheelEvent): void {
-  if (appState.mode !== 'playing') return;
-  e.preventDefault();
-  fractal.adjustIterations(e.deltaY < 0 ? 1 : -1);
-}
-
-useEventListener(window, 'keydown', onKeyDown);
-useEventListener(window, 'keyup', onKeyUp);
-useEventListener(window, 'mousedown', onMouseDown);
-useEventListener(window, 'mousemove', onRadialMouseMove);
-useEventListener(window, 'contextmenu', onContextMenu);
-useEventListener(window, 'wheel', onWheel, { passive: false });
-
-onUnmounted(() => {
-  gameLoop.stop();
-  previewLoop.stop();
-  renderer?.destroy();
+// Global keyboard + mouse shortcuts and pointer-lock pause behavior.
+const { onCanvasClick } = useAppShortcuts({
+  pointerLock,
+  radial,
+  saveActions,
+  urlState,
+  notify,
+  isTouchActive,
+  showHelpOverlay,
 });
 </script>
 
 <template>
   <div class="h-screen w-screen">
-    <div v-if="gpuError" class="flex h-full items-center justify-center">
-      <div class="flex flex-col items-center gap-4 text-center">
-        <p class="text-xl text-red-400">WebGPU Not Available</p>
-        <p class="text-sm text-white/50">{{ gpuError }}</p>
-      </div>
-    </div>
+    <GpuErrorScreen v-if="gpuError" :message="gpuError" />
 
     <template v-else>
       <WebGPUCanvas
@@ -837,42 +162,22 @@ onUnmounted(() => {
       />
       <GameHud
         v-if="appState.mode === 'playing'"
-        :fps="gameLoop.fps.value"
+        :fps="fps"
         :camera="cameraPos"
         :effective-iterations="currentIterations"
         :sample-count="sampleCount"
       />
 
-      <!-- Touch-only action buttons: rendered outside GameHud's pointer-events-none
-           container so mobile touch hit-testing isn't blocked by the parent. -->
-      <div
+      <TouchActionButtons
         v-if="isTouchActive && appState.mode === 'playing'"
-        class="fixed top-3 right-3 z-20 flex gap-2"
-      >
-        <button
-          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/60 backdrop-blur-sm transition-colors active:bg-white/20"
-          @touchstart.stop.prevent="showHelpOverlay = !showHelpOverlay"
-          @click.stop="showHelpOverlay = !showHelpOverlay"
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-            <text x="9" y="14" text-anchor="middle" font-size="14" font-weight="bold">?</text>
-          </svg>
-        </button>
-        <button
-          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/60 backdrop-blur-sm transition-colors active:bg-white/20"
-          @touchstart.stop.prevent="appState.pause()"
-          @click.stop="appState.pause()"
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-            <rect x="3" y="2" width="4" height="14" rx="1" />
-            <rect x="11" y="2" width="4" height="14" rx="1" />
-          </svg>
-        </button>
-      </div>
+        :show-help="showHelpOverlay"
+        @toggle-help="showHelpOverlay = !showHelpOverlay"
+        @pause="appState.pause()"
+      />
 
       <RadialMenu
         v-if="radialActiveId"
-        :options="radialMenuOptions"
+        :options="radialOptions"
         :selected-index="radialSelectedIndex"
         :current-value="radialCurrentValue"
         :cursor-x="radialCursorX"
@@ -881,25 +186,7 @@ onUnmounted(() => {
 
       <HelpOverlay v-if="showHelpOverlay" @close="showHelpOverlay = false" />
 
-      <Transition name="fade">
-        <div
-          v-if="shareNotification"
-          class="pointer-events-none fixed bottom-8 left-1/2 z-30 -translate-x-1/2 border border-white/10 bg-surface-dim/90 px-4 py-2 font-mono text-sm text-accent-bright"
-        >
-          {{ notificationText }}
-        </div>
-      </Transition>
+      <ShareToast :visible="toastVisible" :text="toastText" />
     </template>
   </div>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>
