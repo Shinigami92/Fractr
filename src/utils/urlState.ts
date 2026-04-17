@@ -1,11 +1,5 @@
-import {
-  COLOR_MODES,
-  type ColorMode,
-  FRACTAL_TYPES,
-  type FractalType,
-  RENDER_MODES,
-  type RenderMode,
-} from '../stores/fractalParams';
+import type { ColorMode, FractalType, RenderMode } from '../stores/fractalParams';
+import { COLOR_MODES, FRACTAL_TYPES, RENDER_MODES } from '../stores/fractalParams';
 
 export interface SharedState {
   fractalType: FractalType;

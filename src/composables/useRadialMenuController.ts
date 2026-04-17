@@ -1,13 +1,11 @@
 import { useEventListener } from '@vueuse/core';
 import { computed } from 'vue';
 import { useControlSettings } from '../stores/controlSettings';
+import type { ColorMode, FractalType, RenderMode } from '../stores/fractalParams';
 import {
   COLOR_MODE_OPTIONS,
-  type ColorMode,
   FRACTAL_CONFIGS,
-  type FractalType,
   RENDER_MODE_OPTIONS,
-  type RenderMode,
   useFractalParams,
 } from '../stores/fractalParams';
 import { useRadialMenu } from './useRadialMenu';

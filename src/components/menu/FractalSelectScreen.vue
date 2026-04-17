@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAppState } from '../../stores/appState';
-import { FRACTAL_CONFIGS, type FractalType, useFractalParams } from '../../stores/fractalParams';
+import type { FractalType } from '../../stores/fractalParams';
+import { FRACTAL_CONFIGS, useFractalParams } from '../../stores/fractalParams';
 
 const appState = useAppState();
 const fractal = useFractalParams();

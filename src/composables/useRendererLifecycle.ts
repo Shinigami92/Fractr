@@ -1,4 +1,5 @@
-import { onUnmounted, ref, type Ref, type ShallowRef, watch } from 'vue';
+import type { Ref, ShallowRef } from 'vue';
+import { onUnmounted, ref, watch } from 'vue';
 import { PREVIEW_RESOLUTION_SCALE } from '../constants/game';
 import { WebGPUContext } from '../engine/gpu/WebGPUContext';
 import { Renderer } from '../engine/Renderer';

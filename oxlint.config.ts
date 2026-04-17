@@ -10,7 +10,11 @@ export default defineConfig({
   categories: {
     correctness: 'error',
   },
-  rules: {},
+  rules: {
+    'typescript/consistent-type-imports': 'error',
+    'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+    'sort-imports': ['error', { ignoreCase: true, ignoreDeclarationSort: true }],
+  },
   env: {
     builtin: true,
   },

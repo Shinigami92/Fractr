@@ -1,5 +1,6 @@
 import { useTimeoutFn } from '@vueuse/core';
-import { computed, type Ref, ref } from 'vue';
+import type { Ref } from 'vue';
+import { computed, ref } from 'vue';
 import { RADIAL_MENU_HOLD_DELAY_MS } from '../constants/game';
 import { radialSelectedIndex } from '../utils/radialGeometry';
 

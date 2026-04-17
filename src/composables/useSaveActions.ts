@@ -1,7 +1,8 @@
 import { promiseTimeout } from '@vueuse/core';
 import type { Ref, ShallowRef } from 'vue';
 import type { Renderer } from '../engine/Renderer';
-import { type SaveEntry, type SavedState, saveState, saveThumbnail } from '../services/savesDB';
+import type { SavedState, SaveEntry } from '../services/savesDB';
+import { saveState, saveThumbnail } from '../services/savesDB';
 import {
   captureCanvasPng,
   captureCanvasThumbnail,

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useTimeoutFn } from '@vueuse/core';
-import { onMounted, onUnmounted, ref, reactive } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
+import type { SaveEntry } from '../../services/savesDB';
 import {
-  type SaveEntry,
   deleteSave,
   exportSaves,
   getAllSaves,
@@ -11,7 +11,8 @@ import {
   validateImport,
 } from '../../services/savesDB';
 import { useAppState } from '../../stores/appState';
-import { FRACTAL_CONFIGS, type FractalType } from '../../stores/fractalParams';
+import type { FractalType } from '../../stores/fractalParams';
+import { FRACTAL_CONFIGS } from '../../stores/fractalParams';
 
 const emit = defineEmits<{
   load: [state: SaveEntry['state']];

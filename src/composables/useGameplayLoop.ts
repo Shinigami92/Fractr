@@ -1,4 +1,5 @@
-import { ref, type ShallowRef } from 'vue';
+import type { ShallowRef } from 'vue';
+import { ref } from 'vue';
 import {
   DYN_ITER_DIST_FLOOR,
   DYN_ITER_LOG_SCALE_DIVISOR,

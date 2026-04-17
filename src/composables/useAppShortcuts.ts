@@ -1,5 +1,6 @@
 import { useEventListener } from '@vueuse/core';
-import { type Ref, watch } from 'vue';
+import type { Ref } from 'vue';
+import { watch } from 'vue';
 import { MOUSE_BUTTON_BROWSER_FORWARD } from '../constants/game';
 import { useAppState } from '../stores/appState';
 import { useControlSettings } from '../stores/controlSettings';

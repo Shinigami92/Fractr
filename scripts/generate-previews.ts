@@ -1,5 +1,6 @@
 import { chromium } from '@playwright/test';
-import { type ChildProcess, execSync, spawn } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
+import type { ChildProcess } from 'node:child_process';
 import { mkdirSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 

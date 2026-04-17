@@ -3,10 +3,10 @@ import { ref } from 'vue';
 import { useInputMode } from '../../composables/useInputMode';
 import { useAppState } from '../../stores/appState';
 import { useControlSettings } from '../../stores/controlSettings';
+import type { FractalType } from '../../stores/fractalParams';
 import {
   COLOR_MODE_OPTIONS,
   FRACTAL_CONFIGS,
-  type FractalType,
   RENDER_MODE_OPTIONS,
   useFractalParams,
 } from '../../stores/fractalParams';

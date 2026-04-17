@@ -1,5 +1,6 @@
 import { useEventListener } from '@vueuse/core';
-import { type Ref, ref } from 'vue';
+import type { Ref } from 'vue';
+import { ref } from 'vue';
 
 export function usePointerLock(canvas: Ref<HTMLCanvasElement | null>) {
   const isLocked = ref(false);
