@@ -4,7 +4,7 @@ import type { PiniaPlugin } from 'pinia';
  * Bump this when any store's shape changes (added/removed/renamed fields).
  * On mismatch, all persisted settings are discarded and reset to defaults.
  */
-const SETTINGS_VERSION = 3;
+const SETTINGS_VERSION = 4;
 const VERSION_KEY = 'fractr:settings-version';
 
 const PERSISTED_STORES = new Set([

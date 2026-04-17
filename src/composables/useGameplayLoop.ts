@@ -105,7 +105,6 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
       }
       currentIterations.value = effectiveIterations;
 
-      const bindings = controls.keybindings;
       const rollSpeed = 1.5 * dt;
       const touchMove = deps.touchControls.getMovementVector();
       const touchActive =
@@ -113,13 +112,17 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
         Math.abs(touchMove.y) > 0.05 ||
         Math.abs(touchLook.dx) > 1 ||
         Math.abs(touchLook.dy) > 1;
+      const kb = (id: Parameters<typeof controls.getBinding>[0]): boolean => {
+        const code = controls.getBinding(id, 'keyboard');
+        return code !== undefined && isPressed(code);
+      };
       const moving =
-        isPressed(bindings.moveForward) ||
-        isPressed(bindings.moveBackward) ||
-        isPressed(bindings.moveRight) ||
-        isPressed(bindings.moveLeft) ||
-        isPressed(bindings.rollLeft) ||
-        isPressed(bindings.rollRight) ||
+        kb('moveForward') ||
+        kb('moveBackward') ||
+        kb('moveRight') ||
+        kb('moveLeft') ||
+        kb('rollLeft') ||
+        kb('rollRight') ||
         isPressed('Mouse0') ||
         isPressed('Mouse2') ||
         Math.abs(dx) > 1 ||
@@ -129,19 +132,19 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
       // Adaptive quality
       deps.adaptiveQuality.update(dt, gameLoop.fps.value, moving);
 
-      if (isPressed(bindings.moveForward) || isPressed('Mouse0')) camera.moveForward(speed);
-      if (isPressed(bindings.moveBackward) || isPressed('Mouse2')) camera.moveForward(-speed);
-      if (isPressed(bindings.moveRight)) camera.moveRight(speed);
-      if (isPressed(bindings.moveLeft)) camera.moveRight(-speed);
+      if (kb('moveForward') || isPressed('Mouse0')) camera.moveForward(speed);
+      if (kb('moveBackward') || isPressed('Mouse2')) camera.moveForward(-speed);
+      if (kb('moveRight')) camera.moveRight(speed);
+      if (kb('moveLeft')) camera.moveRight(-speed);
       const shifting = isPressed('ShiftLeft') || isPressed('ShiftRight');
-      if (isPressed(bindings.rollLeft)) {
+      if (kb('rollLeft')) {
         if (shifting) {
           camera.moveUp(-speed);
         } else {
           camera.rollCamera(-rollSpeed);
         }
       }
-      if (isPressed(bindings.rollRight)) {
+      if (kb('rollRight')) {
         if (shifting) {
           camera.moveUp(speed);
         } else {

@@ -100,33 +100,34 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
     }
 
     if (appState.mode === 'playing' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      const b = controls.keybindings;
-      if (e.code === b.toggleHud) hudSettings.toggleHud();
-      if (e.code === b.toggleCrosshair) hudSettings.toggleCrosshair();
-      if (e.code === b.toggleDynamicIterations) {
+      const kb = (id: Parameters<typeof controls.getBinding>[0]) =>
+        controls.getBinding(id, 'keyboard');
+      if (e.code === kb('toggleHud')) hudSettings.toggleHud();
+      if (e.code === kb('toggleCrosshair')) hudSettings.toggleCrosshair();
+      if (e.code === kb('toggleDynamicIterations')) {
         graphics.dynamicIterations = !graphics.dynamicIterations;
       }
-      if (e.code === b.increaseIterations) fractal.adjustIterations(1);
-      if (e.code === b.decreaseIterations) fractal.adjustIterations(-1);
-      if (e.code === b.increaseBailout) fractal.adjustBailout(1);
-      if (e.code === b.decreaseBailout) fractal.adjustBailout(-1);
-      if (e.code === b.toggleAnimatedColors) {
+      if (e.code === kb('increaseIterations')) fractal.adjustIterations(1);
+      if (e.code === kb('decreaseIterations')) fractal.adjustIterations(-1);
+      if (e.code === kb('increaseBailout')) fractal.adjustBailout(1);
+      if (e.code === kb('decreaseBailout')) fractal.adjustBailout(-1);
+      if (e.code === kb('toggleAnimatedColors')) {
         graphics.animatedColors = !graphics.animatedColors;
       }
-      if (e.code === b.quickSave) {
+      if (e.code === kb('quickSave')) {
         e.preventDefault();
         void deps.saveActions.quickSave();
       }
-      if (e.code === b.screenshot) {
+      if (e.code === kb('screenshot')) {
         e.preventDefault();
         void deps.saveActions.takeScreenshot();
       }
-      if (e.code === b.openSaves) {
+      if (e.code === kb('openSaves')) {
         cursorUnlocked = true;
         deps.pointerLock.exitLock();
         appState.openSaves();
       }
-      if (e.code === b.copyShareURL) {
+      if (e.code === kb('copyShareURL')) {
         void navigator.clipboard.writeText(deps.urlState.buildCurrentShareURL());
         deps.notify('Share URL copied to clipboard');
       }

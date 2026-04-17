@@ -90,10 +90,9 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
   });
 
   function idForKey(code: string): RadialMenuId | undefined {
-    const bindings = controls.keybindings;
-    if (code === bindings.cycleColorMode) return 'color';
-    if (code === bindings.cycleRenderMode) return 'render';
-    if (code === bindings.cycleFractalType) return 'fractal';
+    if (code === controls.getBinding('cycleColorMode', 'keyboard')) return 'color';
+    if (code === controls.getBinding('cycleRenderMode', 'keyboard')) return 'render';
+    if (code === controls.getBinding('cycleFractalType', 'keyboard')) return 'fractal';
     return undefined;
   }
 
