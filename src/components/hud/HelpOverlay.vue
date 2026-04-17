@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useInputMode } from '../../composables/useInputMode';
-import type { ActionId } from '../../input/actions';
-import { displayKeyboardCode } from '../../input/actions';
+import type { ActionCategory } from '../../input/actions';
+import { ACTION_IDS, ACTIONS, displayKeyboardCode } from '../../input/actions';
 import { useControlSettings } from '../../stores/controlSettings';
 
 const emit = defineEmits<{ close: [] }>();
@@ -19,90 +19,60 @@ interface KeyGroup {
   entries: KeyEntry[];
 }
 
-function key(id: ActionId): string {
-  const code = controls.getBinding(id, 'keyboard');
-  return code ? displayKeyboardCode(code) : '?';
-}
+/** Display title + order for each category when rendering the overlay. */
+const CATEGORY_ORDER: ActionCategory[] = ['Movement', 'Modes', 'Fractal', 'Saves', 'UI'];
+const CATEGORY_TITLES: Record<ActionCategory, string> = {
+  Movement: 'Movement',
+  Camera: 'Camera',
+  Modes: 'Modes',
+  Fractal: 'Fractal Parameters',
+  Saves: 'Saves & Sharing',
+  UI: 'UI',
+};
 
-const keyboardGroups = computed<KeyGroup[]>(() => [
-  {
-    title: 'Movement',
-    entries: [
-      {
-        key: `${key('moveForward')} ${key('moveLeft')} ${key('moveBackward')} ${key('moveRight')}`,
-        label: 'Move',
-      },
-      { key: 'Mouse', label: 'Look' },
-      {
-        key: `${key('rollLeft')} / ${key('rollRight')}`,
-        label: 'Roll',
-      },
-      {
-        key: `Shift+${key('rollLeft')} / Shift+${key('rollRight')}`,
-        label: 'Up / Down',
-      },
-      { key: 'Shift', label: 'Sprint (2x)' },
-      { key: 'Left click', label: 'Move forward' },
-      { key: 'Right click', label: 'Move backward' },
-    ],
-  },
-  {
-    title: 'Modes',
-    entries: [
-      {
-        key: `${key('cycleColorMode')} / Shift+${key('cycleColorMode')}`,
-        label: 'Cycle color mode',
-      },
-      {
-        key: `${key('cycleRenderMode')} / Shift+${key('cycleRenderMode')}`,
-        label: 'Cycle render mode',
-      },
-      {
-        key: `${key('cycleFractalType')} / Shift+${key('cycleFractalType')}`,
-        label: 'Cycle fractal',
-      },
-      {
-        key: `Hold ${key('cycleColorMode')} / ${key('cycleRenderMode')} / ${key('cycleFractalType')}`,
-        label: 'Open radial menu',
-      },
-    ],
-  },
-  {
-    title: 'Fractal Parameters',
-    entries: [
-      { key: key('toggleDynamicIterations'), label: 'Toggle dynamic iterations' },
-      {
-        key: `${key('increaseIterations')} / ${key('decreaseIterations')}`,
-        label: 'Iterations +/-',
-      },
-      {
-        key: `${key('increaseBailout')} / ${key('decreaseBailout')}`,
-        label: 'Bailout +/-',
-      },
-      { key: key('toggleAnimatedColors'), label: 'Toggle animated colors' },
-      { key: 'Scroll wheel', label: 'Adjust max iterations' },
-    ],
-  },
-  {
-    title: 'Saves & Sharing',
-    entries: [
-      { key: key('quickSave'), label: 'Quick save location' },
-      { key: key('screenshot'), label: 'Screenshot to clipboard' },
-      { key: key('openSaves'), label: 'Browse saved locations' },
-      { key: key('copyShareURL'), label: 'Copy share URL' },
-    ],
-  },
-  {
-    title: 'UI',
-    entries: [
-      { key: 'F1', label: 'Toggle this overlay' },
-      { key: key('toggleHud'), label: 'Toggle HUD' },
-      { key: key('toggleCrosshair'), label: 'Toggle crosshair' },
-      { key: 'Esc', label: 'Pause / back' },
-      { key: 'Ctrl', label: 'Unlock cursor (no pause)' },
-    ],
-  },
-]);
+/**
+ * Supplementary entries that are intrinsic to the app shell (mouse, modifiers,
+ * hardcoded UI hotkeys) and therefore not part of the rebindable action
+ * registry. Merged in under the matching category.
+ */
+const EXTRA_ENTRIES: ReadonlyArray<KeyEntry & { category: ActionCategory }> = [
+  { category: 'Movement', key: 'Mouse', label: 'Look' },
+  { category: 'Movement', key: 'Shift', label: 'Sprint (2x)' },
+  { category: 'Movement', key: 'Left click', label: 'Move forward' },
+  { category: 'Movement', key: 'Right click', label: 'Move backward' },
+  { category: 'Modes', key: 'Shift + cycle key', label: 'Reverse cycle direction' },
+  { category: 'Modes', key: 'Hold cycle key', label: 'Open radial menu' },
+  { category: 'Fractal', key: 'Scroll wheel', label: 'Adjust max iterations' },
+  { category: 'UI', key: 'F1', label: 'Toggle this overlay' },
+  { category: 'UI', key: 'Esc', label: 'Pause / back' },
+  { category: 'UI', key: 'Ctrl', label: 'Unlock cursor (no pause)' },
+];
+
+const keyboardGroups = computed<KeyGroup[]>(() => {
+  const byCategory = new Map<ActionCategory, KeyEntry[]>();
+  const push = (cat: ActionCategory, entry: KeyEntry): void => {
+    const list = byCategory.get(cat);
+    if (list) list.push(entry);
+    else byCategory.set(cat, [entry]);
+  };
+
+  for (const id of ACTION_IDS) {
+    const action = ACTIONS[id];
+    const code = controls.getBinding(id, 'keyboard');
+    push(action.category, {
+      key: code ? displayKeyboardCode(code) : '—',
+      label: action.label,
+    });
+  }
+  for (const extra of EXTRA_ENTRIES) {
+    push(extra.category, { key: extra.key, label: extra.label });
+  }
+
+  return CATEGORY_ORDER.filter((cat) => byCategory.has(cat)).map((cat) => ({
+    title: CATEGORY_TITLES[cat],
+    entries: byCategory.get(cat) ?? [],
+  }));
+});
 
 const touchGroups: KeyGroup[] = [
   {
