@@ -19,8 +19,19 @@ export function usePointerLock(canvas: Ref<HTMLCanvasElement | null>) {
   }
 
   function requestLock(): void {
+    const el = canvas.value;
+    if (!el) return;
     try {
-      void canvas.value?.requestPointerLock();
+      // Modern Chromium returns a Promise that rejects with NotAllowedError
+      // when there's no user gesture (e.g. HMR remount while mode='playing').
+      // Older signatures return void. Swallow both forms — the canvas click
+      // handler will retry on the next user click.
+      const result: unknown = el.requestPointerLock();
+      if (result instanceof Promise) {
+        result.catch(() => {
+          /* benign: no user gesture, or API unavailable */
+        });
+      }
     } catch {
       // Pointer Lock API not available (e.g. mobile browsers)
     }

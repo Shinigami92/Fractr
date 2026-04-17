@@ -30,6 +30,9 @@ export class WebGPUContext {
 
     const device = await adapter.requestDevice();
     void device.lost.then((info) => {
+      // 'destroyed' fires on our own device.destroy() (e.g. HMR teardown) —
+      // not an error. Only log genuine device loss.
+      if (info.reason === 'destroyed') return;
       console.error('WebGPU device lost:', info.message);
     });
 
