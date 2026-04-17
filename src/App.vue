@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useEventListener } from '@vueuse/core';
+import { promiseTimeout, useEventListener, useTimeoutFn } from '@vueuse/core';
 import { computed, onUnmounted, ref, watch } from 'vue';
 import GameHud from './components/hud/GameHud.vue';
 import HelpOverlay from './components/hud/HelpOverlay.vue';
@@ -64,12 +64,20 @@ const savesBrowserRef = ref<InstanceType<typeof SavesBrowser> | null>(null);
 const shareNotification = ref(false);
 const notificationText = ref('');
 
+const notificationDurationMs = ref(2000);
+const { start: startNotificationHide } = useTimeoutFn(
+  () => {
+    shareNotification.value = false;
+  },
+  notificationDurationMs,
+  { immediate: false },
+);
+
 function showNotification(text: string, duration = 2000): void {
   notificationText.value = text;
   shareNotification.value = true;
-  setTimeout(() => {
-    shareNotification.value = false;
-  }, duration);
+  notificationDurationMs.value = duration;
+  startNotificationHide();
 }
 
 // Radial menu
@@ -302,7 +310,7 @@ async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
       savesBrowserRef.value?.setThumbnail(save.stateHash, blob);
     }
     // Delay between captures
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await promiseTimeout(100);
   }
 
   // Restore previous state

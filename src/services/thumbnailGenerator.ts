@@ -1,3 +1,4 @@
+import { promiseTimeout } from '@vueuse/core';
 import type { FPSCamera } from '../engine/camera/FPSCamera';
 import type { Renderer } from '../engine/Renderer';
 import { FRACTAL_CONFIGS } from '../stores/fractalParams';
@@ -91,7 +92,7 @@ export async function renderSavedStateToBlob(
   }
 
   // Extra settle for GPU flush before toBlob reads the canvas
-  await new Promise((resolve) => setTimeout(resolve, GPU_SETTLE_MS));
+  await promiseTimeout(GPU_SETTLE_MS);
 
   return captureCanvasThumbnail(canvas);
 }

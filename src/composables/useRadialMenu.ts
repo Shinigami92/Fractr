@@ -1,3 +1,4 @@
+import { useTimeoutFn } from '@vueuse/core';
 import { computed, type Ref, ref } from 'vue';
 import { RADIAL_MENU_HOLD_DELAY_MS } from '../constants/game';
 import { radialSelectedIndex } from '../utils/radialGeometry';
@@ -30,7 +31,6 @@ export function useRadialMenu<Id extends string>(options: UseRadialMenuOptions<I
   const activeId: Ref<Id | null> = ref(null);
   const cursorX = ref(0);
   const cursorY = ref(0);
-  let holdTimer: ReturnType<typeof setTimeout> | null = null;
   let heldId: Id | null = null;
 
   const currentOptions = computed(() => (activeId.value ? options.getOptions(activeId.value) : []));
@@ -39,22 +39,25 @@ export function useRadialMenu<Id extends string>(options: UseRadialMenuOptions<I
     radialSelectedIndex(cursorX.value, cursorY.value, currentOptions.value.length),
   );
 
-  function clearTimer(): void {
-    if (holdTimer) {
-      clearTimeout(holdTimer);
-      holdTimer = null;
-    }
-  }
-
-  function beginHold(id: Id): void {
-    if (holdTimer || activeId.value) return;
-    heldId = id;
-    holdTimer = setTimeout(() => {
-      holdTimer = null;
-      activeId.value = id;
+  const {
+    start: startHoldTimer,
+    stop: stopHoldTimer,
+    isPending: isHoldPending,
+  } = useTimeoutFn(
+    () => {
+      if (heldId === null) return;
+      activeId.value = heldId;
       cursorX.value = 0;
       cursorY.value = 0;
-    }, RADIAL_MENU_HOLD_DELAY_MS);
+    },
+    RADIAL_MENU_HOLD_DELAY_MS,
+    { immediate: false },
+  );
+
+  function beginHold(id: Id): void {
+    if (isHoldPending.value || activeId.value) return;
+    heldId = id;
+    startHoldTimer();
   }
 
   function endHold(id: Id, shiftKey: boolean): void {
@@ -71,7 +74,7 @@ export function useRadialMenu<Id extends string>(options: UseRadialMenuOptions<I
     }
     activeId.value = null;
     heldId = null;
-    clearTimer();
+    stopHoldTimer();
   }
 
   function onMouseMove(e: MouseEvent): void {

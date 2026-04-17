@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTimeoutFn } from '@vueuse/core';
 import { onMounted, onUnmounted, ref, reactive } from 'vue';
 import {
   type SaveEntry,
@@ -84,6 +85,13 @@ function onImportClick(): void {
 }
 
 const importStatus = ref('');
+const { start: startImportStatusClear } = useTimeoutFn(
+  () => {
+    importStatus.value = '';
+  },
+  4000,
+  { immediate: false },
+);
 
 async function onImportFile(e: Event): Promise<void> {
   const file = (e.target as HTMLInputElement).files?.[0];
@@ -99,9 +107,7 @@ async function onImportFile(e: Event): Promise<void> {
     importStatus.value = err instanceof Error ? err.message : 'Invalid save file';
   }
   if (importInput.value) importInput.value.value = '';
-  setTimeout(() => {
-    importStatus.value = '';
-  }, 4000);
+  startImportStatusClear();
 }
 
 // Called from parent after thumbnails are regenerated
