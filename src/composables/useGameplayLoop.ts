@@ -1,7 +1,7 @@
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- options struct wraps composable return types with inherent mutable Refs */
 import type { Ref, ShallowRef } from 'vue';
 import { ref } from 'vue';
-import { evaluateSDF } from '../engine/fractals/sdf';
+import { evaluateSDF } from '../engine/fractals';
 import type { Renderer } from '../engine/Renderer';
 import type { ActionId } from '../input/actions';
 import { useAppState } from '../stores/appState';
