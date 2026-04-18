@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: ['import', 'oxc', 'typescript', 'unicorn', 'vue'],
   categories: {
     correctness: 'error',
+    nursery: 'error',
   },
   rules: {
     'typescript/consistent-type-imports': 'error',
@@ -17,5 +18,28 @@ export default defineConfig({
   },
   env: {
     builtin: true,
+    browser: true,
   },
+  globals: {
+    defineProps: 'readonly',
+    defineEmits: 'readonly',
+    defineExpose: 'readonly',
+    defineSlots: 'readonly',
+    defineOptions: 'readonly',
+    defineModel: 'readonly',
+    withDefaults: 'readonly',
+    GPUShaderStage: 'readonly',
+    GPUBufferUsage: 'readonly',
+    GPUTextureUsage: 'readonly',
+    GPUMapMode: 'readonly',
+    GPUColorWrite: 'readonly',
+  },
+  overrides: [
+    {
+      files: ['scripts/**/*.ts'],
+      env: {
+        node: true,
+      },
+    },
+  ],
 });

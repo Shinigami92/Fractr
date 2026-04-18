@@ -73,8 +73,10 @@ const {
   cursorY: radialCursorY,
 } = radial;
 
-// Adaptive resolution scaling tied to live FPS.
-let applyCanvasResolution: ((scale: number) => void) | null = null;
+// Adaptive resolution scaling tied to live FPS. Assigned below once
+// `useRendererLifecycle` has been constructed; the closure handles the
+// pre-assignment window via optional chaining.
+let applyCanvasResolution: ((scale: number) => void) | undefined;
 const adaptiveQuality = useAdaptiveQuality({
   onScaleChange: (scale) => applyCanvasResolution?.(scale),
 });

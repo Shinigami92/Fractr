@@ -144,8 +144,9 @@ export function useRendererLifecycle(deps: UseRendererLifecycleDeps) {
           applyCanvasResolution(PREVIEW_RESOLUTION_SCALE);
           deps.previewLoop.start();
           window.history.replaceState({}, '', window.location.pathname);
-        } else if (mode === 'paused' || mode === 'settings' || mode === 'saves') {
-          // Keep current resolution when pausing from gameplay
+        } else {
+          // mode is 'paused' | 'settings' | 'saves' by exhaustion.
+          // Keep current resolution when pausing from gameplay.
           const fromGame = oldMode === 'playing' || oldMode === 'paused';
           if (!fromGame) {
             applyCanvasResolution(PREVIEW_RESOLUTION_SCALE);
