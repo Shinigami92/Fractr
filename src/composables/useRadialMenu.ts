@@ -42,6 +42,7 @@ export interface UseRadialMenuReturn<Id extends string> {
  * - `onMouseMove` accumulates movement deltas while the menu is open so the
  *   selected sector tracks the mouse even under pointer-lock.
  */
+/* oxlint-disable-next-line eslint/max-lines-per-function -- tightly-coupled hold/apply state machine; splitting further hurts clarity */
 export function useRadialMenu<Id extends string>(
   options: UseRadialMenuOptions<Id>,
 ): UseRadialMenuReturn<Id> {
@@ -53,7 +54,6 @@ export function useRadialMenu<Id extends string>(
   const currentOptions = computed(() =>
     activeId.value == null ? [] : options.getOptions(activeId.value),
   );
-
   const selectedIndex = computed(() =>
     radialSelectedIndex(cursorX.value, cursorY.value, currentOptions.value.length),
   );
@@ -81,15 +81,14 @@ export function useRadialMenu<Id extends string>(
 
   function endHold(id: Id, shiftKey: boolean): void {
     if (heldId !== id) return;
-    const wasOpen = activeId.value != null;
-    if (wasOpen) {
+    if (activeId.value == null) {
+      options.onQuickTap(id, shiftKey);
+    } else {
       const idx = selectedIndex.value;
       if (idx >= 0) {
         const sel = currentOptions.value[idx]!;
         options.onApply(id, sel.value);
       }
-    } else {
-      options.onQuickTap(id, shiftKey);
     }
     activeId.value = null;
     heldId = null;

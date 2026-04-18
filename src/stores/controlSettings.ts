@@ -54,3 +54,5 @@ export const useControlSettings = defineStore('controlSettings', () => {
 
   return { cameraSpeed, mouseSensitivity, overrides, getBinding, setBinding, reset };
 });
+
+export type ControlSettingsStore = ReturnType<typeof useControlSettings>;

@@ -175,6 +175,85 @@ export class Renderer {
     this.uniformBuffer.upload(this.ctx.device);
   }
 
+  private encodeAccumulationPass(
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- GPUCommandEncoder/GPUTextureView are mutable WebGPU handles
+    commandEncoder: GPUCommandEncoder,
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- GPUTextureView handle
+    canvasView: GPUTextureView,
+  ): void {
+    const accumView = this.accumulationTexture!.createView();
+    const blendWeight = 1 / (this._sampleCount + 1);
+
+    const samplePass = commandEncoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: accumView,
+          loadOp: this._sampleCount === 0 ? 'clear' : 'load',
+          storeOp: 'store',
+          clearValue: { r: 0, g: 0, b: 0, a: 1 },
+        },
+      ],
+    });
+    const blendPipeline = this.pipelineManager.getOrCreateAccumPipeline(
+      this.currentFractal,
+      this.currentColor,
+      this.currentRenderMode,
+    );
+    samplePass.setPipeline(blendPipeline);
+    samplePass.setBindGroup(0, this.bindGroup);
+    samplePass.setBlendConstant({ r: blendWeight, g: blendWeight, b: blendWeight, a: 1 });
+    samplePass.draw(3);
+    samplePass.end();
+
+    this._sampleCount++;
+
+    const blitPass = commandEncoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: canvasView,
+          loadOp: 'clear',
+          storeOp: 'store',
+          clearValue: { r: 0, g: 0, b: 0, a: 1 },
+        },
+      ],
+    });
+    blitPass.setPipeline(this.blitPipeline);
+    blitPass.setBindGroup(0, this.blitBindGroup);
+    blitPass.draw(3);
+    blitPass.end();
+  }
+
+  private encodeDirectPass(
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- GPUCommandEncoder is a mutable WebGPU handle
+    commandEncoder: GPUCommandEncoder,
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- GPUTextureView handle
+    canvasView: GPUTextureView,
+  ): void {
+    // Fast path: render directly to canvas (no accumulation overhead).
+    // Keep sampleCount at 0 so accumulation starts clean when camera stops.
+    this._sampleCount = 0;
+
+    const pipeline = this.pipelineManager.getOrCreatePipeline(
+      this.currentFractal,
+      this.currentColor,
+      this.currentRenderMode,
+    );
+    const pass = commandEncoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: canvasView,
+          loadOp: 'clear',
+          storeOp: 'store',
+          clearValue: { r: 0, g: 0, b: 0, a: 1 },
+        },
+      ],
+    });
+    pass.setPipeline(pipeline);
+    pass.setBindGroup(0, this.bindGroup);
+    pass.draw(3);
+    pass.end();
+  }
+
   render(accumulate = false): void {
     // Skip frame if GPU is saturated — prevents getCurrentTexture() stalls
     // that cause frame-pacing judder at sub-vsync FPS.
@@ -185,76 +264,8 @@ export class Renderer {
     const commandEncoder = this.ctx.device.createCommandEncoder();
     const canvasView = this.ctx.context.getCurrentTexture().createView();
 
-    if (accumulate) {
-      // Accumulation path: render to float texture with blending, then blit
-      const accumView = this.accumulationTexture!.createView();
-      const blendWeight = 1 / (this._sampleCount + 1);
-
-      const samplePass = commandEncoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: accumView,
-            loadOp: this._sampleCount === 0 ? 'clear' : 'load',
-            storeOp: 'store',
-            clearValue: { r: 0, g: 0, b: 0, a: 1 },
-          },
-        ],
-      });
-
-      const blendPipeline = this.pipelineManager.getOrCreateAccumPipeline(
-        this.currentFractal,
-        this.currentColor,
-        this.currentRenderMode,
-      );
-      samplePass.setPipeline(blendPipeline);
-      samplePass.setBindGroup(0, this.bindGroup);
-      samplePass.setBlendConstant({ r: blendWeight, g: blendWeight, b: blendWeight, a: 1 });
-      samplePass.draw(3);
-      samplePass.end();
-
-      this._sampleCount++;
-
-      // Blit accumulation to canvas
-      const blitPass = commandEncoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: canvasView,
-            loadOp: 'clear',
-            storeOp: 'store',
-            clearValue: { r: 0, g: 0, b: 0, a: 1 },
-          },
-        ],
-      });
-      blitPass.setPipeline(this.blitPipeline);
-      blitPass.setBindGroup(0, this.blitBindGroup);
-      blitPass.draw(3);
-      blitPass.end();
-    } else {
-      // Fast path: render directly to canvas (no accumulation overhead)
-      // Keep sampleCount at 0 so accumulation starts clean when camera stops
-      this._sampleCount = 0;
-
-      const pipeline = this.pipelineManager.getOrCreatePipeline(
-        this.currentFractal,
-        this.currentColor,
-        this.currentRenderMode,
-      );
-
-      const pass = commandEncoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: canvasView,
-            loadOp: 'clear',
-            storeOp: 'store',
-            clearValue: { r: 0, g: 0, b: 0, a: 1 },
-          },
-        ],
-      });
-      pass.setPipeline(pipeline);
-      pass.setBindGroup(0, this.bindGroup);
-      pass.draw(3);
-      pass.end();
-    }
+    if (accumulate) this.encodeAccumulationPass(commandEncoder, canvasView);
+    else this.encodeDirectPass(commandEncoder, canvasView);
 
     this.ctx.device.queue.submit([commandEncoder.finish()]);
     // onSubmittedWorkDone resolves when the GPU finishes processing all

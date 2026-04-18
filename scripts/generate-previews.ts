@@ -1,4 +1,5 @@
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- Node ChildProcess/Buffer and mutable local array literals */
+import type { Browser } from '@playwright/test';
 import { chromium } from '@playwright/test';
 import { execSync, spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
@@ -271,6 +272,68 @@ function waitForServer(server: ChildProcess): Promise<void> {
   });
 }
 
+type FractalSpec = (typeof FRACTALS)[number];
+
+function buildFractalParams(fractal: FractalSpec, color: string): URLSearchParams {
+  return new URLSearchParams({
+    f: fractal.type,
+    p: String(fractal.power),
+    i: String(fractal.iter),
+    b: String(fractal.bail),
+    c: color,
+    x: String(fractal.x),
+    y: String(fractal.y),
+    z: String(fractal.z),
+    yaw: String(fractal.yaw),
+    pitch: String(fractal.pitch),
+    roll: String(fractal.roll ?? 0),
+    dyn: '0',
+    preview: '1',
+  });
+}
+
+async function captureFractal(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Playwright Browser has mutating internals
+  browser: Browser,
+  fractal: FractalSpec,
+  color: string,
+  outDir: string,
+  preset: (typeof PRESETS)[keyof typeof PRESETS],
+): Promise<void> {
+  const { width, height, wait } = preset;
+  const page = await browser.newPage({ viewport: { width, height } });
+  const params = buildFractalParams(fractal, color);
+  await page.goto(`http://localhost:${PORT}/Fractr/?${params.toString()}`);
+  await page.waitForTimeout(wait);
+
+  const canvas = page.locator('canvas');
+  const pngPath = resolve(outDir, `${fractal.type}.png`);
+  const webpPath = resolve(outDir, `${fractal.type}.webp`);
+  await canvas.screenshot({ path: pngPath, type: 'png' });
+  execSync(`cwebp -q 90 "${pngPath}" -o "${webpPath}"`, { stdio: 'pipe' });
+  unlinkSync(pngPath);
+  console.log(`  Saved ${webpPath}`);
+
+  await page.close();
+}
+
+async function captureAll(
+  targets: ReadonlyArray<FractalSpec>,
+  opts: Options,
+  preset: (typeof PRESETS)[keyof typeof PRESETS],
+): Promise<void> {
+  const browser = await chromium.launch({
+    headless: false,
+    args: ['--enable-unsafe-webgpu', '--enable-features=Vulkan'],
+  });
+  for (const fractal of targets) {
+    console.log(`Capturing ${fractal.type}...`);
+    // oxlint-disable-next-line no-await-in-loop -- shared browser: pages must be created/closed sequentially and screenshots are serial
+    await captureFractal(browser, fractal, opts.color, opts.outDir, preset);
+  }
+  await browser.close();
+}
+
 async function main(): Promise<void> {
   const opts = parseArgs();
   const targets =
@@ -281,14 +344,14 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const { width, height, wait } = PRESETS[opts.preset];
+  const preset = PRESETS[opts.preset];
   mkdirSync(opts.outDir, { recursive: true });
 
   console.log('Building...');
   execSync('pnpm run build', { stdio: 'inherit', cwd: resolve(import.meta.dirname, '..') });
 
   console.log(
-    `Capturing ${targets.length} fractal(s) at ${width}x${height} with color=${opts.color}...`,
+    `Capturing ${targets.length} fractal(s) at ${preset.width}x${preset.height} with color=${opts.color}...`,
   );
   const server = spawn('pnpm', ['run', 'preview', '--port', String(PORT)], {
     stdio: 'pipe',
@@ -298,55 +361,7 @@ async function main(): Promise<void> {
   try {
     await waitForServer(server);
     console.log('Server ready, launching browser...');
-
-    const browser = await chromium.launch({
-      headless: false,
-      args: ['--enable-unsafe-webgpu', '--enable-features=Vulkan'],
-    });
-
-    for (const fractal of targets) {
-      console.log(`Capturing ${fractal.type}...`);
-
-      // oxlint-disable-next-line no-await-in-loop -- shared browser instance; pages must be created and closed sequentially
-      const page = await browser.newPage({
-        viewport: { width, height },
-      });
-
-      const params = new URLSearchParams({
-        f: fractal.type,
-        p: String(fractal.power),
-        i: String(fractal.iter),
-        b: String(fractal.bail),
-        c: opts.color,
-        x: String(fractal.x),
-        y: String(fractal.y),
-        z: String(fractal.z),
-        yaw: String(fractal.yaw),
-        pitch: String(fractal.pitch),
-        roll: String(fractal.roll ?? 0),
-        dyn: '0',
-        preview: '1',
-      });
-
-      // oxlint-disable-next-line no-await-in-loop -- sequential page navigation within shared browser
-      await page.goto(`http://localhost:${PORT}/Fractr/?${params.toString()}`);
-      // oxlint-disable-next-line no-await-in-loop -- wait for fractal to render before screenshot
-      await page.waitForTimeout(wait);
-
-      const canvas = page.locator('canvas');
-      const pngPath = resolve(opts.outDir, `${fractal.type}.png`);
-      const webpPath = resolve(opts.outDir, `${fractal.type}.webp`);
-      // oxlint-disable-next-line no-await-in-loop -- screenshot reads live canvas state, must be serial
-      await canvas.screenshot({ path: pngPath, type: 'png' });
-      execSync(`cwebp -q 90 "${pngPath}" -o "${webpPath}"`, { stdio: 'pipe' });
-      unlinkSync(pngPath);
-      console.log(`  Saved ${webpPath}`);
-
-      // oxlint-disable-next-line no-await-in-loop -- must close page before creating the next one
-      await page.close();
-    }
-
-    await browser.close();
+    await captureAll(targets, opts, preset);
   } finally {
     server.kill();
   }

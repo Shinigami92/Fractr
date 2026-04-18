@@ -45,6 +45,27 @@ export function captureCanvasPng(canvas: HTMLCanvasElement): Promise<Blob | null
   });
 }
 
+function computeOriginOffsetForState(
+  state: SavedState,
+  periodFn: ((power: number) => number) | undefined,
+): [number, number, number] | undefined {
+  if (!periodFn) return undefined;
+  const period = periodFn(state.power);
+  return [
+    Math.round(state.x / period) * period,
+    Math.round(state.y / period) * period,
+    Math.round(state.z / period) * period,
+  ];
+}
+
+function waitForAnimationFrame(): Promise<void> {
+  return new Promise<void>((resolve) => {
+    requestAnimationFrame(() => {
+      resolve();
+    });
+  });
+}
+
 /**
  * Render `state` at full quality and capture the resulting canvas contents
  * as a WebP blob. Mutates renderer + camera to the saved pose and leaves
@@ -65,18 +86,6 @@ export async function renderSavedStateToBlob(
   camera.setFromEuler(state.yaw, state.pitch, state.roll);
 
   const cfg = FRACTAL_CONFIGS[state.fractalType];
-  const stepFactor = cfg.stepFactor ?? 1;
-  let originOffset: [number, number, number] | undefined;
-  const periodFn = cfg.periodOffset;
-  if (periodFn) {
-    const period = periodFn(state.power);
-    originOffset = [
-      Math.round(state.x / period) * period,
-      Math.round(state.y / period) * period,
-      Math.round(state.z / period) * period,
-    ];
-  }
-
   const params = {
     power: state.power,
     maxIterations: state.maxIterations,
@@ -84,8 +93,8 @@ export async function renderSavedStateToBlob(
     maxRaySteps,
     resolutionScale: 1,
     animatedColors: false,
-    stepFactor,
-    originOffset,
+    stepFactor: cfg.stepFactor ?? 1,
+    originOffset: computeOriginOffsetForState(state, cfg.periodOffset),
   };
 
   renderer.updateUniforms(camera, params, 0);
@@ -98,11 +107,7 @@ export async function renderSavedStateToBlob(
     renderer.updateUniforms(camera, params, 0);
     renderer.render(false);
     // oxlint-disable-next-line no-await-in-loop -- frame pacing is inherently serial; must wait one rAF between renders for GPU accumulation
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        resolve();
-      });
-    });
+    await waitForAnimationFrame();
   }
 
   // Extra settle for GPU flush before toBlob reads the canvas

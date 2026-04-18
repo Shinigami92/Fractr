@@ -251,6 +251,7 @@ function nextInCycle<T>(list: ReadonlyArray<T>, current: T, reverse: boolean): T
   return list[(idx + delta) % list.length]!;
 }
 
+/* oxlint-disable-next-line eslint/max-lines-per-function -- pinia setup-store factory listing all refs + actions; no meaningful split */
 export const useFractalParams = defineStore('fractalParams', () => {
   const fractalType = ref<FractalType>('mandelbulb');
   const power = ref(8);
@@ -267,24 +268,6 @@ export const useFractalParams = defineStore('fractalParams', () => {
     power.value = cfg.power?.default ?? 0;
     maxIterations.value = cfg.maxIterations.default;
     bailout.value = cfg.bailout?.default ?? 0;
-  }
-
-  function reset(): void {
-    setFractalType('mandelbulb');
-    colorMode.value = 'glow';
-    renderMode.value = 'ray';
-  }
-
-  function cycleRenderMode(reverse = false): void {
-    renderMode.value = nextInCycle(RENDER_MODES, renderMode.value, reverse);
-  }
-
-  function cycleColorMode(reverse = false): void {
-    colorMode.value = nextInCycle(COLOR_MODES, colorMode.value, reverse);
-  }
-
-  function cycleFractalType(reverse = false): void {
-    setFractalType(nextInCycle(FRACTAL_TYPES, fractalType.value, reverse));
   }
 
   function adjustIterations(delta: number): void {
@@ -306,15 +289,27 @@ export const useFractalParams = defineStore('fractalParams', () => {
     colorMode,
     renderMode,
     config,
-    reset,
-    cycleColorMode,
-    cycleRenderMode,
-    cycleFractalType,
+    reset: () => {
+      setFractalType('mandelbulb');
+      colorMode.value = 'glow';
+      renderMode.value = 'ray';
+    },
+    cycleColorMode: (reverse = false) => {
+      colorMode.value = nextInCycle(COLOR_MODES, colorMode.value, reverse);
+    },
+    cycleRenderMode: (reverse = false) => {
+      renderMode.value = nextInCycle(RENDER_MODES, renderMode.value, reverse);
+    },
+    cycleFractalType: (reverse = false) => {
+      setFractalType(nextInCycle(FRACTAL_TYPES, fractalType.value, reverse));
+    },
     setFractalType,
     adjustIterations,
     adjustBailout,
   };
 });
+
+export type FractalParamsStore = ReturnType<typeof useFractalParams>;
 
 if (import.meta.hot) {
   const hmrHandler = acceptHMRUpdate(useFractalParams, import.meta.hot);

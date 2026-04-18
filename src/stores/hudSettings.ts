@@ -15,3 +15,5 @@ export const useHudSettings = defineStore('hudSettings', () => {
 
   return { showFps, showCoordinates, showCrosshair, toggleHud, toggleCrosshair };
 });
+
+export type HudSettingsStore = ReturnType<typeof useHudSettings>;

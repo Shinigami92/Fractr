@@ -41,7 +41,6 @@ export default defineConfig({
     'typescript/prefer-function-type': 'error',
 
     // TODO @Shinigami92 2026-04-18: should be enabled later
-    'max-lines-per-function': 'off',
     'max-lines': 'off',
   },
   env: {

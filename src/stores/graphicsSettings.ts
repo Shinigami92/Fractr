@@ -28,3 +28,5 @@ export const useGraphicsSettings = defineStore('graphicsSettings', () => {
     reset,
   };
 });
+
+export type GraphicsSettingsStore = ReturnType<typeof useGraphicsSettings>;

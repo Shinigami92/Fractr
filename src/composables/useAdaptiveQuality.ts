@@ -36,6 +36,32 @@ export interface UseAdaptiveQualityReturn {
   reset: () => void;
 }
 
+function computeNextScale(
+  current: number,
+  target: number,
+  currentFps: number,
+  moving: boolean,
+): number {
+  const belowTarget = currentFps < target * ADAPTIVE_QUALITY_DROP_THRESHOLD;
+  const maxScale = 1.0 - (moving ? ADAPTIVE_QUALITY_MOVEMENT_PENALTY : 0);
+
+  if (belowTarget && current > ADAPTIVE_QUALITY_MIN_SCALE) {
+    const urgency =
+      currentFps < target * ADAPTIVE_QUALITY_CRITICAL_THRESHOLD
+        ? ADAPTIVE_QUALITY_CRITICAL_DROP_MULTIPLIER
+        : 1;
+    return Math.max(ADAPTIVE_QUALITY_MIN_SCALE, current - ADAPTIVE_QUALITY_SCALE_STEP * urgency);
+  }
+  if (currentFps > target * ADAPTIVE_QUALITY_RISE_THRESHOLD && current < maxScale) {
+    return Math.min(maxScale, current + ADAPTIVE_QUALITY_SCALE_STEP);
+  }
+  return current;
+}
+
+function quantizeScale(scale: number): number {
+  return Math.round(scale / ADAPTIVE_QUALITY_SCALE_STEP) * ADAPTIVE_QUALITY_SCALE_STEP;
+}
+
 /**
  * Tracks render-resolution scale based on frame rate and camera motion.
  *
@@ -54,39 +80,15 @@ export function useAdaptiveQuality(options: UseAdaptiveQualityOptions): UseAdapt
 
   function update(dt: number, currentFps: number, moving: boolean): void {
     if (!graphics.adaptiveQuality) return;
-
     adaptTimer += dt;
-
-    const target = graphics.targetFps;
-    const belowTarget = currentFps < target * ADAPTIVE_QUALITY_DROP_THRESHOLD;
+    const belowTarget = currentFps < graphics.targetFps * ADAPTIVE_QUALITY_DROP_THRESHOLD;
     const interval = belowTarget
       ? ADAPTIVE_QUALITY_DROP_INTERVAL_SEC
       : ADAPTIVE_QUALITY_RISE_INTERVAL_SEC;
-
     if (adaptTimer < interval) return;
     adaptTimer = 0;
-
-    // Movement penalty: reduce target scale while moving for smoother experience
-    const movementPenalty = moving ? ADAPTIVE_QUALITY_MOVEMENT_PENALTY : 0;
-    const maxScale = 1.0 - movementPenalty;
-
-    if (belowTarget && adaptiveScale > ADAPTIVE_QUALITY_MIN_SCALE) {
-      // Drop faster when far below target
-      const urgency =
-        currentFps < target * ADAPTIVE_QUALITY_CRITICAL_THRESHOLD
-          ? ADAPTIVE_QUALITY_CRITICAL_DROP_MULTIPLIER
-          : 1;
-      adaptiveScale = Math.max(
-        ADAPTIVE_QUALITY_MIN_SCALE,
-        adaptiveScale - ADAPTIVE_QUALITY_SCALE_STEP * urgency,
-      );
-    } else if (currentFps > target * ADAPTIVE_QUALITY_RISE_THRESHOLD && adaptiveScale < maxScale) {
-      adaptiveScale = Math.min(maxScale, adaptiveScale + ADAPTIVE_QUALITY_SCALE_STEP);
-    }
-
-    // Only resize when quantized scale actually changed
-    const quantized =
-      Math.round(adaptiveScale / ADAPTIVE_QUALITY_SCALE_STEP) * ADAPTIVE_QUALITY_SCALE_STEP;
+    adaptiveScale = computeNextScale(adaptiveScale, graphics.targetFps, currentFps, moving);
+    const quantized = quantizeScale(adaptiveScale);
     if (Math.abs(quantized - appliedScale) >= ADAPTIVE_QUALITY_SCALE_STEP) {
       appliedScale = quantized;
       options.onScaleChange(quantized);

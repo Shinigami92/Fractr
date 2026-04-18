@@ -78,7 +78,8 @@ export function multiply(out: Mat4, a: ReadonlyMat4, b: ReadonlyMat4): Mat4 {
   return out;
 }
 
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- out is an output buffer, mutated by design
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- out is an output buffer, mutated by design */
+/* oxlint-disable eslint/max-lines-per-function -- standard 4x4 matrix inversion, splitting hurts readability */
 export function invert(out: Mat4, a: ReadonlyMat4): Mat4 | null {
   const a00 = a[0]!;
   const a01 = a[1]!;
@@ -132,3 +133,5 @@ export function invert(out: Mat4, a: ReadonlyMat4): Mat4 | null {
   out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
   return out;
 }
+/* oxlint-enable eslint/max-lines-per-function */
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

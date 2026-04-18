@@ -184,12 +184,10 @@ export class PipelineManager {
       label: 'fullscreen-vertex',
       code: fullscreenSrc,
     });
-
     const fragmentModule = this.ctx.device.createShaderModule({
       label: `fragment-${key}`,
       code: fragmentSource,
     });
-
     const pipelineLayout = this.ctx.device.createPipelineLayout({
       bindGroupLayouts: [this.bindGroupLayout],
     });
@@ -197,18 +195,9 @@ export class PipelineManager {
     pipeline = this.ctx.device.createRenderPipeline({
       label: `pipeline-${key}`,
       layout: pipelineLayout,
-      vertex: {
-        module: vertexModule,
-        entryPoint: 'main',
-      },
-      fragment: {
-        module: fragmentModule,
-        entryPoint: 'main',
-        targets: [{ format, blend }],
-      },
-      primitive: {
-        topology: 'triangle-list',
-      },
+      vertex: { module: vertexModule, entryPoint: 'main' },
+      fragment: { module: fragmentModule, entryPoint: 'main', targets: [{ format, blend }] },
+      primitive: { topology: 'triangle-list' },
     });
 
     this.cache.set(key, pipeline);

@@ -5,12 +5,16 @@ import { evaluateSDF } from '../engine/fractals/sdf';
 import type { Renderer } from '../engine/Renderer';
 import type { ActionId } from '../input/actions';
 import { useAppState } from '../stores/appState';
+import type { ControlSettingsStore } from '../stores/controlSettings';
 import { useControlSettings } from '../stores/controlSettings';
+import type { FractalParamsStore } from '../stores/fractalParams';
 import { useFractalParams } from '../stores/fractalParams';
+import type { GraphicsSettingsStore } from '../stores/graphicsSettings';
 import { useGraphicsSettings } from '../stores/graphicsSettings';
 import type { UseAdaptiveQualityReturn } from './useAdaptiveQuality';
 import type { UseGameLoopReturn } from './useGameLoop';
 import { useGameLoop } from './useGameLoop';
+import type { UseGamepadInputReturn } from './useGamepadInput';
 import { useGamepadInput } from './useGamepadInput';
 import type { UseInputReturn } from './useInput';
 import type { UsePointerLockReturn } from './usePointerLock';
@@ -138,6 +142,162 @@ export interface UseGameplayLoopReturn {
   sampleCount: Ref<number>;
 }
 
+function computeEffectiveIterations(
+  fractal: FractalParamsStore,
+  graphics: GraphicsSettingsStore,
+  absDist: number,
+): number {
+  if (!graphics.dynamicIterations) return fractal.maxIterations;
+  const dynMax = Math.min(
+    fractal.maxIterations,
+    fractal.config.dynMaxIterations ?? fractal.maxIterations,
+  );
+  const iterScale = Math.max(
+    0,
+    Math.min(1, -Math.log10(Math.max(absDist, DYN_ITER_DIST_FLOOR)) / DYN_ITER_LOG_SCALE_DIVISOR),
+  );
+  const minIter = Math.max(DYN_ITER_MIN_ABSOLUTE, Math.ceil(dynMax * DYN_ITER_MIN_FACTOR));
+  return Math.ceil(minIter + (dynMax - minIter) * iterScale);
+}
+
+function applyLookRotation(
+  camera: Camera,
+  mouseSensitivity: number,
+  radialOpen: boolean,
+  dt: number,
+  totalDx: number,
+  totalDy: number,
+  rx: number,
+  ry: number,
+): void {
+  if (radialOpen) return;
+  camera.rotate(totalDx * mouseSensitivity, -totalDy * mouseSensitivity);
+  if (rx !== 0 || ry !== 0) {
+    camera.rotate(rx * GAMEPAD_LOOK_SPEED * dt, -ry * GAMEPAD_LOOK_SPEED * dt);
+  }
+}
+
+interface LoopInput {
+  dx: number;
+  dy: number;
+  touchLook: { dx: number; dy: number };
+  touchMove: Vec2;
+  lx: number;
+  ly: number;
+  rx: number;
+  ry: number;
+}
+
+function sampleLoopInput(
+  options: UseGameplayLoopOptions,
+  gamepad: UseGamepadInputReturn,
+): LoopInput {
+  const { dx, dy } = options.pointerLock.consumeMovement();
+  const touchLook = options.touchControls.consumeLookDelta();
+  const touchMove = options.touchControls.getMovementVector();
+  const { x: lx, y: ly } = gamepad.leftStick.value;
+  const { x: rx, y: ry } = gamepad.rightStick.value;
+  return { dx, dy, touchLook, touchMove, lx, ly, rx, ry };
+}
+
+function computeAbsDistance(fractal: FractalParamsStore, camera: Camera): number {
+  return Math.abs(
+    evaluateSDF(
+      fractal.fractalType,
+      camera.position[0]!,
+      camera.position[1]!,
+      camera.position[2]!,
+      { power: fractal.power, maxIterations: fractal.maxIterations, bailout: fractal.bailout },
+    ),
+  );
+}
+
+function computeMoving(
+  input: Readonly<LoopInput>,
+  isPressed: UseInputReturn['isPressed'],
+  kb: ActionPredicate,
+  gp: ActionPredicate,
+): boolean {
+  return (
+    isMovementKeyHeld(kb) ||
+    isPressed('Mouse0') ||
+    isPressed('Mouse2') ||
+    Math.abs(input.dx) > 1 ||
+    Math.abs(input.dy) > 1 ||
+    isTouchActive(input.touchMove, input.touchLook) ||
+    isGamepadActive(input.lx, input.ly, input.rx, input.ry, gp)
+  );
+}
+
+interface LoopState {
+  wasMoving: boolean;
+  isMovingThisFrame: boolean;
+  currentIterations: Ref<number>;
+}
+
+/* oxlint-disable-next-line eslint/max-lines-per-function -- frame update orchestrates input sampling, movement, and uniform upload; splitting further obscures the pipeline */
+function runFrameUpdate(
+  dt: number,
+  options: UseGameplayLoopOptions,
+  state: LoopState,
+  fps: number,
+  fractal: FractalParamsStore,
+  graphics: GraphicsSettingsStore,
+  controls: ControlSettingsStore,
+  gamepad: UseGamepadInputReturn,
+): void {
+  const { camera } = options.scene;
+  const input = sampleLoopInput(options, gamepad);
+  const { isPressed } = options.input;
+
+  applyLookRotation(
+    camera,
+    controls.mouseSensitivity,
+    options.radial.activeId.value != null,
+    dt,
+    input.dx + input.touchLook.dx,
+    input.dy + input.touchLook.dy,
+    input.rx,
+    input.ry,
+  );
+
+  const absDist = computeAbsDistance(fractal, camera);
+  const speedScale = Math.max(1e-6, Math.min(1, absDist));
+  const shifting = isPressed('ShiftLeft') || isPressed('ShiftRight');
+  const speed = controls.cameraSpeed * speedScale * (shifting ? 2 : 1) * dt;
+
+  const effectiveIterations = computeEffectiveIterations(fractal, graphics, absDist);
+  state.currentIterations.value = effectiveIterations;
+
+  const kb: ActionPredicate = (id) => {
+    const code = controls.getBinding(id, 'keyboard');
+    return code != null && isPressed(code);
+  };
+  const gp: ActionPredicate = (id) => {
+    const code = controls.getBinding(id, 'gamepad');
+    return code != null && gamepad.pressedButtons.value.has(code);
+  };
+
+  const moving = computeMoving(input, isPressed, kb, gp);
+  options.adaptiveQuality.update(dt, fps, moving);
+
+  applyKeyboardMovement(camera, speed, 1.5 * dt, kb, gp, isPressed, shifting);
+  applyAnalogMovement(camera, speed, input.touchMove, input.lx, input.ly);
+
+  state.isMovingThisFrame = moving;
+  const renderer = options.rendererRef.value;
+  if (moving) renderer?.resetAccumulation();
+  else if (state.wasMoving) options.urlState.syncURLState();
+  state.wasMoving = moving;
+
+  options.scene.syncCameraPos();
+  renderer?.updateUniforms(
+    camera,
+    options.scene.buildLiveSceneParams({ maxIterations: effectiveIterations }),
+    options.getTimeSeconds(),
+  );
+}
+
 /**
  * The main gameplay update/render loop: consumes pointer-lock + touch input,
  * moves the camera with distance-scaled speed, drives adaptive quality, and
@@ -152,115 +312,16 @@ export function useGameplayLoop(options: UseGameplayLoopOptions): UseGameplayLoo
 
   const currentIterations = ref(0);
   const sampleCount = ref(0);
-
-  let wasMoving = false;
-  let isMovingThisFrame = false;
-
-  function computeEffectiveIterations(absDist: number): number {
-    if (!graphics.dynamicIterations) return fractal.maxIterations;
-    const dynMax = Math.min(
-      fractal.maxIterations,
-      fractal.config.dynMaxIterations ?? fractal.maxIterations,
-    );
-    const iterScale = Math.max(
-      0,
-      Math.min(1, -Math.log10(Math.max(absDist, DYN_ITER_DIST_FLOOR)) / DYN_ITER_LOG_SCALE_DIVISOR),
-    );
-    const minIter = Math.max(DYN_ITER_MIN_ABSOLUTE, Math.ceil(dynMax * DYN_ITER_MIN_FACTOR));
-    return Math.ceil(minIter + (dynMax - minIter) * iterScale);
-  }
-
-  function applyLookRotation(
-    camera: Camera,
-    dt: number,
-    totalDx: number,
-    totalDy: number,
-    rx: number,
-    ry: number,
-  ): void {
-    if (options.radial.activeId.value) return;
-    camera.rotate(totalDx * controls.mouseSensitivity, -totalDy * controls.mouseSensitivity);
-    if (rx !== 0 || ry !== 0) {
-      camera.rotate(rx * GAMEPAD_LOOK_SPEED * dt, -ry * GAMEPAD_LOOK_SPEED * dt);
-    }
-  }
+  const state: LoopState = { wasMoving: false, isMovingThisFrame: false, currentIterations };
 
   const gameLoop = useGameLoop({
     update(dt) {
       if (appState.mode !== 'playing') return;
-
-      const { camera } = options.scene;
-
-      // Input sampling
-      const { dx, dy } = options.pointerLock.consumeMovement();
-      const touchLook = options.touchControls.consumeLookDelta();
-      const touchMove = options.touchControls.getMovementVector();
-      const { x: lx, y: ly } = gamepad.leftStick.value;
-      const { x: rx, y: ry } = gamepad.rightStick.value;
-      const { isPressed } = options.input;
-
-      // Camera rotation from mouse + touch (disabled while radial menu is open)
-      applyLookRotation(camera, dt, dx + touchLook.dx, dy + touchLook.dy, rx, ry);
-
-      // Distance-based camera speed: slow near surfaces, fast in open space
-      const absDist = Math.abs(
-        evaluateSDF(
-          fractal.fractalType,
-          camera.position[0]!,
-          camera.position[1]!,
-          camera.position[2]!,
-          { power: fractal.power, maxIterations: fractal.maxIterations, bailout: fractal.bailout },
-        ),
-      );
-      const speedScale = Math.max(1e-6, Math.min(1, absDist));
-      const shifting = isPressed('ShiftLeft') || isPressed('ShiftRight');
-      const sprint = shifting ? 2 : 1;
-      const speed = controls.cameraSpeed * speedScale * sprint * dt;
-
-      const effectiveIterations = computeEffectiveIterations(absDist);
-      currentIterations.value = effectiveIterations;
-
-      const kb: ActionPredicate = (id) => {
-        const code = controls.getBinding(id, 'keyboard');
-        return code != null && isPressed(code);
-      };
-      const gp: ActionPredicate = (id) => {
-        const code = controls.getBinding(id, 'gamepad');
-        return code != null && gamepad.pressedButtons.value.has(code);
-      };
-
-      const moving =
-        isMovementKeyHeld(kb) ||
-        isPressed('Mouse0') ||
-        isPressed('Mouse2') ||
-        Math.abs(dx) > 1 ||
-        Math.abs(dy) > 1 ||
-        isTouchActive(touchMove, touchLook) ||
-        isGamepadActive(lx, ly, rx, ry, gp);
-
-      options.adaptiveQuality.update(dt, gameLoop.fps.value, moving);
-
-      applyKeyboardMovement(camera, speed, 1.5 * dt, kb, gp, isPressed, shifting);
-      applyAnalogMovement(camera, speed, touchMove, lx, ly);
-
-      // Track movement for render path selection
-      isMovingThisFrame = moving;
-      const renderer = options.rendererRef.value;
-      if (moving) renderer?.resetAccumulation();
-      else if (wasMoving) options.urlState.syncURLState();
-      wasMoving = moving;
-
-      options.scene.syncCameraPos();
-
-      renderer?.updateUniforms(
-        camera,
-        options.scene.buildLiveSceneParams({ maxIterations: effectiveIterations }),
-        options.getTimeSeconds(),
-      );
+      runFrameUpdate(dt, options, state, gameLoop.fps.value, fractal, graphics, controls, gamepad);
     },
     render() {
       const renderer = options.rendererRef.value;
-      renderer?.render(!isMovingThisFrame && !graphics.animatedColors);
+      renderer?.render(!state.isMovingThisFrame && !graphics.animatedColors);
       sampleCount.value = renderer?.sampleCount ?? 0;
     },
   });
