@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- WebGPU and DOM element types wrap mutable handles */
 export class WebGPUContext {
   readonly adapter: GPUAdapter;
   readonly device: GPUDevice;

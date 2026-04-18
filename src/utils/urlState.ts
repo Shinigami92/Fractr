@@ -2,20 +2,20 @@ import type { ColorMode, FractalType, RenderMode } from '../stores/fractalParams
 import { COLOR_MODES, FRACTAL_TYPES, RENDER_MODES } from '../stores/fractalParams';
 
 export interface SharedState {
-  fractalType: FractalType;
-  power: number;
-  maxIterations: number;
-  bailout: number;
-  colorMode: ColorMode;
-  renderMode: RenderMode;
-  dynamicIterations: boolean;
-  x: number;
-  y: number;
-  z: number;
-  yaw: number;
-  pitch: number;
-  roll: number;
-  preview: boolean;
+  readonly fractalType: FractalType;
+  readonly power: number;
+  readonly maxIterations: number;
+  readonly bailout: number;
+  readonly colorMode: ColorMode;
+  readonly renderMode: RenderMode;
+  readonly dynamicIterations: boolean;
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly yaw: number;
+  readonly pitch: number;
+  readonly roll: number;
+  readonly preview: boolean;
 }
 
 const FRACTAL_TYPE_SET = new Set<string>(FRACTAL_TYPES);

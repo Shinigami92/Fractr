@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- HTMLCanvasElement/Renderer/FPSCamera/ThumbnailRenderDeps wrap mutable DOM/class handles */
 import { promiseTimeout } from '@vueuse/core';
 import type { FPSCamera } from '../engine/camera/FPSCamera';
 import type { Renderer } from '../engine/Renderer';

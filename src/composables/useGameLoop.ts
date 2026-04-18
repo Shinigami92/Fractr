@@ -4,7 +4,10 @@ import { ref } from 'vue';
 // the next frame BEFORE running update/render (see comment in `loop`), whereas
 // `useRafFn` schedules after. For a heavy ray-marcher running below 60fps, the
 // difference in vsync lead time is measurable.
-export function useGameLoop(callbacks: { update: (dt: number) => void; render: () => void }) {
+export function useGameLoop(callbacks: {
+  readonly update: (dt: number) => void;
+  readonly render: () => void;
+}) {
   const fps = ref(0);
   const isRunning = ref(false);
 

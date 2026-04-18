@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- SceneState wraps mutable camera/store handles */
 import { ref } from 'vue';
 import { useAppState } from '../stores/appState';
 import { useFractalParams } from '../stores/fractalParams';

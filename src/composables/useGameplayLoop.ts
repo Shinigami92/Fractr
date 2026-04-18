@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- deps struct wraps composable return types with inherent mutable Refs */
 import type { ShallowRef } from 'vue';
 import { ref } from 'vue';
 import { evaluateSDF } from '../engine/fractals/sdf';

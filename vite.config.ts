@@ -20,6 +20,7 @@ function getCommitSha(): string {
 function wgslFullReload(): Plugin {
   return {
     name: 'wgsl-full-reload',
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Vite hook receives mutable context
     handleHotUpdate({ file, server }) {
       if (file.endsWith('.wgsl')) {
         server.ws.send({ type: 'full-reload', path: '*' });
@@ -30,6 +31,7 @@ function wgslFullReload(): Plugin {
   };
 }
 
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Vite config callback receives mutable env
 export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/Fractr/' : undefined,
   plugins: [

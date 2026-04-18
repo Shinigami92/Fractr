@@ -1,25 +1,25 @@
 import type { ColorMode, FractalType, RenderMode } from '../stores/fractalParams';
 
 export interface SavedState {
-  fractalType: FractalType;
-  power: number;
-  maxIterations: number;
-  bailout: number;
-  colorMode: ColorMode;
-  renderMode: RenderMode;
-  dynamicIterations: boolean;
-  x: number;
-  y: number;
-  z: number;
-  yaw: number;
-  pitch: number;
-  roll: number;
+  readonly fractalType: FractalType;
+  readonly power: number;
+  readonly maxIterations: number;
+  readonly bailout: number;
+  readonly colorMode: ColorMode;
+  readonly renderMode: RenderMode;
+  readonly dynamicIterations: boolean;
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly yaw: number;
+  readonly pitch: number;
+  readonly roll: number;
 }
 
 export interface SaveEntry {
-  stateHash: string;
-  timestamp: number;
-  state: SavedState;
+  readonly stateHash: string;
+  readonly timestamp: number;
+  readonly state: SavedState;
 }
 
 const DB_NAME = 'fractr-saves';
@@ -72,6 +72,7 @@ function hashState(state: SavedState): string {
   return (hash >>> 0).toString(36);
 }
 
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Blob is a DOM type with mutating methods
 export async function saveState(state: SavedState, thumbnail?: Blob): Promise<boolean> {
   const db = await openDB();
   const stateHash = hashState(state);
@@ -145,6 +146,7 @@ export async function getThumbnail(stateHash: string): Promise<Blob | null> {
   });
 }
 
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Blob is a DOM type with mutating methods
 export async function saveThumbnail(stateHash: string, blob: Blob): Promise<void> {
   const db = await openDB();
   return new Promise((resolve) => {
@@ -202,7 +204,7 @@ export function validateImport(data: unknown): SaveEntry[] {
   return valid;
 }
 
-export async function importSaves(entries: SaveEntry[]): Promise<number> {
+export async function importSaves(entries: readonly SaveEntry[]): Promise<number> {
   const db = await openDB();
   let imported = 0;
 
@@ -227,7 +229,7 @@ export async function importSaves(entries: SaveEntry[]): Promise<number> {
   return imported;
 }
 
-export function exportSaves(entries: SaveEntry[]): string {
+export function exportSaves(entries: readonly SaveEntry[]): string {
   return JSON.stringify(entries, null, 2);
 }
 

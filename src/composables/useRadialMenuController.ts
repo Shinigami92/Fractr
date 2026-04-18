@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- pinia store instances have mutable reactive state */
 import { useEventListener } from '@vueuse/core';
 import { computed } from 'vue';
 import { useControlSettings } from '../stores/controlSettings';

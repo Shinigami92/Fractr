@@ -36,6 +36,7 @@ export async function initKeyboardLayout(): Promise<void> {
   try {
     layoutMap.value = await keyboard.getLayoutMap();
     keyboard.addEventListener?.('layoutchange', () => {
+      // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Keyboard API returns a Map with mutating methods
       void keyboard.getLayoutMap().then((map) => {
         layoutMap.value = map;
       });

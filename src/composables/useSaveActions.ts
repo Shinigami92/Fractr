@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Vue Refs and SaveEntry/Renderer instances have mutating internals */
 import { promiseTimeout } from '@vueuse/core';
 import type { Ref, ShallowRef } from 'vue';
 import type { Renderer } from '../engine/Renderer';

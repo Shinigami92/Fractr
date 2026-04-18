@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Node ChildProcess/Buffer and mutable local array literals */
 import { chromium } from '@playwright/test';
 import { execSync, spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';

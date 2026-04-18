@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Vue Refs and HTMLCanvasElement have mutating internals */
 import type { Ref, ShallowRef } from 'vue';
 import { onUnmounted, ref, watch } from 'vue';
 import { WebGPUContext } from '../engine/gpu/WebGPUContext';

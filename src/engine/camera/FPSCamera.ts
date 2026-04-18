@@ -129,7 +129,7 @@ export class FPSCamera {
   getViewProjectionInverse(
     aspect: number,
     fov = Math.PI / 3,
-    positionOverride?: vec3.Vec3,
+    positionOverride?: vec3.ReadonlyVec3,
   ): Float32Array {
     const r = this._right;
     const u = this._up;
@@ -161,7 +161,8 @@ export class FPSCamera {
   }
 
   // Rodrigues rotation: rotate vec around axis by angle
-  private rotateAroundAxis(axis: vec3.Vec3, angle: number, vec: vec3.Vec3): void {
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `vec` is mutated in place
+  private rotateAroundAxis(axis: vec3.ReadonlyVec3, angle: number, vec: vec3.Vec3): void {
     const c = Math.cos(angle);
     const s = Math.sin(angle);
     const t = 1 - c;

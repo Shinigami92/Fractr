@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Vue Ref has mutable .value; DOM events have mutating methods */
 import { useEventListener } from '@vueuse/core';
 import type { Ref } from 'vue';
 import { ref } from 'vue';

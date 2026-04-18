@@ -1,9 +1,9 @@
 import type { FractalType } from '../../stores/fractalParams';
 
 interface SDFParams {
-  power: number;
-  maxIterations: number;
-  bailout: number;
+  readonly power: number;
+  readonly maxIterations: number;
+  readonly bailout: number;
 }
 
 function mandelbulbSDF(x: number, y: number, z: number, params: SDFParams): number {

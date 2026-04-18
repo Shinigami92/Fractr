@@ -29,6 +29,7 @@ function clearAllSettings(): void {
   }
 }
 
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pinia plugin receives mutable store context
 export const piniaPersistPlugin: PiniaPlugin = ({ store }) => {
   if (!PERSISTED_STORES.has(store.$id)) return;
 

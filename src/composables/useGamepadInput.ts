@@ -23,7 +23,7 @@ interface StickVector {
 
 export interface GamepadButtonEvent {
   /** 'Button0'..'ButtonN', mapping to the W3C standard gamepad layout. */
-  code: string;
+  readonly code: string;
 }
 
 type ButtonListener = (event: GamepadButtonEvent) => void;
@@ -97,6 +97,7 @@ function startPolling(): void {
   pollHandle = requestAnimationFrame(pollGamepads);
 }
 
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Gamepad is a DOM type with mutating internals
 function attachGamepad(gamepad: Gamepad): void {
   if (connectedIndex.value !== null) return;
   connectedIndex.value = gamepad.index;
@@ -122,12 +123,20 @@ export function useGamepadInput() {
   // useGamepadInput() calls just surface the same reactive refs.
   if (!initialized) {
     initialized = true;
-    window.addEventListener('gamepadconnected', (e) => {
-      attachGamepad(e.gamepad);
-    });
-    window.addEventListener('gamepaddisconnected', (e) => {
-      detachGamepad(e.gamepad.index);
-    });
+    window.addEventListener(
+      'gamepadconnected',
+      // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- DOM event
+      (e) => {
+        attachGamepad(e.gamepad);
+      },
+    );
+    window.addEventListener(
+      'gamepaddisconnected',
+      // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- DOM event
+      (e) => {
+        detachGamepad(e.gamepad.index);
+      },
+    );
     // On some browsers the `gamepadconnected` event only fires after the user
     // presses a button; pick up any gamepad that was already present at load.
     for (const gp of navigator.getGamepads()) {

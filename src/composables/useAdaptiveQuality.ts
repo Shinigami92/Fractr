@@ -28,7 +28,7 @@ const ADAPTIVE_QUALITY_MOVEMENT_PENALTY = 0.1;
 
 export interface UseAdaptiveQualityOptions {
   /** Called with the quantized scale whenever it actually changes. */
-  onScaleChange: (scale: number) => void;
+  readonly onScaleChange: (scale: number) => void;
 }
 
 /**

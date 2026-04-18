@@ -15,7 +15,9 @@ console.log(`Fractr ${__COMMIT_SHA__}`);
 // canvas, 0 FPS, zero HUD stats). Force a full reload on JS updates. CSS
 // updates still HMR normally.
 if (import.meta.hot) {
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Vite HMR payload type lacks readonly fields
   import.meta.hot.on('vite:beforeUpdate', (payload) => {
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Update items lack readonly fields
     if (payload.updates.some((u) => u.type === 'js-update')) {
       window.location.reload();
     }

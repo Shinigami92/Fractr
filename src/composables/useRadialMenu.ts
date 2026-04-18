@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Vue Refs and DOM events have mutating internals */
 import { useTimeoutFn } from '@vueuse/core';
 import type { Ref } from 'vue';
 import { computed, ref } from 'vue';

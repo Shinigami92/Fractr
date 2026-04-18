@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- SavedState/FPSCamera instances have mutable internals */
 import { ref } from 'vue';
 import { FPSCamera } from '../engine/camera/FPSCamera';
 import type { SavedState } from '../services/savesDB';

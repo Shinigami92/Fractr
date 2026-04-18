@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Vue Ref and TouchEvent have mutating internals */
 import { useEventListener } from '@vueuse/core';
 import type { Ref } from 'vue';
 import { ref } from 'vue';

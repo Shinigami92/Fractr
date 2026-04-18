@@ -34,6 +34,7 @@ export class Renderer {
     return this._sampleCount;
   }
 
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- WebGPUContext is a class wrapper around mutable GPU handles
   constructor(ctx: WebGPUContext) {
     this.ctx = ctx;
     this.pipelineManager = new PipelineManager(ctx);
@@ -137,16 +138,17 @@ export class Renderer {
   }
 
   updateUniforms(
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- FPSCamera is a class with mutable state
     camera: FPSCamera,
     params: {
-      power: number;
-      maxIterations: number;
-      bailout: number;
-      maxRaySteps: number;
-      resolutionScale: number;
-      animatedColors: boolean;
-      stepFactor: number;
-      originOffset?: [number, number, number];
+      readonly power: number;
+      readonly maxIterations: number;
+      readonly bailout: number;
+      readonly maxRaySteps: number;
+      readonly resolutionScale: number;
+      readonly animatedColors: boolean;
+      readonly stepFactor: number;
+      readonly originOffset?: readonly [number, number, number];
     },
     time: number,
   ): void {

@@ -1,7 +1,8 @@
-import type { Vec3 } from './vec3';
+import type { ReadonlyVec3, Vec3 } from './vec3';
 import * as vec3 from './vec3';
 
 export type Mat4 = Float32Array;
+export type ReadonlyMat4 = { readonly [index: number]: number; readonly length: number };
 
 export function create(): Mat4 {
   const out = new Float32Array(16);
@@ -13,6 +14,7 @@ export function create(): Mat4 {
 }
 
 export function perspective(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- output buffer, mutated
   out: Mat4,
   fovY: number,
   aspect: number,
@@ -29,7 +31,8 @@ export function perspective(
   return out;
 }
 
-export function lookAt(out: Mat4, eye: Vec3, target: Vec3, up: Vec3): Mat4 {
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- out is an output buffer, mutated by design
+export function lookAt(out: Mat4, eye: ReadonlyVec3, target: ReadonlyVec3, up: ReadonlyVec3): Mat4 {
   const z = vec3.create();
   vec3.subtract(z, eye, target);
   vec3.normalize(z, z);
@@ -60,7 +63,8 @@ export function lookAt(out: Mat4, eye: Vec3, target: Vec3, up: Vec3): Mat4 {
   return out;
 }
 
-export function multiply(out: Mat4, a: Mat4, b: Mat4): Mat4 {
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- out is an output buffer, mutated by design
+export function multiply(out: Mat4, a: ReadonlyMat4, b: ReadonlyMat4): Mat4 {
   for (let i = 0; i < 4; i++) {
     const ai0 = a[i]!;
     const ai1 = a[i + 4]!;
@@ -74,7 +78,8 @@ export function multiply(out: Mat4, a: Mat4, b: Mat4): Mat4 {
   return out;
 }
 
-export function invert(out: Mat4, a: Mat4): Mat4 | null {
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- out is an output buffer, mutated by design
+export function invert(out: Mat4, a: ReadonlyMat4): Mat4 | null {
   const a00 = a[0]!;
   const a01 = a[1]!;
   const a02 = a[2]!;

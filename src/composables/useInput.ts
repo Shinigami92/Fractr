@@ -3,6 +3,7 @@ import { onScopeDispose } from 'vue';
 
 const pressedKeys = new Set<string>();
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM event types have mutating methods */
 export function useInput() {
   function onKeyDown(e: KeyboardEvent): void {
     pressedKeys.add(e.code);
@@ -19,6 +20,7 @@ export function useInput() {
   function onMouseUp(e: MouseEvent): void {
     pressedKeys.delete(`Mouse${e.button}`);
   }
+  /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
   function onBlur(): void {
     pressedKeys.clear();

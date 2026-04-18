@@ -39,6 +39,7 @@ export class UniformBuffer {
   private readonly floatView: Float32Array;
   private readonly uintView: Uint32Array;
 
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- GPUDevice wraps mutable GPU handles
   constructor(device: GPUDevice) {
     this.data = new ArrayBuffer(BUFFER_SIZE);
     this.floatView = new Float32Array(this.data);
@@ -50,7 +51,7 @@ export class UniformBuffer {
     });
   }
 
-  setViewProjectionInverse(m: Float32Array): void {
+  setViewProjectionInverse(m: ArrayLike<number>): void {
     this.floatView.set(m, IDX_VIEW_PROJ_INVERSE);
   }
 
@@ -101,6 +102,7 @@ export class UniformBuffer {
     this.floatView[IDX_STEP_FACTOR] = f;
   }
 
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- GPUDevice wraps mutable GPU handles
   upload(device: GPUDevice): void {
     device.queue.writeBuffer(this.buffer, 0, this.data);
   }

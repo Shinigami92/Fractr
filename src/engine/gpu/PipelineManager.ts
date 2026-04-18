@@ -117,6 +117,7 @@ export class PipelineManager {
   private readonly cache = new Map<string, GPURenderPipeline>();
   readonly bindGroupLayout: GPUBindGroupLayout;
 
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- WebGPUContext wraps mutable GPU handles
   constructor(ctx: WebGPUContext) {
     this.ctx = ctx;
     this.bindGroupLayout = ctx.device.createBindGroupLayout({
@@ -165,6 +166,7 @@ export class PipelineManager {
     colorMode: ColorMode,
     renderMode: RenderMode,
     format: GPUTextureFormat,
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- GPUBlendState is a deeply-nested GPU descriptor
     blend: GPUBlendState | undefined,
   ): GPURenderPipeline {
     let pipeline = this.cache.get(key);
