@@ -205,6 +205,26 @@ export const RESERVED_KEYBOARD_CODES: ReadonlySet<string> = new Set([
   'ControlRight',
 ]);
 
+/** KeyboardEvent.code → human-readable symbol for non-letter/digit keys. */
+const KEYBOARD_CODE_SYMBOLS: Readonly<Record<string, string>> = {
+  Comma: ',',
+  Period: '.',
+  Space: 'Space',
+  ArrowUp: '↑',
+  ArrowDown: '↓',
+  ArrowLeft: '←',
+  ArrowRight: '→',
+  Slash: '/',
+  Backslash: '\\',
+  Semicolon: ';',
+  Quote: "'",
+  Backquote: '`',
+  Minus: '-',
+  Equal: '=',
+  BracketLeft: '[',
+  BracketRight: ']',
+};
+
 /**
  * Human-readable label for a KeyboardEvent.code ("KeyW" → "W", "F5" → "F5").
  *
@@ -222,21 +242,5 @@ export function displayKeyboardCode(code: string): string {
   }
   if (code.startsWith('Key')) return code.slice(3);
   if (code.startsWith('Digit')) return code.slice(5);
-  if (code === 'Comma') return ',';
-  if (code === 'Period') return '.';
-  if (code === 'Space') return 'Space';
-  if (code === 'ArrowUp') return '↑';
-  if (code === 'ArrowDown') return '↓';
-  if (code === 'ArrowLeft') return '←';
-  if (code === 'ArrowRight') return '→';
-  if (code === 'Slash') return '/';
-  if (code === 'Backslash') return '\\';
-  if (code === 'Semicolon') return ';';
-  if (code === 'Quote') return "'";
-  if (code === 'Backquote') return '`';
-  if (code === 'Minus') return '-';
-  if (code === 'Equal') return '=';
-  if (code === 'BracketLeft') return '[';
-  if (code === 'BracketRight') return ']';
-  return code;
+  return KEYBOARD_CODE_SYMBOLS[code] ?? code;
 }

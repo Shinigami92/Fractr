@@ -69,6 +69,61 @@ export function useAppShortcuts(options: UseAppShortcutsOptions): UseAppShortcut
     },
   );
 
+  function handleEscapeKey(): void {
+    if (options.showHelpOverlay.value) {
+      options.showHelpOverlay.value = false;
+      return;
+    }
+    if (appState.mode === 'select') {
+      appState.backToTitle();
+    } else if (appState.mode === 'paused') {
+      appState.resume();
+    } else if (appState.mode === 'settings') {
+      appState.closeSettings();
+    } else if (appState.mode === 'saves') {
+      appState.closeSaves();
+    }
+    // 'playing' → pointer lock exit triggers pause via watcher above
+  }
+
+  function handlePlayingKeyDown(e: KeyboardEvent): void {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const kb: (id: Parameters<typeof controls.getBinding>[0]) => string | undefined = (id) =>
+      controls.getBinding(id, 'keyboard');
+    if (e.code === kb('toggleHud')) hudSettings.toggleHud();
+    if (e.code === kb('toggleCrosshair')) hudSettings.toggleCrosshair();
+    if (e.code === kb('toggleDynamicIterations')) {
+      graphics.dynamicIterations = !graphics.dynamicIterations;
+    }
+    if (e.code === kb('increaseIterations')) fractal.adjustIterations(1);
+    if (e.code === kb('decreaseIterations')) fractal.adjustIterations(-1);
+    if (e.code === kb('increaseBailout')) fractal.adjustBailout(1);
+    if (e.code === kb('decreaseBailout')) fractal.adjustBailout(-1);
+    if (e.code === kb('toggleAnimatedColors')) {
+      graphics.animatedColors = !graphics.animatedColors;
+    }
+    if (e.code === kb('quickSave')) {
+      e.preventDefault();
+      void options.saveActions.quickSave();
+    }
+    if (e.code === kb('screenshot')) {
+      e.preventDefault();
+      void options.saveActions.takeScreenshot();
+    }
+    if (e.code === kb('openSaves')) {
+      cursorUnlocked = true;
+      options.pointerLock.exitLock();
+      appState.openSaves();
+    }
+    if (e.code === kb('copyShareURL')) {
+      void navigator.clipboard.writeText(options.urlState.buildCurrentShareURL());
+      options.notify('Share URL copied to clipboard');
+    }
+
+    // Radial menu hold detection for cycle keys
+    options.radial.tryBeginHoldFromKey(e.code, e.repeat);
+  }
+
   function onKeyDown(e: KeyboardEvent): void {
     // F1 toggles the help overlay during gameplay (closing also allowed if open)
     if (e.code === 'F1') {
@@ -90,59 +145,9 @@ export function useAppShortcuts(options: UseAppShortcutsOptions): UseAppShortcut
       return;
     }
 
-    if (e.code === 'Escape') {
-      if (options.showHelpOverlay.value) {
-        options.showHelpOverlay.value = false;
-        return;
-      }
-      if (appState.mode === 'select') {
-        appState.backToTitle();
-      } else if (appState.mode === 'paused') {
-        appState.resume();
-      } else if (appState.mode === 'settings') {
-        appState.closeSettings();
-      } else if (appState.mode === 'saves') {
-        appState.closeSaves();
-      }
-      // 'playing' → pointer lock exit triggers pause via watcher above
-    }
+    if (e.code === 'Escape') handleEscapeKey();
 
-    if (appState.mode === 'playing' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      const kb: (id: Parameters<typeof controls.getBinding>[0]) => string | undefined = (id) =>
-        controls.getBinding(id, 'keyboard');
-      if (e.code === kb('toggleHud')) hudSettings.toggleHud();
-      if (e.code === kb('toggleCrosshair')) hudSettings.toggleCrosshair();
-      if (e.code === kb('toggleDynamicIterations')) {
-        graphics.dynamicIterations = !graphics.dynamicIterations;
-      }
-      if (e.code === kb('increaseIterations')) fractal.adjustIterations(1);
-      if (e.code === kb('decreaseIterations')) fractal.adjustIterations(-1);
-      if (e.code === kb('increaseBailout')) fractal.adjustBailout(1);
-      if (e.code === kb('decreaseBailout')) fractal.adjustBailout(-1);
-      if (e.code === kb('toggleAnimatedColors')) {
-        graphics.animatedColors = !graphics.animatedColors;
-      }
-      if (e.code === kb('quickSave')) {
-        e.preventDefault();
-        void options.saveActions.quickSave();
-      }
-      if (e.code === kb('screenshot')) {
-        e.preventDefault();
-        void options.saveActions.takeScreenshot();
-      }
-      if (e.code === kb('openSaves')) {
-        cursorUnlocked = true;
-        options.pointerLock.exitLock();
-        appState.openSaves();
-      }
-      if (e.code === kb('copyShareURL')) {
-        void navigator.clipboard.writeText(options.urlState.buildCurrentShareURL());
-        options.notify('Share URL copied to clipboard');
-      }
-
-      // Radial menu hold detection for cycle keys
-      options.radial.tryBeginHoldFromKey(e.code, e.repeat);
-    }
+    if (appState.mode === 'playing') handlePlayingKeyDown(e);
   }
 
   function onKeyUp(e: KeyboardEvent): void {
