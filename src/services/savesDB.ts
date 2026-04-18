@@ -42,7 +42,7 @@ function openDB(): Promise<IDBDatabase> {
       }
     };
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    request.addEventListener('error', () => reject(request.error));
   });
 }
 
@@ -104,7 +104,7 @@ export async function saveState(state: SavedState, thumbnail?: Blob): Promise<bo
       resolve(true);
     };
 
-    tx.onerror = () => resolve(false);
+    tx.addEventListener('error', () => resolve(false));
   });
 }
 
@@ -119,13 +119,14 @@ export async function getAllSaves(): Promise<SaveEntry[]> {
     request.onsuccess = () => {
       const cursor = request.result;
       if (cursor) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- IDB cursor.value is typed `any`; shape is validated via validateImport on reads from untrusted sources.
         results.push(cursor.value as SaveEntry);
         cursor.continue();
       } else {
         resolve(results);
       }
     };
-    request.onerror = () => resolve([]);
+    request.addEventListener('error', () => resolve([]));
   });
 }
 
@@ -136,10 +137,11 @@ export async function getThumbnail(stateHash: string): Promise<Blob | null> {
     const store = tx.objectStore(THUMBS_STORE);
     const request = store.get(stateHash);
     request.onsuccess = () => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- IDB request.result is `any`; thumbnail store is only written via saveThumbnail with this shape.
       const result = request.result as { stateHash: string; blob: Blob } | undefined;
       resolve(result?.blob ?? null);
     };
-    request.onerror = () => resolve(null);
+    request.addEventListener('error', () => resolve(null));
   });
 }
 
@@ -150,7 +152,7 @@ export async function saveThumbnail(stateHash: string, blob: Blob): Promise<void
     const store = tx.objectStore(THUMBS_STORE);
     store.put({ stateHash, blob });
     tx.oncomplete = () => resolve();
-    tx.onerror = () => resolve();
+    tx.addEventListener('error', () => resolve());
   });
 }
 
@@ -161,16 +163,18 @@ export async function deleteSave(stateHash: string): Promise<void> {
     tx.objectStore(SAVES_STORE).delete(stateHash);
     tx.objectStore(THUMBS_STORE).delete(stateHash);
     tx.oncomplete = () => resolve();
-    tx.onerror = () => resolve();
+    tx.addEventListener('error', () => resolve());
   });
 }
 
 function isValidSaveEntry(entry: unknown): entry is SaveEntry {
   if (!entry || typeof entry !== 'object') return false;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing `object` to `Record<string, unknown>` for field-by-field validation below.
   const e = entry as Record<string, unknown>;
   if (typeof e.stateHash !== 'string' || typeof e.timestamp !== 'number') return false;
   const s = e.state;
   if (!s || typeof s !== 'object') return false;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- same pattern: narrowing nested state object for field-by-field validation.
   const state = s as Record<string, unknown>;
   return (
     typeof state.fractalType === 'string' &&
@@ -215,7 +219,7 @@ export async function importSaves(entries: SaveEntry[]): Promise<number> {
         store.put(entry);
         resolve(true);
       };
-      tx.onerror = () => resolve(false);
+      tx.addEventListener('error', () => resolve(false));
     });
     if (added) imported++;
   }

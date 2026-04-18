@@ -3,6 +3,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import { initKeyboardLayout } from './input/keyboardLayout';
 import { piniaPersistPlugin } from './plugins/piniaPersist';
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect import: loads global Tailwind/CSS resets.
 import './style.css';
 
 declare const __COMMIT_SHA__: string;

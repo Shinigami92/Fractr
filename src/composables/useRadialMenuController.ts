@@ -60,16 +60,20 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
         case 'fractal':
           return fractalOptions.value;
       }
+      return [];
     },
     onApply(id, value) {
       switch (id) {
         case 'color':
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- value originates from COLOR_MODE_OPTIONS passed into getOptions for this id.
           fractal.colorMode = value as ColorMode;
           break;
         case 'render':
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- value originates from RENDER_MODE_OPTIONS passed into getOptions for this id.
           fractal.renderMode = value as RenderMode;
           break;
         case 'fractal':
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- value originates from fractalOptions (keys of FRACTAL_CONFIGS) passed into getOptions for this id.
           fractal.setFractalType(value as FractalType);
           options.onResetCamera();
           break;

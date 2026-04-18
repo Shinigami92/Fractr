@@ -115,7 +115,7 @@ function sierpinskiSDF(x: number, y: number, z: number, params: SDFParams): numb
 
   for (let i = 0; i < params.maxIterations; i++) {
     let ci = 0;
-    let d = (zx - a[0]![0]) ** 2 + (zy - a[0]![1]) ** 2 + (zz - a[0]![2]) ** 2;
+    let d = (zx - a[0][0]) ** 2 + (zy - a[0][1]) ** 2 + (zz - a[0][2]) ** 2;
     for (let j = 1; j < 4; j++) {
       const dj = (zx - a[j]![0]) ** 2 + (zy - a[j]![1]) ** 2 + (zz - a[j]![2]) ** 2;
       if (dj < d) {
@@ -353,10 +353,13 @@ function octahedronSDF(x: number, y: number, z: number, params: SDFParams): numb
   return (a - 1) * 0.577;
 }
 
+function glslMod(v: number, m: number): number {
+  return v - m * Math.floor(v / m);
+}
+
 function cantordustSDF(x: number, y: number, z: number, params: SDFParams): number {
   let d = Math.max(Math.abs(x), Math.abs(y), Math.abs(z)) - 1;
   let s = 1;
-  const glslMod = (v: number, m: number) => v - m * Math.floor(v / m);
   for (let i = 0; i < params.maxIterations; i++) {
     const ax = glslMod(x * s, 2) - 1;
     const ay = glslMod(y * s, 2) - 1;

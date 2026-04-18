@@ -254,12 +254,12 @@ Available colors: glow, distance, orbit_trap, iteration, ao, normal, curvature, 
 }
 
 function waitForServer(server: ChildProcess): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => reject(new Error('Server start timeout')), 15000);
+  return new Promise((done, fail) => {
+    const timeout = setTimeout(() => fail(new Error('Server start timeout')), 15000);
     server.stdout?.on('data', (data: Buffer) => {
       if (data.toString().includes('Local')) {
         clearTimeout(timeout);
-        resolve();
+        done();
       }
     });
     server.stderr?.on('data', (data: Buffer) => {

@@ -224,7 +224,7 @@ export class Renderer {
         ],
       });
       blitPass.setPipeline(this.blitPipeline);
-      blitPass.setBindGroup(0, this.blitBindGroup!);
+      blitPass.setBindGroup(0, this.blitBindGroup);
       blitPass.draw(3);
       blitPass.end();
     } else {

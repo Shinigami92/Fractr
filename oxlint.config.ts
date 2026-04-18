@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: ['import', 'oxc', 'typescript', 'unicorn', 'vue'],
   categories: {
     correctness: 'error',
-    nursery: 'error',
+    suspicious: 'error',
   },
   rules: {
     'typescript/consistent-type-imports': 'error',

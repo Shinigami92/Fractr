@@ -13,6 +13,10 @@ export interface TouchState {
 const DEAD_ZONE = 0.05;
 const MAX_RADIUS = 80;
 
+function screenMidX(): number {
+  return window.innerWidth / 2;
+}
+
 export function useTouchControls(canvas: Ref<HTMLCanvasElement | null>) {
   const leftTouch = ref<TouchState | null>(null);
   const rightTouch = ref<TouchState | null>(null);
@@ -27,10 +31,6 @@ export function useTouchControls(canvas: Ref<HTMLCanvasElement | null>) {
   // Previous position for right-touch delta calculation
   let rightPrevX = 0;
   let rightPrevY = 0;
-
-  function screenMidX(): number {
-    return window.innerWidth / 2;
-  }
 
   function onTouchStart(e: TouchEvent): void {
     e.preventDefault();

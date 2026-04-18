@@ -25,6 +25,7 @@ function wgslFullReload(): Plugin {
         server.ws.send({ type: 'full-reload', path: '*' });
         return [];
       }
+      return undefined;
     },
   };
 }

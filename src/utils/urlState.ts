@@ -38,11 +38,14 @@ export function readStateFromURL(): SharedState | null {
   const render = params.get('r') ?? 'ray';
 
   return {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- guarded by FRACTAL_TYPE_SET.has(f) above.
     fractalType: f as FractalType,
     power: get('p', 8),
     maxIterations: get('i', 20),
     bailout: get('b', 2),
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- guarded by COLOR_MODE_SET.has(color).
     colorMode: COLOR_MODE_SET.has(color) ? (color as ColorMode) : 'distance',
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- guarded by RENDER_MODE_SET.has(render).
     renderMode: RENDER_MODE_SET.has(render) ? (render as RenderMode) : 'ray',
     x: get('x', 0),
     y: get('y', 0),

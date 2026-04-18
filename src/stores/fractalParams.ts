@@ -189,6 +189,7 @@ const _FRACTAL_CONFIGS = {
 
 export type FractalType = keyof typeof _FRACTAL_CONFIGS;
 export const FRACTAL_CONFIGS: Record<FractalType, FractalConfig> = _FRACTAL_CONFIGS;
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.keys widens to `string[]`; keys are guaranteed to match FractalType by construction.
 export const FRACTAL_TYPES = Object.keys(FRACTAL_CONFIGS) as FractalType[];
 
 export interface ModeOption {

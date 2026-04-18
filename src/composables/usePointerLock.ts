@@ -2,6 +2,12 @@ import { useEventListener } from '@vueuse/core';
 import type { Ref } from 'vue';
 import { ref } from 'vue';
 
+function exitLock(): void {
+  if (document.pointerLockElement) {
+    document.exitPointerLock();
+  }
+}
+
 export function usePointerLock(canvas: Ref<HTMLCanvasElement | null>) {
   const isLocked = ref(false);
   let accumulatedX = 0;
@@ -34,12 +40,6 @@ export function usePointerLock(canvas: Ref<HTMLCanvasElement | null>) {
       }
     } catch {
       // Pointer Lock API not available (e.g. mobile browsers)
-    }
-  }
-
-  function exitLock(): void {
-    if (document.pointerLockElement) {
-      document.exitPointerLock();
     }
   }
 

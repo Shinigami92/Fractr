@@ -123,10 +123,10 @@ export function useGamepadInput() {
   if (!initialized) {
     initialized = true;
     window.addEventListener('gamepadconnected', (e) => {
-      attachGamepad((e as GamepadEvent).gamepad);
+      attachGamepad(e.gamepad);
     });
     window.addEventListener('gamepaddisconnected', (e) => {
-      detachGamepad((e as GamepadEvent).gamepad.index);
+      detachGamepad(e.gamepad.index);
     });
     // On some browsers the `gamepadconnected` event only fires after the user
     // presses a button; pick up any gamepad that was already present at load.

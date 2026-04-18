@@ -17,7 +17,6 @@ export class WebGPUContext {
   }
 
   static async create(canvas: HTMLCanvasElement): Promise<WebGPUContext> {
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- @webgpu/types declares `navigator.gpu` as non-nullable, but it's `undefined` at runtime in browsers without WebGPU (e.g. Firefox, older Safari)
     if (!navigator.gpu) {
       throw new Error('WebGPU is not supported in this browser');
     }

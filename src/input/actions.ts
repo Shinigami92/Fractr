@@ -189,6 +189,7 @@ export type ActionId = keyof typeof ACTIONS_RAW;
  */
 export const ACTIONS: Readonly<Record<ActionId, ActionDefinition>> = ACTIONS_RAW;
 
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.keys widens to `string[]`; keys are guaranteed to match ActionId by construction.
 export const ACTION_IDS = Object.keys(ACTIONS_RAW) as ActionId[];
 
 /**
