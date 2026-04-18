@@ -21,6 +21,7 @@ Ultra-performant 3D fractal explorer powered by WebGPU. Fly through infinite mat
 - **Adaptive quality** — resolution scales with FPS for smooth performance on any GPU
 - **Shareable URLs** — URL updates live with your camera position; press P to copy
 - **Mobile touch controls** — dual-joystick (left = move, right = look), auto-detected on touch devices
+- **Gamepad support** — standard 6DOF controls via sticks, triggers, and face buttons
 - **F1 controls overlay** — in-game keybinding reference; shows touch controls on mobile
 - **Game-style UI** — title screen, fractal selection, pause menu, settings, HUD
 
@@ -98,8 +99,11 @@ pnpm run generate-previews
 # Specific fractals with custom color
 pnpm run generate-previews mandelbulb menger --color chromatic
 
+# Custom color and render mode
+pnpm run generate-previews quatjulia --color chromatic --render reflection
+
 # High-res screenshots (1920x1080, for README)
-pnpm run generate-previews --highres --color glow
+pnpm run generate-previews --highres --color glow --render softshadow
 
 # Single fractal, high-res
 pnpm run generate-previews mandelbulb --highres

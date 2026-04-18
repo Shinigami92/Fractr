@@ -7,6 +7,8 @@ import { mkdirSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { ColorMode } from '../src/engine/colorModes';
 import { COLOR_MODES } from '../src/engine/colorModes';
+import type { RenderMode } from '../src/engine/renderModes';
+import { RENDER_MODES } from '../src/engine/renderModes';
 import type { FractalSpec } from './preview-fractals';
 import { FRACTALS } from './preview-fractals';
 
@@ -20,6 +22,7 @@ const PORT = 4173;
 interface Options {
   fractals: string[];
   color: ColorMode;
+  render: RenderMode;
   preset: keyof typeof PRESETS;
   outDir: string;
 }
@@ -28,10 +31,33 @@ function isColorMode(value: string): value is ColorMode {
   return (COLOR_MODES as ReadonlyArray<string>).includes(value);
 }
 
+function isRenderMode(value: string): value is RenderMode {
+  return (RENDER_MODES as ReadonlyArray<string>).includes(value);
+}
+
+const HELP_TEXT = `Usage: generate-previews [options] [fractal names...]
+
+Options:
+  --color <mode>    Color mode (default: glow)
+  --render <mode>   Render mode (default: ray)
+  --highres         1920x1080 with longer render wait (default: 960x540)
+  --help            Show this help
+
+Examples:
+  pnpm run generate-previews
+  pnpm run generate-previews mandelbulb menger --color chromatic
+  pnpm run generate-previews --highres --color distance --render softshadow
+  pnpm run generate-previews mandelbulb --highres
+
+Available fractals: ${FRACTALS.map((f) => f.type).join(', ')}
+Available colors: ${COLOR_MODES.join(', ')}
+Available renders: ${RENDER_MODES.join(', ')}`;
+
 function parseArgs(): Options {
   const args = process.argv.slice(2);
   const fractals: string[] = [];
   let color: ColorMode = 'glow';
+  let render: RenderMode = 'ray';
   let preset: keyof typeof PRESETS = 'thumbnail';
 
   for (let i = 0; i < args.length; i++) {
@@ -43,24 +69,17 @@ function parseArgs(): Options {
         process.exit(1);
       }
       color = next;
+    } else if (arg === '--render' && args[i + 1] != null) {
+      const next = args[++i]!;
+      if (!isRenderMode(next)) {
+        console.error(`Unknown render mode "${next}". Available: ${RENDER_MODES.join(', ')}`);
+        process.exit(1);
+      }
+      render = next;
     } else if (arg === '--highres') {
       preset = 'highres';
     } else if (arg === '--help') {
-      console.log(`Usage: generate-previews [options] [fractal names...]
-
-Options:
-  --color <mode>   Color mode (default: glow)
-  --highres        1920x1080 with longer render wait (default: 960x540)
-  --help           Show this help
-
-Examples:
-  pnpm run generate-previews
-  pnpm run generate-previews mandelbulb menger --color chromatic
-  pnpm run generate-previews --highres --color distance
-  pnpm run generate-previews mandelbulb --highres
-
-Available fractals: ${FRACTALS.map((f) => f.type).join(', ')}
-Available colors: ${COLOR_MODES.join(', ')}`);
+      console.log(HELP_TEXT);
       process.exit(0);
     } else if (!arg.startsWith('--')) {
       fractals.push(arg);
@@ -72,7 +91,7 @@ Available colors: ${COLOR_MODES.join(', ')}`);
       ? resolve(import.meta.dirname, '../public/screenshots')
       : resolve(import.meta.dirname, '../public/previews');
 
-  return { fractals, color, preset, outDir };
+  return { fractals, color, render, preset, outDir };
 }
 
 function waitForServer(server: ChildProcess): Promise<void> {
@@ -92,13 +111,14 @@ function waitForServer(server: ChildProcess): Promise<void> {
   });
 }
 
-function buildFractalParams(fractal: FractalSpec, color: string): URLSearchParams {
+function buildFractalParams(fractal: FractalSpec, color: string, render: string): URLSearchParams {
   return new URLSearchParams({
     f: fractal.type,
     p: String(fractal.power),
     i: String(fractal.iter),
     b: String(fractal.bail),
     c: color,
+    r: render,
     x: String(fractal.x),
     y: String(fractal.y),
     z: String(fractal.z),
@@ -115,12 +135,13 @@ async function captureFractal(
   browser: Browser,
   fractal: FractalSpec,
   color: string,
+  render: string,
   outDir: string,
   preset: (typeof PRESETS)[keyof typeof PRESETS],
 ): Promise<void> {
   const { width, height, wait } = preset;
   const page = await browser.newPage({ viewport: { width, height }, ignoreHTTPSErrors: true });
-  const params = buildFractalParams(fractal, color);
+  const params = buildFractalParams(fractal, color, render);
   await page.goto(`https://localhost:${PORT}/Fractr/?${params.toString()}`);
   await page.waitForTimeout(wait);
 
@@ -147,7 +168,7 @@ async function captureAll(
   for (const fractal of targets) {
     console.log(`Capturing ${fractal.type}...`);
     // oxlint-disable-next-line no-await-in-loop -- shared browser: pages must be created/closed sequentially and screenshots are serial
-    await captureFractal(browser, fractal, opts.color, opts.outDir, preset);
+    await captureFractal(browser, fractal, opts.color, opts.render, opts.outDir, preset);
   }
   await browser.close();
 }
@@ -169,7 +190,7 @@ async function main(): Promise<void> {
   execSync('pnpm run build', { stdio: 'inherit', cwd: resolve(import.meta.dirname, '..') });
 
   console.log(
-    `Capturing ${targets.length} fractal(s) at ${preset.width}x${preset.height} with color=${opts.color}...`,
+    `Capturing ${targets.length} fractal(s) at ${preset.width}x${preset.height} with color=${opts.color}, render=${opts.render}...`,
   );
   const server = spawn('pnpm', ['run', 'preview', '--port', String(PORT)], {
     stdio: 'pipe',
