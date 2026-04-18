@@ -229,29 +229,30 @@ export function validateImport(data: unknown): SaveEntry[] {
 
 export async function importSaves(entries: readonly SaveEntry[]): Promise<number> {
   const db = await openDB();
-  let imported = 0;
 
-  for (const entry of entries) {
-    const added = await new Promise<boolean>((resolve) => {
-      const tx = db.transaction(SAVES_STORE, 'readwrite');
-      const store = tx.objectStore(SAVES_STORE);
-      const getReq = store.get(entry.stateHash);
-      getReq.onsuccess = () => {
-        if (getReq.result != null) {
-          resolve(false);
-          return;
-        }
-        store.put(entry);
-        resolve(true);
-      };
-      tx.addEventListener('error', () => {
-        resolve(false);
-      });
-    });
-    if (added) imported++;
-  }
+  const results = await Promise.all(
+    entries.map(
+      (entry) =>
+        new Promise<boolean>((resolve) => {
+          const tx = db.transaction(SAVES_STORE, 'readwrite');
+          const store = tx.objectStore(SAVES_STORE);
+          const getReq = store.get(entry.stateHash);
+          getReq.onsuccess = () => {
+            if (getReq.result != null) {
+              resolve(false);
+              return;
+            }
+            store.put(entry);
+            resolve(true);
+          };
+          tx.addEventListener('error', () => {
+            resolve(false);
+          });
+        }),
+    ),
+  );
 
-  return imported;
+  return results.filter(Boolean).length;
 }
 
 export function exportSaves(entries: readonly SaveEntry[]): string {

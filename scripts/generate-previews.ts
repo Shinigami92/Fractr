@@ -307,6 +307,7 @@ async function main() {
     for (const fractal of targets) {
       console.log(`Capturing ${fractal.type}...`);
 
+      // oxlint-disable-next-line no-await-in-loop -- shared browser instance; pages must be created and closed sequentially
       const page = await browser.newPage({
         viewport: { width, height },
       });
@@ -327,17 +328,21 @@ async function main() {
         preview: '1',
       });
 
+      // oxlint-disable-next-line no-await-in-loop -- sequential page navigation within shared browser
       await page.goto(`http://localhost:${PORT}/Fractr/?${params.toString()}`);
+      // oxlint-disable-next-line no-await-in-loop -- wait for fractal to render before screenshot
       await page.waitForTimeout(wait);
 
       const canvas = page.locator('canvas');
       const pngPath = resolve(opts.outDir, `${fractal.type}.png`);
       const webpPath = resolve(opts.outDir, `${fractal.type}.webp`);
+      // oxlint-disable-next-line no-await-in-loop -- screenshot reads live canvas state, must be serial
       await canvas.screenshot({ path: pngPath, type: 'png' });
       execSync(`cwebp -q 90 "${pngPath}" -o "${webpPath}"`, { stdio: 'pipe' });
       unlinkSync(pngPath);
       console.log(`  Saved ${webpPath}`);
 
+      // oxlint-disable-next-line no-await-in-loop -- must close page before creating the next one
       await page.close();
     }
 

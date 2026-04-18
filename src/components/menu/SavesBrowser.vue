@@ -39,10 +39,12 @@ function updateFilter(): void {
 async function loadSaves(): Promise<void> {
   saves.value = await getAllSaves();
   updateFilter();
-  // Load thumbnails sequentially
+  // Load thumbnails in parallel
+  const results = await Promise.all(
+    saves.value.map(async (save) => ({ save, blob: await getThumbnail(save.stateHash) })),
+  );
   const missing: SaveEntry[] = [];
-  for (const save of saves.value) {
-    const blob = await getThumbnail(save.stateHash);
+  for (const { save, blob } of results) {
     if (blob) {
       thumbnailUrls.value[save.stateHash] = URL.createObjectURL(blob);
     } else {
@@ -114,12 +116,13 @@ async function onImportFile(e: Event): Promise<void> {
 // Called from parent after thumbnails are regenerated
 async function refreshThumbnails(): Promise<void> {
   regenerating.value = false;
-  for (const save of saves.value) {
-    if (!thumbnailUrls.value[save.stateHash]) {
-      const blob = await getThumbnail(save.stateHash);
-      if (blob) {
-        thumbnailUrls.value[save.stateHash] = URL.createObjectURL(blob);
-      }
+  const missing = saves.value.filter((s) => !thumbnailUrls.value[s.stateHash]);
+  const results = await Promise.all(
+    missing.map(async (save) => ({ save, blob: await getThumbnail(save.stateHash) })),
+  );
+  for (const { save, blob } of results) {
+    if (blob) {
+      thumbnailUrls.value[save.stateHash] = URL.createObjectURL(blob);
     }
   }
 }

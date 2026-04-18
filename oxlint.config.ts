@@ -11,6 +11,7 @@ export default defineConfig({
     correctness: 'error',
     suspicious: 'error',
     pedantic: 'error',
+    perf: 'error',
   },
   rules: {
     eqeqeq: ['error', 'always', { null: 'ignore' }],

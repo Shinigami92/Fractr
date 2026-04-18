@@ -97,6 +97,7 @@ export async function renderSavedStateToBlob(
   while (performance.now() - startMs < renderTimeMs) {
     renderer.updateUniforms(camera, params, 0);
     renderer.render(false);
+    // oxlint-disable-next-line no-await-in-loop -- frame pacing is inherently serial; must wait one rAF between renders for GPU accumulation
     await new Promise<void>((resolve) => {
       requestAnimationFrame(() => {
         resolve();

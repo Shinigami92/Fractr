@@ -60,7 +60,7 @@ const sectors = computed(() => {
     const lx = Math.cos(midAngle) * labelR;
     const ly = Math.sin(midAngle) * labelR;
 
-    return { ...opt, path, lx, ly, index: i };
+    return { value: opt.value, short: opt.short, path, lx, ly, index: i };
   });
 });
 </script>

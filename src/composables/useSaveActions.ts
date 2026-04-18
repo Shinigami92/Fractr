@@ -96,13 +96,16 @@ export function useSaveActions(deps: UseSaveActionsDeps) {
     };
 
     for (const save of saves) {
+      // oxlint-disable-next-line no-await-in-loop -- renders share one renderer/canvas; captures must run serially
       const blob = await renderSavedStateToBlob(renderDeps, save.state);
       if (blob) {
+        // oxlint-disable-next-line no-await-in-loop -- sequential so each thumbnail appears progressively in the browser
         await saveThumbnail(save.stateHash, blob);
         // Show thumbnail immediately in the browser
         deps.savesBrowserRef.value?.setThumbnail(save.stateHash, blob);
       }
       // Delay between captures
+      // oxlint-disable-next-line no-await-in-loop -- inter-capture throttle, must be sequential
       await promiseTimeout(100);
     }
 
