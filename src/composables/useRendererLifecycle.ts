@@ -15,7 +15,11 @@ import type { UsePointerLockReturn } from './usePointerLock';
 import type { UseSceneStateReturn } from './useSceneState';
 import type { UseURLStateReturn } from './useURLState';
 
-/** Canvas resolution scale applied outside of active gameplay. */
+/**
+ * Canvas resolution scale applied to the blurred menu backdrop (title, select,
+ * pause, settings, saves). Not applied in URL `preview=1` screenshot mode —
+ * that path renders full-res with no blur.
+ */
 const PREVIEW_RESOLUTION_SCALE = 0.25;
 
 export interface UseRendererLifecycleOptions {
@@ -129,8 +133,9 @@ function onExitPlaying(
   applyCanvasResolution: (scale: number) => void,
 ): void {
   options.gameLoop.stop();
+  const backdropScale = options.urlState.previewMode ? 1 : PREVIEW_RESOLUTION_SCALE;
   if (mode === 'title' || mode === 'select') {
-    applyCanvasResolution(PREVIEW_RESOLUTION_SCALE);
+    applyCanvasResolution(backdropScale);
     options.previewLoop.start();
     window.history.replaceState({}, '', window.location.pathname);
   } else {
@@ -138,7 +143,7 @@ function onExitPlaying(
     // Keep current resolution when pausing from gameplay.
     const fromGame = oldMode === 'playing' || oldMode === 'paused';
     if (!fromGame) {
-      applyCanvasResolution(PREVIEW_RESOLUTION_SCALE);
+      applyCanvasResolution(backdropScale);
     }
     options.previewLoop.start();
   }
@@ -183,7 +188,8 @@ export function useRendererLifecycle(
   function onResize(width: number, height: number): void {
     displayWidth = width;
     displayHeight = height;
-    const scale = appState.mode === 'playing' ? 1 : PREVIEW_RESOLUTION_SCALE;
+    const scale =
+      appState.mode === 'playing' || options.urlState.previewMode ? 1 : PREVIEW_RESOLUTION_SCALE;
     applyCanvasResolution(scale);
   }
 

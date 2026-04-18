@@ -5,6 +5,8 @@ import { execSync, spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { mkdirSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
+import type { ColorMode } from '../src/engine/colorModes';
+import { COLOR_MODES } from '../src/engine/colorModes';
 import type { FractalSpec } from './preview-fractals';
 import { FRACTALS } from './preview-fractals';
 
@@ -17,21 +19,30 @@ const PORT = 4173;
 
 interface Options {
   fractals: string[];
-  color: string;
+  color: ColorMode;
   preset: keyof typeof PRESETS;
   outDir: string;
+}
+
+function isColorMode(value: string): value is ColorMode {
+  return (COLOR_MODES as ReadonlyArray<string>).includes(value);
 }
 
 function parseArgs(): Options {
   const args = process.argv.slice(2);
   const fractals: string[] = [];
-  let color = 'glow';
+  let color: ColorMode = 'glow';
   let preset: keyof typeof PRESETS = 'thumbnail';
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]!;
     if (arg === '--color' && args[i + 1] != null) {
-      color = args[++i]!;
+      const next = args[++i]!;
+      if (!isColorMode(next)) {
+        console.error(`Unknown color "${next}". Available: ${COLOR_MODES.join(', ')}`);
+        process.exit(1);
+      }
+      color = next;
     } else if (arg === '--highres') {
       preset = 'highres';
     } else if (arg === '--help') {
@@ -49,7 +60,7 @@ Examples:
   pnpm run generate-previews mandelbulb --highres
 
 Available fractals: ${FRACTALS.map((f) => f.type).join(', ')}
-Available colors: glow, distance, orbit_trap, iteration, ao, normal, curvature, stripe, fresnel, depth, triplanar, temperature, chromatic`);
+Available colors: ${COLOR_MODES.join(', ')}`);
       process.exit(0);
     } else if (!arg.startsWith('--')) {
       fractals.push(arg);
@@ -108,9 +119,9 @@ async function captureFractal(
   preset: (typeof PRESETS)[keyof typeof PRESETS],
 ): Promise<void> {
   const { width, height, wait } = preset;
-  const page = await browser.newPage({ viewport: { width, height } });
+  const page = await browser.newPage({ viewport: { width, height }, ignoreHTTPSErrors: true });
   const params = buildFractalParams(fractal, color);
-  await page.goto(`http://localhost:${PORT}/Fractr/?${params.toString()}`);
+  await page.goto(`https://localhost:${PORT}/Fractr/?${params.toString()}`);
   await page.waitForTimeout(wait);
 
   const canvas = page.locator('canvas');
