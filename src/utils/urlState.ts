@@ -27,7 +27,7 @@ export function readStateFromURL(): SharedState | null {
   const f = params.get('f');
   if (f == null || f === '' || !FRACTAL_TYPE_SET.has(f)) return null;
 
-  const get = (key: string, fallback: number) => {
+  const get: (key: string, fallback: number) => number = (key, fallback) => {
     const v = params.get(key);
     if (v == null) return fallback;
     const n = Number.parseFloat(v);

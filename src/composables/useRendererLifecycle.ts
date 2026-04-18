@@ -6,28 +6,33 @@ import { Renderer } from '../engine/Renderer';
 import { useAppState } from '../stores/appState';
 import { useFractalParams } from '../stores/fractalParams';
 import { useGraphicsSettings } from '../stores/graphicsSettings';
-import type { useAdaptiveQuality } from './useAdaptiveQuality';
-import type { useGameLoop } from './useGameLoop';
-import type { usePointerLock } from './usePointerLock';
-import type { SceneState } from './useSceneState';
-import type { URLStateController } from './useURLState';
+import type { UseAdaptiveQualityReturn } from './useAdaptiveQuality';
+import type { UseGameLoopReturn } from './useGameLoop';
+import type { UsePointerLockReturn } from './usePointerLock';
+import type { UseSceneStateReturn } from './useSceneState';
+import type { UseURLStateReturn } from './useURLState';
 
 /** Canvas resolution scale applied outside of active gameplay. */
 const PREVIEW_RESOLUTION_SCALE = 0.25;
 
-type LoopHandle = ReturnType<typeof useGameLoop>;
-
-export interface UseRendererLifecycleDeps {
+export interface UseRendererLifecycleOptions {
   canvasRef: Ref<HTMLCanvasElement | null>;
   rendererRef: ShallowRef<Renderer | null>;
   startTime: Ref<number>;
-  scene: SceneState;
-  urlState: URLStateController;
-  gameLoop: LoopHandle;
-  previewLoop: LoopHandle;
-  adaptiveQuality: ReturnType<typeof useAdaptiveQuality>;
-  pointerLock: ReturnType<typeof usePointerLock>;
+  scene: UseSceneStateReturn;
+  urlState: UseURLStateReturn;
+  gameLoop: UseGameLoopReturn;
+  previewLoop: UseGameLoopReturn;
+  adaptiveQuality: UseAdaptiveQualityReturn;
+  pointerLock: UsePointerLockReturn;
   isTouchActive: Ref<boolean>;
+}
+
+export interface UseRendererLifecycleReturn {
+  gpuError: Ref<string | null>;
+  onCanvasReady: (canvas: HTMLCanvasElement) => Promise<void>;
+  onResize: (width: number, height: number) => void;
+  applyCanvasResolution: (scale: number) => void;
 }
 
 /**
@@ -35,7 +40,9 @@ export interface UseRendererLifecycleDeps {
  * fractal/color/render-mode changes into the renderer and start/stop the
  * correct loop on app-mode transitions.
  */
-export function useRendererLifecycle(deps: UseRendererLifecycleDeps) {
+export function useRendererLifecycle(
+  options: UseRendererLifecycleOptions,
+): UseRendererLifecycleReturn {
   const appState = useAppState();
   const fractal = useFractalParams();
   const graphics = useGraphicsSettings();
@@ -45,17 +52,17 @@ export function useRendererLifecycle(deps: UseRendererLifecycleDeps) {
   let displayHeight = 1;
 
   function applyCanvasResolution(scale: number): void {
-    const canvas = deps.canvasRef.value;
+    const canvas = options.canvasRef.value;
     if (!canvas) return;
     const w = Math.floor(displayWidth * scale);
     const h = Math.floor(displayHeight * scale);
     canvas.width = w;
     canvas.height = h;
-    deps.rendererRef.value?.resize(w, h);
+    options.rendererRef.value?.resize(w, h);
   }
 
   async function onCanvasReady(canvas: HTMLCanvasElement): Promise<void> {
-    deps.canvasRef.value = canvas;
+    options.canvasRef.value = canvas;
 
     try {
       const ctx = await WebGPUContext.create(canvas);
@@ -64,17 +71,17 @@ export function useRendererLifecycle(deps: UseRendererLifecycleDeps) {
       renderer.setFractalType(fractal.fractalType);
       renderer.setColorMode(fractal.colorMode);
       renderer.setRenderMode(fractal.renderMode);
-      deps.rendererRef.value = renderer;
-      deps.startTime.value = performance.now();
+      options.rendererRef.value = renderer;
+      options.startTime.value = performance.now();
 
-      if (deps.urlState.previewMode) {
+      if (options.urlState.previewMode) {
         // Screenshot mode: render continuously at full quality, no UI
-        deps.previewLoop.start();
-      } else if (deps.urlState.startFromURL.value) {
+        options.previewLoop.start();
+      } else if (options.urlState.startFromURL.value) {
         // Jump directly into 3D view from shared URL
         appState.startGame();
       } else {
-        deps.previewLoop.start();
+        options.previewLoop.start();
       }
     } catch (e) {
       gpuError.value = e instanceof Error ? e.message : 'Unknown WebGPU error';
@@ -92,9 +99,9 @@ export function useRendererLifecycle(deps: UseRendererLifecycleDeps) {
   watch(
     () => fractal.fractalType,
     (type) => {
-      deps.rendererRef.value?.setFractalType(type);
-      if (!deps.urlState.startFromURL.value) {
-        deps.scene.resetCamera();
+      options.rendererRef.value?.setFractalType(type);
+      if (!options.urlState.startFromURL.value) {
+        options.scene.resetCamera();
         graphics.dynamicIterations = fractal.config.defaultDynamicIterations !== false;
       }
     },
@@ -102,22 +109,22 @@ export function useRendererLifecycle(deps: UseRendererLifecycleDeps) {
   watch(
     () => fractal.colorMode,
     (mode) => {
-      deps.rendererRef.value?.setColorMode(mode);
-      deps.rendererRef.value?.resetAccumulation();
-      deps.urlState.syncURLState();
+      options.rendererRef.value?.setColorMode(mode);
+      options.rendererRef.value?.resetAccumulation();
+      options.urlState.syncURLState();
     },
   );
   watch(
     () => fractal.renderMode,
     (mode) => {
-      deps.rendererRef.value?.setRenderMode(mode);
-      deps.rendererRef.value?.resetAccumulation();
-      deps.urlState.syncURLState();
+      options.rendererRef.value?.setRenderMode(mode);
+      options.rendererRef.value?.resetAccumulation();
+      options.urlState.syncURLState();
     },
   );
   watch([() => fractal.power, () => fractal.maxIterations, () => fractal.bailout], () => {
-    deps.rendererRef.value?.resetAccumulation();
-    deps.urlState.syncURLState();
+    options.rendererRef.value?.resetAccumulation();
+    options.urlState.syncURLState();
   });
 
   // Handle game state transitions
@@ -128,22 +135,22 @@ export function useRendererLifecycle(deps: UseRendererLifecycleDeps) {
         // Reset camera for fresh starts (title/select/saves); resume from
         // pause keeps current pose. startFromURL suppresses reset when a
         // caller has already positioned the camera (URL deep-link, save load).
-        if (oldMode !== 'paused' && !deps.urlState.startFromURL.value) {
-          deps.scene.resetCamera();
+        if (oldMode !== 'paused' && !options.urlState.startFromURL.value) {
+          options.scene.resetCamera();
         }
-        deps.urlState.startFromURL.value = false;
-        deps.adaptiveQuality.reset();
+        options.urlState.startFromURL.value = false;
+        options.adaptiveQuality.reset();
         applyCanvasResolution(1);
-        deps.previewLoop.stop();
-        deps.gameLoop.start();
-        if (!deps.isTouchActive.value) {
-          deps.pointerLock.requestLock();
+        options.previewLoop.stop();
+        options.gameLoop.start();
+        if (!options.isTouchActive.value) {
+          options.pointerLock.requestLock();
         }
       } else {
-        deps.gameLoop.stop();
+        options.gameLoop.stop();
         if (mode === 'title' || mode === 'select') {
           applyCanvasResolution(PREVIEW_RESOLUTION_SCALE);
-          deps.previewLoop.start();
+          options.previewLoop.start();
           window.history.replaceState({}, '', window.location.pathname);
         } else {
           // mode is 'paused' | 'settings' | 'saves' by exhaustion.
@@ -152,16 +159,16 @@ export function useRendererLifecycle(deps: UseRendererLifecycleDeps) {
           if (!fromGame) {
             applyCanvasResolution(PREVIEW_RESOLUTION_SCALE);
           }
-          deps.previewLoop.start();
+          options.previewLoop.start();
         }
       }
     },
   );
 
   onUnmounted(() => {
-    deps.gameLoop.stop();
-    deps.previewLoop.stop();
-    deps.rendererRef.value?.destroy();
+    options.gameLoop.stop();
+    options.previewLoop.stop();
+    options.rendererRef.value?.destroy();
   });
 
   return { gpuError, onCanvasReady, onResize, applyCanvasResolution };

@@ -1,10 +1,22 @@
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- SceneState wraps mutable camera/store handles */
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- UseSceneStateReturn wraps mutable camera/store handles */
+import type { Ref } from 'vue';
 import { ref } from 'vue';
 import { useAppState } from '../stores/appState';
 import { useFractalParams } from '../stores/fractalParams';
 import { useGraphicsSettings } from '../stores/graphicsSettings';
 import { buildShareURL, readStateFromURL } from '../utils/urlState';
-import type { SceneState } from './useSceneState';
+import type { UseSceneStateReturn } from './useSceneState';
+
+export interface UseURLStateOptions {
+  scene: UseSceneStateReturn;
+}
+
+export interface UseURLStateReturn {
+  previewMode: boolean;
+  startFromURL: Ref<boolean>;
+  buildCurrentShareURL: () => string;
+  syncURLState: () => void;
+}
 
 /**
  * Reads fractal/camera state from the URL on boot (if present), applies it to
@@ -14,7 +26,8 @@ import type { SceneState } from './useSceneState';
  * camera-reset-on-startGame path when the caller has already positioned the
  * camera.
  */
-export function useURLState(scene: SceneState) {
+export function useURLState(options: UseURLStateOptions): UseURLStateReturn {
+  const { scene } = options;
   const appState = useAppState();
   const fractal = useFractalParams();
   const graphics = useGraphicsSettings();
@@ -54,5 +67,3 @@ export function useURLState(scene: SceneState) {
 
   return { previewMode, startFromURL, buildCurrentShareURL, syncURLState };
 }
-
-export type URLStateController = ReturnType<typeof useURLState>;

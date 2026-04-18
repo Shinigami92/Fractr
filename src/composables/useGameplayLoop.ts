@@ -1,5 +1,5 @@
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- deps struct wraps composable return types with inherent mutable Refs */
-import type { ShallowRef } from 'vue';
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- options struct wraps composable return types with inherent mutable Refs */
+import type { Ref, ShallowRef } from 'vue';
 import { ref } from 'vue';
 import { evaluateSDF } from '../engine/fractals/sdf';
 import type { Renderer } from '../engine/Renderer';
@@ -7,15 +7,16 @@ import { useAppState } from '../stores/appState';
 import { useControlSettings } from '../stores/controlSettings';
 import { useFractalParams } from '../stores/fractalParams';
 import { useGraphicsSettings } from '../stores/graphicsSettings';
-import type { useAdaptiveQuality } from './useAdaptiveQuality';
+import type { UseAdaptiveQualityReturn } from './useAdaptiveQuality';
+import type { UseGameLoopReturn } from './useGameLoop';
 import { useGameLoop } from './useGameLoop';
 import { useGamepadInput } from './useGamepadInput';
-import type { useInput } from './useInput';
-import type { usePointerLock } from './usePointerLock';
-import type { RadialMenuController } from './useRadialMenuController';
-import type { SceneState } from './useSceneState';
-import type { useTouchControls } from './useTouchControls';
-import type { URLStateController } from './useURLState';
+import type { UseInputReturn } from './useInput';
+import type { UsePointerLockReturn } from './usePointerLock';
+import type { UseRadialMenuControllerReturn } from './useRadialMenuController';
+import type { UseSceneStateReturn } from './useSceneState';
+import type { UseTouchControlsReturn } from './useTouchControls';
+import type { UseURLStateReturn } from './useURLState';
 
 // Dynamic iterations: when enabled, the iteration count ramps logarithmically
 // between a minimum factor (near-surface, max detail would saturate anyway)
@@ -35,16 +36,22 @@ const GAMEPAD_LOOK_SPEED = 2.5;
 /** Axis magnitude below which gamepad stick input is ignored for movement flags. */
 const GAMEPAD_ACTIVE_EPS = 0.01;
 
-export interface UseGameplayLoopDeps {
+export interface UseGameplayLoopOptions {
   rendererRef: ShallowRef<Renderer | null>;
-  scene: SceneState;
-  pointerLock: ReturnType<typeof usePointerLock>;
-  touchControls: ReturnType<typeof useTouchControls>;
-  adaptiveQuality: ReturnType<typeof useAdaptiveQuality>;
-  radial: RadialMenuController;
-  input: ReturnType<typeof useInput>;
-  urlState: URLStateController;
+  scene: UseSceneStateReturn;
+  pointerLock: UsePointerLockReturn;
+  touchControls: UseTouchControlsReturn;
+  adaptiveQuality: UseAdaptiveQualityReturn;
+  radial: UseRadialMenuControllerReturn;
+  input: UseInputReturn;
+  urlState: UseURLStateReturn;
   getTimeSeconds: () => number;
+}
+
+export interface UseGameplayLoopReturn {
+  gameLoop: UseGameLoopReturn;
+  currentIterations: Ref<number>;
+  sampleCount: Ref<number>;
 }
 
 /**
@@ -52,7 +59,7 @@ export interface UseGameplayLoopDeps {
  * moves the camera with distance-scaled speed, drives adaptive quality, and
  * pushes uniforms + draws each frame.
  */
-export function useGameplayLoop(deps: UseGameplayLoopDeps) {
+export function useGameplayLoop(options: UseGameplayLoopOptions): UseGameplayLoopReturn {
   const appState = useAppState();
   const fractal = useFractalParams();
   const graphics = useGraphicsSettings();
@@ -69,16 +76,16 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
     update(dt) {
       if (appState.mode !== 'playing') return;
 
-      const { camera } = deps.scene;
+      const { camera } = options.scene;
 
       // Camera rotation from mouse + touch (disabled while radial menu is open)
-      const { dx, dy } = deps.pointerLock.consumeMovement();
-      const touchLook = deps.touchControls.consumeLookDelta();
+      const { dx, dy } = options.pointerLock.consumeMovement();
+      const touchLook = options.touchControls.consumeLookDelta();
       const { x: lx, y: ly } = gamepad.leftStick.value;
       const { x: rx, y: ry } = gamepad.rightStick.value;
       const totalDx = dx + touchLook.dx;
       const totalDy = dy + touchLook.dy;
-      if (!deps.radial.activeId.value) {
+      if (!options.radial.activeId.value) {
         camera.rotate(totalDx * controls.mouseSensitivity, -totalDy * controls.mouseSensitivity);
         if (rx !== 0 || ry !== 0) {
           camera.rotate(rx * GAMEPAD_LOOK_SPEED * dt, -ry * GAMEPAD_LOOK_SPEED * dt);
@@ -95,7 +102,7 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
       );
       const absDist = Math.abs(dist);
       const speedScale = Math.max(1e-6, Math.min(1, absDist));
-      const { isPressed } = deps.input;
+      const { isPressed } = options.input;
       const sprint = isPressed('ShiftLeft') || isPressed('ShiftRight') ? 2 : 1;
       const speed = controls.cameraSpeed * speedScale * sprint * dt;
 
@@ -119,17 +126,17 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
       currentIterations.value = effectiveIterations;
 
       const rollSpeed = 1.5 * dt;
-      const touchMove = deps.touchControls.getMovementVector();
+      const touchMove = options.touchControls.getMovementVector();
       const touchActive =
         Math.abs(touchMove.x) > 0.05 ||
         Math.abs(touchMove.y) > 0.05 ||
         Math.abs(touchLook.dx) > 1 ||
         Math.abs(touchLook.dy) > 1;
-      const kb = (id: Parameters<typeof controls.getBinding>[0]): boolean => {
+      const kb: (id: Parameters<typeof controls.getBinding>[0]) => boolean = (id) => {
         const code = controls.getBinding(id, 'keyboard');
         return code != null && isPressed(code);
       };
-      const gp = (id: Parameters<typeof controls.getBinding>[0]): boolean => {
+      const gp: (id: Parameters<typeof controls.getBinding>[0]) => boolean = (id) => {
         const code = controls.getBinding(id, 'gamepad');
         return code != null && gamepad.pressedButtons.value.has(code);
       };
@@ -155,7 +162,7 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
         gamepadActive;
 
       // Adaptive quality
-      deps.adaptiveQuality.update(dt, gameLoop.fps.value, moving);
+      options.adaptiveQuality.update(dt, gameLoop.fps.value, moving);
 
       if (kb('moveForward') || isPressed('Mouse0')) camera.moveForward(speed);
       if (kb('moveBackward') || isPressed('Mouse2')) camera.moveForward(-speed);
@@ -193,26 +200,26 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
 
       // Track movement for render path selection
       isMovingThisFrame = moving;
-      const renderer = deps.rendererRef.value;
+      const renderer = options.rendererRef.value;
       if (moving) {
         renderer?.resetAccumulation();
       } else if (wasMoving) {
-        deps.urlState.syncURLState();
+        options.urlState.syncURLState();
       }
       wasMoving = moving;
 
       // Update reactive camera position for HUD
-      deps.scene.syncCameraPos();
+      options.scene.syncCameraPos();
 
       // Update renderer uniforms
       renderer?.updateUniforms(
         camera,
-        deps.scene.buildLiveSceneParams({ maxIterations: effectiveIterations }),
-        deps.getTimeSeconds(),
+        options.scene.buildLiveSceneParams({ maxIterations: effectiveIterations }),
+        options.getTimeSeconds(),
       );
     },
     render() {
-      const renderer = deps.rendererRef.value;
+      const renderer = options.rendererRef.value;
       renderer?.render(!isMovingThisFrame && !graphics.animatedColors);
       sampleCount.value = renderer?.sampleCount ?? 0;
     },

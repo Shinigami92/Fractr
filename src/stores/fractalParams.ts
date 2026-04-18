@@ -261,6 +261,14 @@ export const useFractalParams = defineStore('fractalParams', () => {
 
   const config = computed(() => FRACTAL_CONFIGS[fractalType.value]);
 
+  function setFractalType(type: FractalType): void {
+    fractalType.value = type;
+    const cfg = FRACTAL_CONFIGS[type];
+    power.value = cfg.power?.default ?? 0;
+    maxIterations.value = cfg.maxIterations.default;
+    bailout.value = cfg.bailout?.default ?? 0;
+  }
+
   function reset(): void {
     setFractalType('mandelbulb');
     colorMode.value = 'glow';
@@ -277,14 +285,6 @@ export const useFractalParams = defineStore('fractalParams', () => {
 
   function cycleFractalType(reverse = false): void {
     setFractalType(nextInCycle(FRACTAL_TYPES, fractalType.value, reverse));
-  }
-
-  function setFractalType(type: FractalType): void {
-    fractalType.value = type;
-    const cfg = FRACTAL_CONFIGS[type];
-    power.value = cfg.power?.default ?? 0;
-    maxIterations.value = cfg.maxIterations.default;
-    bailout.value = cfg.bailout?.default ?? 0;
   }
 
   function adjustIterations(delta: number): void {

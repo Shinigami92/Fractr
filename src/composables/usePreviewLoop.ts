@@ -1,9 +1,10 @@
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- deps struct wraps composable return types with inherent mutable Refs */
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- options struct wraps composable return types with inherent mutable Refs */
 import type { ShallowRef } from 'vue';
 import type { Renderer } from '../engine/Renderer';
 import { useAppState } from '../stores/appState';
+import type { UseGameLoopReturn } from './useGameLoop';
 import { useGameLoop } from './useGameLoop';
-import type { SceneState } from './useSceneState';
+import type { UseSceneStateReturn } from './useSceneState';
 
 // Title/select-screen preview loop: renders at a reduced canvas resolution
 // and with drastically capped iteration / ray-step counts so the idle preview
@@ -14,11 +15,15 @@ const PREVIEW_MAX_ITERATIONS = 8;
 /** Max ray-march steps while the title preview is active. */
 const PREVIEW_MAX_RAY_STEPS = 64;
 
-export interface UsePreviewLoopDeps {
+export interface UsePreviewLoopOptions {
   rendererRef: ShallowRef<Renderer | null>;
-  scene: SceneState;
+  scene: UseSceneStateReturn;
   previewMode: boolean;
   getTimeSeconds: () => number;
+}
+
+export interface UsePreviewLoopReturn {
+  previewLoop: UseGameLoopReturn;
 }
 
 /**
@@ -29,7 +34,7 @@ export interface UsePreviewLoopDeps {
  * `previewMode` (shared-URL screenshot mode) keeps the camera at the exact
  * URL-supplied pose and renders continuously at full quality with no UI.
  */
-export function usePreviewLoop(deps: UsePreviewLoopDeps) {
+export function usePreviewLoop(options: UsePreviewLoopOptions): UsePreviewLoopReturn {
   const appState = useAppState();
 
   const previewLoop = useGameLoop({
@@ -37,12 +42,12 @@ export function usePreviewLoop(deps: UsePreviewLoopDeps) {
       // Only auto-orbit on title/select screen (and settings opened from title)
       // In preview mode, camera stays fixed at URL position
       const shouldOrbit =
-        !deps.previewMode &&
+        !options.previewMode &&
         (appState.mode === 'title' ||
           appState.mode === 'select' ||
           (appState.mode === 'settings' && appState.settingsSource === 'title'));
 
-      const { camera } = deps.scene;
+      const { camera } = options.scene;
       if (shouldOrbit) {
         const t = performance.now() / 5000;
         camera.position[0] = Math.cos(t) * 3;
@@ -54,19 +59,19 @@ export function usePreviewLoop(deps: UsePreviewLoopDeps) {
       // Paused / settings-from-pause: keep current camera position (frozen frame)
 
       // Use low quality only on title screen, not in settings or preview mode
-      const lowQuality = appState.mode === 'title' && !deps.previewMode;
-      deps.rendererRef.value?.updateUniforms(
+      const lowQuality = appState.mode === 'title' && !options.previewMode;
+      options.rendererRef.value?.updateUniforms(
         camera,
-        deps.scene.buildLiveSceneParams(
+        options.scene.buildLiveSceneParams(
           lowQuality
             ? { maxIterations: PREVIEW_MAX_ITERATIONS, maxRaySteps: PREVIEW_MAX_RAY_STEPS }
             : undefined,
         ),
-        deps.getTimeSeconds(),
+        options.getTimeSeconds(),
       );
     },
     render() {
-      deps.rendererRef.value?.render();
+      options.rendererRef.value?.render();
     },
   });
 

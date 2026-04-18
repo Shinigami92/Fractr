@@ -50,7 +50,7 @@ const EXTRA_ENTRIES: ReadonlyArray<KeyEntry & { category: ActionCategory }> = [
 
 const keyboardGroups = computed<KeyGroup[]>(() => {
   const byCategory = new Map<ActionCategory, KeyEntry[]>();
-  const push = (cat: ActionCategory, entry: KeyEntry): void => {
+  const push: (cat: ActionCategory, entry: KeyEntry) => void = (cat, entry) => {
     const list = byCategory.get(cat);
     if (list) list.push(entry);
     else byCategory.set(cat, [entry]);

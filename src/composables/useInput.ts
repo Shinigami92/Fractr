@@ -1,10 +1,14 @@
 import { useEventListener } from '@vueuse/core';
 import { onScopeDispose } from 'vue';
 
+export interface UseInputReturn {
+  isPressed: (code: string) => boolean;
+}
+
 const pressedKeys = new Set<string>();
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM event types have mutating methods */
-export function useInput() {
+export function useInput(): UseInputReturn {
   function onKeyDown(e: KeyboardEvent): void {
     pressedKeys.add(e.code);
   }

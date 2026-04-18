@@ -271,7 +271,7 @@ function waitForServer(server: ChildProcess): Promise<void> {
   });
 }
 
-async function main() {
+async function main(): Promise<void> {
   const opts = parseArgs();
   const targets =
     opts.fractals.length > 0 ? FRACTALS.filter((f) => opts.fractals.includes(f.type)) : FRACTALS;

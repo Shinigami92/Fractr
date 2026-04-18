@@ -1,6 +1,6 @@
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- Vue Refs and DOM events have mutating internals */
 import { useTimeoutFn } from '@vueuse/core';
-import type { Ref } from 'vue';
+import type { ComputedRef, Ref } from 'vue';
 import { computed, ref } from 'vue';
 import { radialSelectedIndex } from '../utils/radialGeometry';
 
@@ -21,6 +21,17 @@ export interface UseRadialMenuOptions<Id extends string> {
   onQuickTap: (id: Id, shiftKey: boolean) => void;
 }
 
+export interface UseRadialMenuReturn<Id extends string> {
+  activeId: Ref<Id | null>;
+  cursorX: Ref<number>;
+  cursorY: Ref<number>;
+  currentOptions: ComputedRef<ReadonlyArray<RadialOption>>;
+  selectedIndex: ComputedRef<number>;
+  beginHold: (id: Id) => void;
+  endHold: (id: Id, shiftKey: boolean) => void;
+  onMouseMove: (e: MouseEvent) => void;
+}
+
 /**
  * State + behaviour for a press-and-hold radial menu.
  *
@@ -31,7 +42,9 @@ export interface UseRadialMenuOptions<Id extends string> {
  * - `onMouseMove` accumulates movement deltas while the menu is open so the
  *   selected sector tracks the mouse even under pointer-lock.
  */
-export function useRadialMenu<Id extends string>(options: UseRadialMenuOptions<Id>) {
+export function useRadialMenu<Id extends string>(
+  options: UseRadialMenuOptions<Id>,
+): UseRadialMenuReturn<Id> {
   const activeId: Ref<Id | null> = ref(null);
   const cursorX = ref(0);
   const cursorY = ref(0);

@@ -11,7 +11,7 @@ function mandelbulbSDF(x: number, y: number, z: number, params: SDFParams): numb
   let zy = y;
   let zz = z;
   let dr = 1;
-  let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+  let r = Math.hypot(zx, zy, zz);
   const { power, maxIterations, bailout } = params;
 
   for (let i = 0; i < maxIterations; i++) {
@@ -28,7 +28,7 @@ function mandelbulbSDF(x: number, y: number, z: number, params: SDFParams): numb
     zy = rp * Math.sin(newTheta) * Math.sin(newPhi) + y;
     zz = rp * Math.cos(newTheta) + z;
 
-    r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+    r = Math.hypot(zx, zy, zz);
   }
 
   return (0.5 * Math.log(r) * r) / dr;
@@ -45,7 +45,7 @@ function mandelboxSDF(x: number, y: number, z: number, params: SDFParams): numbe
   const FIXED_R2 = 1;
 
   for (let i = 0; i < maxIterations; i++) {
-    if (Math.sqrt(zx * zx + zy * zy + zz * zz) > bailout) break;
+    if (Math.hypot(zx, zy, zz) > bailout) break;
 
     // Box fold
     zx = Math.max(-FOLD, Math.min(FOLD, zx)) * 2 - zx;
@@ -72,7 +72,7 @@ function mandelboxSDF(x: number, y: number, z: number, params: SDFParams): numbe
     dr = dr * Math.abs(scale) + 1;
   }
 
-  return Math.sqrt(zx * zx + zy * zy + zz * zz) / Math.abs(dr);
+  return Math.hypot(zx, zy, zz) / Math.abs(dr);
 }
 
 function mengerSDF(x: number, y: number, z: number, params: SDFParams): number {
@@ -128,7 +128,7 @@ function sierpinskiSDF(x: number, y: number, z: number, params: SDFParams): numb
     zz = zz * scale - a[ci]![2] * (scale - 1);
   }
 
-  return (Math.sqrt(zx * zx + zy * zy + zz * zz) - 1.5) * scale ** -params.maxIterations;
+  return (Math.hypot(zx, zy, zz) - 1.5) * scale ** -params.maxIterations;
 }
 
 function quatjuliaSDF(x: number, y: number, z: number, params: SDFParams): number {
@@ -141,7 +141,7 @@ function quatjuliaSDF(x: number, y: number, z: number, params: SDFParams): numbe
   let dqy = 0;
   let dqz = 0;
   let dqw = 0;
-  let r = Math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw);
+  let r = Math.hypot(qx, qy, qz, qw);
 
   for (let i = 0; i < params.maxIterations; i++) {
     if (r > params.bailout) break;
@@ -161,10 +161,10 @@ function quatjuliaSDF(x: number, y: number, z: number, params: SDFParams): numbe
     qy = nqy;
     qz = nqz;
     qw = nqw;
-    r = Math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw);
+    r = Math.hypot(qx, qy, qz, qw);
   }
 
-  const dr = Math.sqrt(dqx * dqx + dqy * dqy + dqz * dqz + dqw * dqw);
+  const dr = Math.hypot(dqx, dqy, dqz, dqw);
   return (0.5 * r * Math.log(r)) / dr;
 }
 
@@ -196,7 +196,7 @@ function kleinianSDF(x: number, y: number, z: number, params: SDFParams): number
     zx += 0.2;
     zy += 0.3;
     zz += -0.4;
-    const d = (Math.sqrt(zx * zx + zy * zy + zz * zz) - 0.5) / dr;
+    const d = (Math.hypot(zx, zy, zz) - 0.5) / dr;
     const ad = Math.abs(d);
     if (ad < minAbsDist) {
       minAbsDist = ad;
@@ -240,7 +240,7 @@ function koch3dSDF(x: number, y: number, z: number, params: SDFParams): number {
     r *= scale;
   }
 
-  return (Math.sqrt(zx * zx + zy * zy + zz * zz) - 1.5) / r;
+  return (Math.hypot(zx, zy, zz) - 1.5) / r;
 }
 
 function apollonianSDF(x: number, y: number, z: number, params: SDFParams): number {
@@ -282,7 +282,7 @@ function apollonianSDF(x: number, y: number, z: number, params: SDFParams): numb
     zz += 1;
   }
 
-  return (Math.sqrt(zx * zx + zy * zy + zz * zz) - 1) / scale;
+  return (Math.hypot(zx, zy, zz) - 1) / scale;
 }
 
 function juliabulbSDF(x: number, y: number, z: number, params: SDFParams): number {
@@ -291,7 +291,7 @@ function juliabulbSDF(x: number, y: number, z: number, params: SDFParams): numbe
   let zy = y;
   let zz = z;
   let dr = 1;
-  let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+  let r = Math.hypot(zx, zy, zz);
   const power = 8;
 
   for (let i = 0; i < params.maxIterations; i++) {
@@ -305,7 +305,7 @@ function juliabulbSDF(x: number, y: number, z: number, params: SDFParams): numbe
     zx = rp * Math.sin(nt) * Math.cos(np) + julia[0]!;
     zy = rp * Math.sin(nt) * Math.sin(np) + julia[1]!;
     zz = rp * Math.cos(nt) + julia[2]!;
-    r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+    r = Math.hypot(zx, zy, zz);
   }
 
   return (0.5 * Math.log(r) * r) / dr;
@@ -381,7 +381,7 @@ function burningshipSDF(x: number, y: number, z: number, params: SDFParams): num
   let zx = x,
     zy = y,
     zz = z;
-  let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+  let r = Math.hypot(zx, zy, zz);
   const { power, maxIterations, bailout } = params;
   for (let i = 0; i < maxIterations; i++) {
     if (r > bailout) break;
@@ -395,7 +395,7 @@ function burningshipSDF(x: number, y: number, z: number, params: SDFParams): num
     zx = rp * Math.sin(theta * power) * Math.cos(phi * power) + x;
     zy = rp * Math.sin(theta * power) * Math.sin(phi * power) + y;
     zz = rp * Math.cos(theta * power) + z;
-    r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+    r = Math.hypot(zx, zy, zz);
   }
   return (0.5 * Math.log(r) * r) / dr;
 }
@@ -405,7 +405,7 @@ function tricornSDF(x: number, y: number, z: number, params: SDFParams): number 
   let zx = x,
     zy = y,
     zz = z;
-  let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+  let r = Math.hypot(zx, zy, zz);
   const { power, maxIterations, bailout } = params;
   for (let i = 0; i < maxIterations; i++) {
     if (r > bailout) break;
@@ -416,7 +416,7 @@ function tricornSDF(x: number, y: number, z: number, params: SDFParams): number 
     zx = rp * Math.sin(theta * power) * Math.cos(phi * power) + x;
     zy = rp * Math.sin(theta * power) * Math.sin(phi * power) + y;
     zz = rp * Math.cos(theta * power) + z;
-    r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+    r = Math.hypot(zx, zy, zz);
   }
   return (0.5 * Math.log(r) * r) / dr;
 }
@@ -426,7 +426,7 @@ function cospower2SDF(x: number, y: number, z: number, params: SDFParams): numbe
   let zx = x,
     zy = y,
     zz = z;
-  let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+  let r = Math.hypot(zx, zy, zz);
   for (let i = 0; i < params.maxIterations; i++) {
     if (r > params.bailout) break;
     const theta = Math.acos(Math.max(-1, Math.min(1, zz / r)));
@@ -438,7 +438,7 @@ function cospower2SDF(x: number, y: number, z: number, params: SDFParams): numbe
     zx = rp * Math.sin(nt) * Math.cos(np) + x;
     zy = rp * Math.sin(nt) * Math.sin(np) + y;
     zz = rp * Math.cos(nt) + z;
-    r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+    r = Math.hypot(zx, zy, zz);
   }
   return (0.5 * Math.log(r) * r) / dr;
 }
@@ -450,7 +450,7 @@ function kaleidoboxSDF(x: number, y: number, z: number, params: SDFParams): numb
     zz = z;
   const { power: scale, maxIterations, bailout } = params;
   for (let i = 0; i < maxIterations; i++) {
-    if (Math.sqrt(zx * zx + zy * zy + zz * zz) > bailout) break;
+    if (Math.hypot(zx, zy, zz) > bailout) break;
     if (zx + zy < 0) {
       const t = zx;
       zx = -zy;
@@ -480,7 +480,7 @@ function kaleidoboxSDF(x: number, y: number, z: number, params: SDFParams): numb
     zz = zz * scale + z;
     dr = dr * Math.abs(scale) + 1;
   }
-  return Math.sqrt(zx * zx + zy * zy + zz * zz) / Math.abs(dr);
+  return Math.hypot(zx, zy, zz) / Math.abs(dr);
 }
 
 function spudsvilleSDF(x: number, y: number, z: number, params: SDFParams): number {
@@ -488,7 +488,7 @@ function spudsvilleSDF(x: number, y: number, z: number, params: SDFParams): numb
   let zx = x,
     zy = y,
     zz = z;
-  let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+  let r = Math.hypot(zx, zy, zz);
   const { power, maxIterations, bailout } = params;
   for (let i = 0; i < maxIterations; i++) {
     if (r > bailout) break;
@@ -515,7 +515,7 @@ function spudsvilleSDF(x: number, y: number, z: number, params: SDFParams): numb
       zz = zz * 2 + z;
       dr = dr * 2 + 1;
     }
-    r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+    r = Math.hypot(zx, zy, zz);
   }
   return (0.5 * Math.log(r) * r) / dr;
 }
@@ -525,7 +525,7 @@ function bristorbrotSDF(x: number, y: number, z: number, params: SDFParams): num
   let zx = x,
     zy = y,
     zz = z;
-  let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+  let r = Math.hypot(zx, zy, zz);
   for (let i = 0; i < params.maxIterations; i++) {
     if (r > params.bailout) break;
     dr = 2 * r * dr + 1;
@@ -535,7 +535,7 @@ function bristorbrotSDF(x: number, y: number, z: number, params: SDFParams): num
     zx = nx + x;
     zy = ny + y;
     zz = nz + z;
-    r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+    r = Math.hypot(zx, zy, zz);
   }
   return (0.5 * Math.log(r) * r) / dr;
 }
@@ -545,7 +545,7 @@ function xenodreambuieSDF(x: number, y: number, z: number, params: SDFParams): n
   let zx = x,
     zy = y,
     zz = z;
-  let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+  let r = Math.hypot(zx, zy, zz);
   const { power, maxIterations, bailout } = params;
   for (let i = 0; i < maxIterations; i++) {
     if (r > bailout) break;
@@ -556,7 +556,7 @@ function xenodreambuieSDF(x: number, y: number, z: number, params: SDFParams): n
     zx = rp * Math.cos(phi) * Math.cos(theta) + x;
     zy = rp * Math.cos(phi) * Math.sin(theta) + y;
     zz = rp * Math.sin(phi) + z;
-    r = Math.sqrt(zx * zx + zy * zy + zz * zz);
+    r = Math.hypot(zx, zy, zz);
   }
   return (0.5 * Math.log(r) * r) / dr;
 }

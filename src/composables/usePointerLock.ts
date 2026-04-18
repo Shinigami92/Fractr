@@ -3,13 +3,25 @@ import { useEventListener } from '@vueuse/core';
 import type { Ref } from 'vue';
 import { ref } from 'vue';
 
+export interface UsePointerLockOptions {
+  canvas: Ref<HTMLCanvasElement | null>;
+}
+
+export interface UsePointerLockReturn {
+  isLocked: Ref<boolean>;
+  requestLock: () => void;
+  exitLock: () => void;
+  consumeMovement: () => { dx: number; dy: number };
+}
+
 function exitLock(): void {
   if (document.pointerLockElement) {
     document.exitPointerLock();
   }
 }
 
-export function usePointerLock(canvas: Ref<HTMLCanvasElement | null>) {
+export function usePointerLock(options: UsePointerLockOptions): UsePointerLockReturn {
+  const { canvas } = options;
   const isLocked = ref(false);
   let accumulatedX = 0;
   let accumulatedY = 0;

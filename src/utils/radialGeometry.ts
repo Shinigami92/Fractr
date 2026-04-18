@@ -8,7 +8,7 @@ const RADIAL_DEAD_ZONE = 15;
  * zone or when `count` is non-positive.
  */
 export function radialSelectedIndex(cursorX: number, cursorY: number, count: number): number {
-  const dist = Math.sqrt(cursorX * cursorX + cursorY * cursorY);
+  const dist = Math.hypot(cursorX, cursorY);
   if (dist < RADIAL_DEAD_ZONE || count <= 0) return -1;
 
   const TAU = Math.PI * 2;

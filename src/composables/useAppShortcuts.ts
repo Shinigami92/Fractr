@@ -10,22 +10,26 @@ import { useFractalParams } from '../stores/fractalParams';
 import { useGraphicsSettings } from '../stores/graphicsSettings';
 import { useHudSettings } from '../stores/hudSettings';
 import { useGamepadInput } from './useGamepadInput';
-import type { usePointerLock } from './usePointerLock';
-import type { RadialMenuController } from './useRadialMenuController';
-import type { useSaveActions } from './useSaveActions';
-import type { URLStateController } from './useURLState';
+import type { UsePointerLockReturn } from './usePointerLock';
+import type { UseRadialMenuControllerReturn } from './useRadialMenuController';
+import type { UseSaveActionsReturn } from './useSaveActions';
+import type { UseURLStateReturn } from './useURLState';
 
 /** MouseEvent.button for the "browser forward" side button. */
 const MOUSE_BUTTON_BROWSER_FORWARD = 4;
 
-export interface UseAppShortcutsDeps {
-  pointerLock: ReturnType<typeof usePointerLock>;
-  radial: RadialMenuController;
-  saveActions: ReturnType<typeof useSaveActions>;
-  urlState: URLStateController;
+export interface UseAppShortcutsOptions {
+  pointerLock: UsePointerLockReturn;
+  radial: UseRadialMenuControllerReturn;
+  saveActions: UseSaveActionsReturn;
+  urlState: UseURLStateReturn;
   notify: (text: string, duration?: number) => void;
   isTouchActive: Ref<boolean>;
   showHelpOverlay: Ref<boolean>;
+}
+
+export interface UseAppShortcutsReturn {
+  onCanvasClick: () => void;
 }
 
 /**
@@ -40,7 +44,7 @@ export interface UseAppShortcutsDeps {
  * Exposes `onCanvasClick` for the canvas element to restore pointer lock
  * after an intentional Ctrl-unlock.
  */
-export function useAppShortcuts(deps: UseAppShortcutsDeps) {
+export function useAppShortcuts(options: UseAppShortcutsOptions): UseAppShortcutsReturn {
   const appState = useAppState();
   const fractal = useFractalParams();
   const controls = useControlSettings();
@@ -51,14 +55,14 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
 
   // Pointer lock loss → pause (unless intentionally unlocked via Ctrl)
   watch(
-    () => deps.pointerLock.isLocked.value,
+    () => options.pointerLock.isLocked.value,
     (locked) => {
       if (
         !locked &&
         appState.mode === 'playing' &&
         !cursorUnlocked &&
-        !deps.showHelpOverlay.value &&
-        !deps.isTouchActive.value
+        !options.showHelpOverlay.value &&
+        !options.isTouchActive.value
       ) {
         appState.pause();
       }
@@ -69,8 +73,8 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
     // F1 toggles the help overlay during gameplay (closing also allowed if open)
     if (e.code === 'F1') {
       e.preventDefault();
-      if (appState.mode === 'playing' || deps.showHelpOverlay.value) {
-        deps.showHelpOverlay.value = !deps.showHelpOverlay.value;
+      if (appState.mode === 'playing' || options.showHelpOverlay.value) {
+        options.showHelpOverlay.value = !options.showHelpOverlay.value;
       }
       return;
     }
@@ -79,16 +83,16 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
     if (
       (e.code === 'ControlLeft' || e.code === 'ControlRight') &&
       appState.mode === 'playing' &&
-      deps.pointerLock.isLocked.value
+      options.pointerLock.isLocked.value
     ) {
       cursorUnlocked = true;
-      deps.pointerLock.exitLock();
+      options.pointerLock.exitLock();
       return;
     }
 
     if (e.code === 'Escape') {
-      if (deps.showHelpOverlay.value) {
-        deps.showHelpOverlay.value = false;
+      if (options.showHelpOverlay.value) {
+        options.showHelpOverlay.value = false;
         return;
       }
       if (appState.mode === 'select') {
@@ -104,7 +108,7 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
     }
 
     if (appState.mode === 'playing' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      const kb = (id: Parameters<typeof controls.getBinding>[0]) =>
+      const kb: (id: Parameters<typeof controls.getBinding>[0]) => string | undefined = (id) =>
         controls.getBinding(id, 'keyboard');
       if (e.code === kb('toggleHud')) hudSettings.toggleHud();
       if (e.code === kb('toggleCrosshair')) hudSettings.toggleCrosshair();
@@ -120,30 +124,30 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
       }
       if (e.code === kb('quickSave')) {
         e.preventDefault();
-        void deps.saveActions.quickSave();
+        void options.saveActions.quickSave();
       }
       if (e.code === kb('screenshot')) {
         e.preventDefault();
-        void deps.saveActions.takeScreenshot();
+        void options.saveActions.takeScreenshot();
       }
       if (e.code === kb('openSaves')) {
         cursorUnlocked = true;
-        deps.pointerLock.exitLock();
+        options.pointerLock.exitLock();
         appState.openSaves();
       }
       if (e.code === kb('copyShareURL')) {
-        void navigator.clipboard.writeText(deps.urlState.buildCurrentShareURL());
-        deps.notify('Share URL copied to clipboard');
+        void navigator.clipboard.writeText(options.urlState.buildCurrentShareURL());
+        options.notify('Share URL copied to clipboard');
       }
 
       // Radial menu hold detection for cycle keys
-      deps.radial.tryBeginHoldFromKey(e.code, e.repeat);
+      options.radial.tryBeginHoldFromKey(e.code, e.repeat);
     }
   }
 
   function onKeyUp(e: KeyboardEvent): void {
     if (appState.mode !== 'playing' || e.ctrlKey || e.metaKey || e.altKey) return;
-    deps.radial.tryEndHoldFromKey(e.code, e.shiftKey);
+    options.radial.tryEndHoldFromKey(e.code, e.shiftKey);
   }
 
   function onMouseDown(e: MouseEvent): void {
@@ -170,11 +174,11 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
   function onCanvasClick(): void {
     if (
       appState.mode === 'playing' &&
-      !deps.pointerLock.isLocked.value &&
-      !deps.isTouchActive.value
+      !options.pointerLock.isLocked.value &&
+      !options.isTouchActive.value
     ) {
       cursorUnlocked = false;
-      deps.pointerLock.requestLock();
+      options.pointerLock.requestLock();
     }
   }
 
@@ -214,28 +218,28 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
       fractal.adjustBailout(-1);
     },
     quickSave: () => {
-      void deps.saveActions.quickSave();
+      void options.saveActions.quickSave();
     },
     screenshot: () => {
-      void deps.saveActions.takeScreenshot();
+      void options.saveActions.takeScreenshot();
     },
     openSaves: () => {
       cursorUnlocked = true;
-      deps.pointerLock.exitLock();
+      options.pointerLock.exitLock();
       appState.openSaves();
     },
     copyShareURL: () => {
-      void navigator.clipboard.writeText(deps.urlState.buildCurrentShareURL());
-      deps.notify('Share URL copied to clipboard');
+      void navigator.clipboard.writeText(options.urlState.buildCurrentShareURL());
+      options.notify('Share URL copied to clipboard');
     },
     cycleColorMode: () => {
-      deps.radial.triggerQuickTap('color', false);
+      options.radial.triggerQuickTap('color', false);
     },
     cycleRenderMode: () => {
-      deps.radial.triggerQuickTap('render', false);
+      options.radial.triggerQuickTap('render', false);
     },
     cycleFractalType: () => {
-      deps.radial.triggerQuickTap('fractal', false);
+      options.radial.triggerQuickTap('fractal', false);
     },
   };
 

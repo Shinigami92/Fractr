@@ -1,4 +1,5 @@
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- SavedState/FPSCamera instances have mutable internals */
+import type { Ref } from 'vue';
 import { ref } from 'vue';
 import { FPSCamera } from '../engine/camera/FPSCamera';
 import type { SavedState } from '../services/savesDB';
@@ -10,12 +11,42 @@ export interface LiveSceneParamOverrides {
   maxRaySteps?: number;
 }
 
+export interface LiveSceneParams {
+  power: number;
+  maxIterations: number;
+  bailout: number;
+  maxRaySteps: number;
+  resolutionScale: number;
+  animatedColors: boolean;
+  stepFactor: number;
+  originOffset: [number, number, number] | undefined;
+}
+
+export interface CameraPos {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  pitch: number;
+  roll: number;
+}
+
+export interface UseSceneStateReturn {
+  camera: FPSCamera;
+  cameraPos: Ref<CameraPos>;
+  syncCameraPos: () => void;
+  resetCamera: () => void;
+  getCurrentState: () => SavedState;
+  applyState: (state: SavedState) => void;
+  buildLiveSceneParams: (overrides?: LiveSceneParamOverrides) => LiveSceneParams;
+}
+
 /**
  * Owns the live `FPSCamera` instance and exposes helpers to snapshot / apply
  * scene state (fractal + graphics + camera) and to build the parameter bag
  * consumed by `renderer.updateUniforms`.
  */
-export function useSceneState() {
+export function useSceneState(): UseSceneStateReturn {
   const fractal = useFractalParams();
   const graphics = useGraphicsSettings();
 
@@ -103,7 +134,7 @@ export function useSceneState() {
    * caller substitute the effective iteration count (dynamic iterations) or
    * cap cost for the low-quality title preview.
    */
-  function buildLiveSceneParams(overrides?: LiveSceneParamOverrides) {
+  function buildLiveSceneParams(overrides?: LiveSceneParamOverrides): LiveSceneParams {
     return {
       power: fractal.power,
       maxIterations: overrides?.maxIterations ?? fractal.maxIterations,
@@ -126,5 +157,3 @@ export function useSceneState() {
     buildLiveSceneParams,
   };
 }
-
-export type SceneState = ReturnType<typeof useSceneState>;

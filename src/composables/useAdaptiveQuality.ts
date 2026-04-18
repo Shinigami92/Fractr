@@ -31,6 +31,11 @@ export interface UseAdaptiveQualityOptions {
   readonly onScaleChange: (scale: number) => void;
 }
 
+export interface UseAdaptiveQualityReturn {
+  update: (dt: number, currentFps: number, moving: boolean) => void;
+  reset: () => void;
+}
+
 /**
  * Tracks render-resolution scale based on frame rate and camera motion.
  *
@@ -40,7 +45,7 @@ export interface UseAdaptiveQualityOptions {
  * When the camera is moving, the max scale is reduced by MOVEMENT_PENALTY to
  * avoid fighting motion-induced cost spikes.
  */
-export function useAdaptiveQuality(options: UseAdaptiveQualityOptions) {
+export function useAdaptiveQuality(options: UseAdaptiveQualityOptions): UseAdaptiveQualityReturn {
   const graphics = useGraphicsSettings();
 
   let adaptiveScale = 1.0;

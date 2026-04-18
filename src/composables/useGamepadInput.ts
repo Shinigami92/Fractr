@@ -1,4 +1,5 @@
 import { useEventListener } from '@vueuse/core';
+import type { Ref } from 'vue';
 import { onScopeDispose, ref } from 'vue';
 import type { GamepadVendor } from '../input/gamepadVendor';
 import { detectGamepadVendor } from '../input/gamepadVendor';
@@ -27,6 +28,15 @@ export interface GamepadButtonEvent {
 }
 
 type ButtonListener = (event: GamepadButtonEvent) => void;
+
+export interface UseGamepadInputReturn {
+  connectedIndex: Ref<number | null>;
+  vendor: Ref<GamepadVendor>;
+  pressedButtons: Ref<ReadonlySet<string>>;
+  leftStick: Ref<StickVector>;
+  rightStick: Ref<StickVector>;
+  onButtonPress: (listener: ButtonListener) => void;
+}
 
 const connectedIndex = ref<number | null>(null);
 const vendor = ref<GamepadVendor>('generic');
@@ -118,7 +128,7 @@ function detachGamepad(index: number): void {
 
 let initialized = false;
 
-export function useGamepadInput() {
+export function useGamepadInput(): UseGamepadInputReturn {
   // Register global connect/disconnect listeners once. Further
   // useGamepadInput() calls just surface the same reactive refs.
   if (!initialized) {

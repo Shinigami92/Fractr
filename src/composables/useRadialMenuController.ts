@@ -1,5 +1,6 @@
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- pinia store instances have mutable reactive state */
 import { useEventListener } from '@vueuse/core';
+import type { ComputedRef, Ref } from 'vue';
 import { computed } from 'vue';
 import { useControlSettings } from '../stores/controlSettings';
 import type { ColorMode, FractalType, RenderMode } from '../stores/fractalParams';
@@ -9,6 +10,7 @@ import {
   RENDER_MODE_OPTIONS,
   useFractalParams,
 } from '../stores/fractalParams';
+import type { RadialOption } from './useRadialMenu';
 import { useRadialMenu } from './useRadialMenu';
 
 type RadialMenuId = 'color' | 'render' | 'fractal';
@@ -18,13 +20,27 @@ export interface UseRadialMenuControllerOptions {
   onResetCamera: () => void;
 }
 
+export interface UseRadialMenuControllerReturn {
+  activeId: Ref<RadialMenuId | null>;
+  cursorX: Ref<number>;
+  cursorY: Ref<number>;
+  currentOptions: ComputedRef<ReadonlyArray<RadialOption>>;
+  selectedIndex: ComputedRef<number>;
+  currentValue: ComputedRef<string>;
+  tryBeginHoldFromKey: (code: string, repeat: boolean) => boolean;
+  tryEndHoldFromKey: (code: string, shiftKey: boolean) => boolean;
+  triggerQuickTap: (id: RadialMenuId, shiftKey: boolean) => void;
+}
+
 /**
  * App-level wiring for the press-and-hold radial menu: maps keybindings to
  * menu ids, exposes the currently-selected value for each id, and forwards
  * selections into the fractal store. Also tracks which physical key is
  * currently holding the menu so keydown/keyup stay consistent.
  */
-export function useRadialMenuController(options: UseRadialMenuControllerOptions) {
+export function useRadialMenuController(
+  options: UseRadialMenuControllerOptions,
+): UseRadialMenuControllerReturn {
   const fractal = useFractalParams();
   const controls = useControlSettings();
 
@@ -48,6 +64,8 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
         fractal.cycleFractalType(shiftKey);
         options.onResetCamera();
         break;
+      default:
+        break;
     }
   }
 
@@ -60,8 +78,9 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
           return RENDER_MODE_OPTIONS;
         case 'fractal':
           return fractalOptions.value;
+        default:
+          return [];
       }
-      return [];
     },
     onApply(id, value) {
       switch (id) {
@@ -77,6 +96,8 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- value originates from fractalOptions (keys of FRACTAL_CONFIGS) passed into getOptions for this id.
           fractal.setFractalType(value as FractalType);
           options.onResetCamera();
+          break;
+        default:
           break;
       }
     },
@@ -141,5 +162,3 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
     triggerQuickTap,
   };
 }
-
-export type RadialMenuController = ReturnType<typeof useRadialMenuController>;

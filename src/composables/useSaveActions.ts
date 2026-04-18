@@ -11,8 +11,8 @@ import {
 } from '../services/thumbnailGenerator';
 import { useAppState } from '../stores/appState';
 import { useGraphicsSettings } from '../stores/graphicsSettings';
-import type { SceneState } from './useSceneState';
-import type { URLStateController } from './useURLState';
+import type { UseSceneStateReturn } from './useSceneState';
+import type { UseURLStateReturn } from './useURLState';
 
 export interface SavesBrowserHandle {
   setThumbnail(hash: string, blob: Blob): void;
@@ -24,14 +24,21 @@ export interface LoopHandle {
   stop(): void;
 }
 
-export interface UseSaveActionsDeps {
+export interface UseSaveActionsOptions {
   canvasRef: Ref<HTMLCanvasElement | null>;
   rendererRef: ShallowRef<Renderer | null>;
   savesBrowserRef: Ref<SavesBrowserHandle | null>;
   previewLoop: LoopHandle;
-  scene: SceneState;
-  urlState: URLStateController;
+  scene: UseSceneStateReturn;
+  urlState: UseURLStateReturn;
   notify: (text: string, duration?: number) => void;
+}
+
+export interface UseSaveActionsReturn {
+  quickSave: () => Promise<void>;
+  takeScreenshot: () => Promise<void>;
+  loadSavedState: (state: SavedState) => void;
+  regenerateThumbnails: (saves: SaveEntry[]) => Promise<void>;
 }
 
 /**
@@ -39,26 +46,26 @@ export interface UseSaveActionsDeps {
  * of the current location, screenshot to clipboard or file, load a saved
  * state into the live scene, and bulk thumbnail regeneration.
  */
-export function useSaveActions(deps: UseSaveActionsDeps) {
+export function useSaveActions(options: UseSaveActionsOptions): UseSaveActionsReturn {
   const appState = useAppState();
   const graphics = useGraphicsSettings();
 
   async function quickSave(): Promise<void> {
-    const state = deps.scene.getCurrentState();
-    const canvas = deps.canvasRef.value;
+    const state = options.scene.getCurrentState();
+    const canvas = options.canvasRef.value;
     const thumbnail = canvas ? await captureCanvasThumbnail(canvas) : undefined;
     const saved = await saveState(state, thumbnail);
-    deps.notify(saved ? 'Location saved' : 'Already saved');
+    options.notify(saved ? 'Location saved' : 'Already saved');
   }
 
   async function takeScreenshot(): Promise<void> {
-    const canvas = deps.canvasRef.value;
+    const canvas = options.canvasRef.value;
     if (!canvas) return;
     const blob = await captureCanvasPng(canvas);
     if (!blob) return;
     try {
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-      deps.notify('Screenshot copied to clipboard');
+      options.notify('Screenshot copied to clipboard');
     } catch {
       // Fallback: download the file
       const url = URL.createObjectURL(blob);
@@ -67,30 +74,30 @@ export function useSaveActions(deps: UseSaveActionsDeps) {
       a.download = `fractr-${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(url);
-      deps.notify('Screenshot saved as file');
+      options.notify('Screenshot saved as file');
     }
   }
 
   function loadSavedState(state: SavedState): void {
-    deps.scene.applyState(state);
+    options.scene.applyState(state);
     // Suppress the camera reset that would otherwise fire on entering 'playing'
-    deps.urlState.startFromURL.value = true;
+    options.urlState.startFromURL.value = true;
     appState.startGame();
   }
 
   async function regenerateThumbnails(saves: SaveEntry[]): Promise<void> {
-    const renderer = deps.rendererRef.value;
-    const canvas = deps.canvasRef.value;
+    const renderer = options.rendererRef.value;
+    const canvas = options.canvasRef.value;
     if (!renderer || !canvas) return;
 
     // Stop preview loop so it doesn't overwrite our renders
-    deps.previewLoop.stop();
+    options.previewLoop.stop();
 
     // Save current state to restore after
-    const prevState = deps.scene.getCurrentState();
+    const prevState = options.scene.getCurrentState();
     const renderDeps = {
       renderer,
-      camera: deps.scene.camera,
+      camera: options.scene.camera,
       canvas,
       maxRaySteps: graphics.maxRaySteps,
     };
@@ -102,7 +109,7 @@ export function useSaveActions(deps: UseSaveActionsDeps) {
         // oxlint-disable-next-line no-await-in-loop -- sequential so each thumbnail appears progressively in the browser
         await saveThumbnail(save.stateHash, blob);
         // Show thumbnail immediately in the browser
-        deps.savesBrowserRef.value?.setThumbnail(save.stateHash, blob);
+        options.savesBrowserRef.value?.setThumbnail(save.stateHash, blob);
       }
       // Delay between captures
       // oxlint-disable-next-line no-await-in-loop -- inter-capture throttle, must be sequential
@@ -114,15 +121,15 @@ export function useSaveActions(deps: UseSaveActionsDeps) {
     // `prevState` already — in which case the lifecycle watchers won't
     // fire and the renderer would remain in the last save's mode. Force
     // the renderer back in sync explicitly.
-    deps.scene.applyState(prevState);
+    options.scene.applyState(prevState);
     renderer.setFractalType(prevState.fractalType);
     renderer.setColorMode(prevState.colorMode);
     renderer.setRenderMode(prevState.renderMode);
     renderer.resetAccumulation();
 
     // Restart preview loop and refresh thumbnails in the browser
-    deps.previewLoop.start();
-    deps.savesBrowserRef.value?.refreshThumbnails();
+    options.previewLoop.start();
+    options.savesBrowserRef.value?.refreshThumbnails();
   }
 
   return { quickSave, takeScreenshot, loadSavedState, regenerateThumbnails };

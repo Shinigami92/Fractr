@@ -1,7 +1,13 @@
 import { useEventListener, useMediaQuery } from '@vueuse/core';
+import type { ComputedRef, Ref } from 'vue';
 import { computed, ref } from 'vue';
 
 export type InputMode = 'pointer' | 'touch';
+
+export interface UseInputModeReturn {
+  inputMode: Ref<InputMode>;
+  isTouchActive: ComputedRef<boolean>;
+}
 
 // Detect initial mode: coarse primary pointer = touch device (phone/tablet),
 // fine = desktop/laptop (even if it has a touchscreen, trackpad is primary).
@@ -40,7 +46,7 @@ export function installInputModeDetection(): void {
   useEventListener(window, 'keydown', onKeyDown, { passive: true });
 }
 
-export function useInputMode() {
+export function useInputMode(): UseInputModeReturn {
   return {
     inputMode,
     isTouchActive: computed(() => inputMode.value === 'touch'),

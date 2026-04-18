@@ -90,22 +90,22 @@ export class FPSCamera {
 
   // Rotate around local up axis (yaw)
   rotateYaw(angle: number): void {
-    this.rotateAroundAxis(this._up, angle, this._forward);
-    this.rotateAroundAxis(this._up, angle, this._right);
+    FPSCamera.rotateAroundAxis(this._up, angle, this._forward);
+    FPSCamera.rotateAroundAxis(this._up, angle, this._right);
     this.orthonormalize();
   }
 
   // Rotate around local right axis (pitch)
   rotatePitch(angle: number): void {
-    this.rotateAroundAxis(this._right, angle, this._forward);
-    this.rotateAroundAxis(this._right, angle, this._up);
+    FPSCamera.rotateAroundAxis(this._right, angle, this._forward);
+    FPSCamera.rotateAroundAxis(this._right, angle, this._up);
     this.orthonormalize();
   }
 
   // Rotate around local forward axis (roll)
   rollCamera(angle: number): void {
-    this.rotateAroundAxis(this._forward, angle, this._right);
-    this.rotateAroundAxis(this._forward, angle, this._up);
+    FPSCamera.rotateAroundAxis(this._forward, angle, this._right);
+    FPSCamera.rotateAroundAxis(this._forward, angle, this._up);
     this.orthonormalize();
   }
 
@@ -162,7 +162,7 @@ export class FPSCamera {
 
   // Rodrigues rotation: rotate vec around axis by angle
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `vec` is mutated in place
-  private rotateAroundAxis(axis: vec3.ReadonlyVec3, angle: number, vec: vec3.Vec3): void {
+  private static rotateAroundAxis(axis: vec3.ReadonlyVec3, angle: number, vec: vec3.Vec3): void {
     const c = Math.cos(angle);
     const s = Math.sin(angle);
     const t = 1 - c;

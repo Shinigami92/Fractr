@@ -41,7 +41,7 @@ const showHelpOverlay = ref(false);
 // Start time for renderer `time` uniform. Set to `performance.now()` once the
 // renderer is constructed (inside useRendererLifecycle.onCanvasReady).
 const startTime = ref(performance.now());
-const getTimeSeconds = (): number => (performance.now() - startTime.value) / 1000;
+const getTimeSeconds: () => number = () => (performance.now() - startTime.value) / 1000;
 
 // Transient toast notifications (share URL copied, save, screenshot, …).
 const { text: toastText, visible: toastVisible, show: notify } = useNotification();
@@ -51,13 +51,13 @@ const scene = useSceneState();
 const { cameraPos } = scene;
 
 // URL state: read on boot, restore fractal + camera pose, expose share helpers.
-const urlState = useURLState(scene);
+const urlState = useURLState({ scene });
 const { previewMode } = urlState;
 
 // Input primitives.
 const input = useInput();
-const pointerLock = usePointerLock(canvasRef);
-const touchControls = useTouchControls(canvasRef);
+const pointerLock = usePointerLock({ canvas: canvasRef });
+const touchControls = useTouchControls({ canvas: canvasRef });
 installInputModeDetection();
 const { isTouchActive } = useInputMode();
 

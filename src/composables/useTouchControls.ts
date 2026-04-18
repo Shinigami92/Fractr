@@ -11,6 +11,17 @@ export interface TouchState {
   currentY: number;
 }
 
+export interface UseTouchControlsOptions {
+  canvas: Ref<HTMLCanvasElement | null>;
+}
+
+export interface UseTouchControlsReturn {
+  leftTouch: Ref<TouchState | null>;
+  rightTouch: Ref<TouchState | null>;
+  getMovementVector: () => { x: number; y: number };
+  consumeLookDelta: () => { dx: number; dy: number };
+}
+
 const DEAD_ZONE = 0.05;
 const MAX_RADIUS = 80;
 
@@ -18,7 +29,8 @@ function screenMidX(): number {
   return window.innerWidth / 2;
 }
 
-export function useTouchControls(canvas: Ref<HTMLCanvasElement | null>) {
+export function useTouchControls(options: UseTouchControlsOptions): UseTouchControlsReturn {
+  const { canvas } = options;
   const leftTouch = ref<TouchState | null>(null);
   const rightTouch = ref<TouchState | null>(null);
 
@@ -107,7 +119,7 @@ export function useTouchControls(canvas: Ref<HTMLCanvasElement | null>) {
     let dx = (lt.currentX - lt.originX) / MAX_RADIUS;
     let dy = (lt.currentY - lt.originY) / MAX_RADIUS;
     // Clamp to unit circle
-    const mag = Math.sqrt(dx * dx + dy * dy);
+    const mag = Math.hypot(dx, dy);
     if (mag > 1) {
       dx /= mag;
       dy /= mag;

@@ -12,6 +12,7 @@ export default defineConfig({
     suspicious: 'error',
     pedantic: 'error',
     perf: 'error',
+    restriction: 'off',
   },
   rules: {
     eqeqeq: ['error', 'always', { null: 'ignore' }],
@@ -21,6 +22,15 @@ export default defineConfig({
 
     'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
     'import/max-dependencies': 'off',
+    'import/no-default-export': 'off',
+
+    // category restriction preferences
+    'class-methods-use-this': 'error',
+    'default-case': 'error',
+    'explicit-function-return-type': ['error', { allowExpressions: true }],
+    'explicit-module-boundary-types': 'error',
+    'no-use-before-define': 'error',
+    'unicorn/prefer-modern-math-apis': 'error',
 
     // category style preferences
     'typescript/array-type': ['error', { default: 'array-simple', readonly: 'generic' }],
@@ -30,8 +40,10 @@ export default defineConfig({
     'typescript/prefer-function-type': 'error',
 
     // TODO @Shinigami92 2026-04-18: should be enabled later
+    complexity: 'off',
     'max-lines-per-function': 'off',
     'max-lines': 'off',
+    'import/no-relative-parent-imports': 'off',
   },
   env: {
     builtin: true,
