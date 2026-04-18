@@ -18,7 +18,7 @@ export class WebGPUContext {
   }
 
   static async create(canvas: HTMLCanvasElement): Promise<WebGPUContext> {
-    if (!navigator.gpu) {
+    if (navigator.gpu == null) {
       throw new Error('WebGPU is not supported in this browser');
     }
 

@@ -1,4 +1,4 @@
-import type { ReadonlyVec3, Vec3 } from './vec3';
+import type { ReadonlyVec3 } from './vec3';
 import * as vec3 from './vec3';
 
 export type Mat4 = Float32Array;

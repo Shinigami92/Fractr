@@ -220,7 +220,7 @@ function parseArgs(): Options {
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]!;
-    if (arg === '--color' && args[i + 1]) {
+    if (arg === '--color' && args[i + 1] != null) {
       color = args[++i]!;
     } else if (arg === '--highres') {
       preset = 'highres';
@@ -256,7 +256,9 @@ Available colors: glow, distance, orbit_trap, iteration, ao, normal, curvature, 
 
 function waitForServer(server: ChildProcess): Promise<void> {
   return new Promise((done, fail) => {
-    const timeout = setTimeout(() => fail(new Error('Server start timeout')), 15000);
+    const timeout = setTimeout(() => {
+      fail(new Error('Server start timeout'));
+    }, 15000);
     server.stdout?.on('data', (data: Buffer) => {
       if (data.toString().includes('Local')) {
         clearTimeout(timeout);
@@ -347,7 +349,9 @@ async function main() {
   console.log('Done!');
 }
 
-main().catch((err) => {
+try {
+  await main();
+} catch (err) {
   console.error(err);
   process.exit(1);
-});
+}

@@ -216,7 +216,7 @@ export const RESERVED_KEYBOARD_CODES: ReadonlySet<string> = new Set([
  */
 export function displayKeyboardCode(code: string): string {
   const layoutLabel = getKeycapLabel(code);
-  if (layoutLabel) {
+  if (layoutLabel != null && layoutLabel !== '') {
     if (/^[a-z]$/.test(layoutLabel)) return layoutLabel.toUpperCase();
     if (layoutLabel.length === 1) return layoutLabel;
   }

@@ -317,5 +317,9 @@ export const useFractalParams = defineStore('fractalParams', () => {
 });
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useFractalParams, import.meta.hot));
+  const hmrHandler = acceptHMRUpdate(useFractalParams, import.meta.hot);
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Vite HMR mod type is not readonly
+  import.meta.hot.accept((mod) => {
+    hmrHandler(mod);
+  });
 }

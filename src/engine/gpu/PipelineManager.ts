@@ -137,7 +137,7 @@ export class PipelineManager {
     renderMode: RenderMode,
   ): GPURenderPipeline {
     const key = `${fractalType}:${colorMode}:${renderMode}`;
-    return this.buildPipeline(key, fractalType, colorMode, renderMode, this.ctx.format, undefined);
+    return this.buildPipeline(key, fractalType, colorMode, renderMode, this.ctx.format);
   }
 
   getOrCreateAccumPipeline(
@@ -167,7 +167,7 @@ export class PipelineManager {
     renderMode: RenderMode,
     format: GPUTextureFormat,
     // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- GPUBlendState is a deeply-nested GPU descriptor
-    blend: GPUBlendState | undefined,
+    blend?: GPUBlendState,
   ): GPURenderPipeline {
     let pipeline = this.cache.get(key);
     if (pipeline) return pipeline;

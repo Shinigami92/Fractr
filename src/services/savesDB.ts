@@ -41,8 +41,12 @@ function openDB(): Promise<IDBDatabase> {
         db.createObjectStore(THUMBS_STORE, { keyPath: 'stateHash' });
       }
     };
-    request.onsuccess = () => resolve(request.result);
-    request.addEventListener('error', () => reject(request.error));
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+    request.addEventListener('error', () => {
+      reject(request.error ?? new Error('IndexedDB open failed'));
+    });
   });
 }
 
@@ -64,11 +68,16 @@ function hashState(state: SavedState): string {
     state.roll.toFixed(6),
   ].join('|');
 
-  // Simple string hash (djb2)
+  // Simple string hash (djb2). Bitwise `| 0` and `>>> 0` here are load-bearing:
+  // they force 32-bit integer wraparound, which is the hash's defining behavior.
+  // `Math.trunc` does not produce the same result, so the prefer-math-trunc and
+  // prefer-code-point suggestions don't apply cleanly here.
   let hash = 5381;
   for (let i = 0; i < key.length; i++) {
+    // oxlint-disable-next-line unicorn/prefer-math-trunc, unicorn/prefer-code-point -- 32-bit djb2 hash; see block comment above
     hash = ((hash << 5) + hash + key.charCodeAt(i)) | 0;
   }
+  // oxlint-disable-next-line unicorn/prefer-math-trunc -- 32-bit unsigned cast for djb2 hash; see block comment above
   return (hash >>> 0).toString(36);
 }
 
@@ -84,7 +93,7 @@ export async function saveState(state: SavedState, thumbnail?: Blob): Promise<bo
     // Check for duplicate
     const getReq = savesStore.get(stateHash);
     getReq.onsuccess = () => {
-      if (getReq.result) {
+      if (getReq.result != null) {
         // Duplicate — skip silently
         resolve(false);
         return;
@@ -105,7 +114,9 @@ export async function saveState(state: SavedState, thumbnail?: Blob): Promise<bo
       resolve(true);
     };
 
-    tx.addEventListener('error', () => resolve(false));
+    tx.addEventListener('error', () => {
+      resolve(false);
+    });
   });
 }
 
@@ -127,7 +138,9 @@ export async function getAllSaves(): Promise<SaveEntry[]> {
         resolve(results);
       }
     };
-    request.addEventListener('error', () => resolve([]));
+    request.addEventListener('error', () => {
+      resolve([]);
+    });
   });
 }
 
@@ -142,7 +155,9 @@ export async function getThumbnail(stateHash: string): Promise<Blob | null> {
       const result = request.result as { stateHash: string; blob: Blob } | undefined;
       resolve(result?.blob ?? null);
     };
-    request.addEventListener('error', () => resolve(null));
+    request.addEventListener('error', () => {
+      resolve(null);
+    });
   });
 }
 
@@ -153,8 +168,12 @@ export async function saveThumbnail(stateHash: string, blob: Blob): Promise<void
     const tx = db.transaction(THUMBS_STORE, 'readwrite');
     const store = tx.objectStore(THUMBS_STORE);
     store.put({ stateHash, blob });
-    tx.oncomplete = () => resolve();
-    tx.addEventListener('error', () => resolve());
+    tx.oncomplete = () => {
+      resolve();
+    };
+    tx.addEventListener('error', () => {
+      resolve();
+    });
   });
 }
 
@@ -164,18 +183,22 @@ export async function deleteSave(stateHash: string): Promise<void> {
     const tx = db.transaction([SAVES_STORE, THUMBS_STORE], 'readwrite');
     tx.objectStore(SAVES_STORE).delete(stateHash);
     tx.objectStore(THUMBS_STORE).delete(stateHash);
-    tx.oncomplete = () => resolve();
-    tx.addEventListener('error', () => resolve());
+    tx.oncomplete = () => {
+      resolve();
+    };
+    tx.addEventListener('error', () => {
+      resolve();
+    });
   });
 }
 
 function isValidSaveEntry(entry: unknown): entry is SaveEntry {
-  if (!entry || typeof entry !== 'object') return false;
+  if (entry == null || typeof entry !== 'object') return false;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing `object` to `Record<string, unknown>` for field-by-field validation below.
   const e = entry as Record<string, unknown>;
   if (typeof e.stateHash !== 'string' || typeof e.timestamp !== 'number') return false;
   const s = e.state;
-  if (!s || typeof s !== 'object') return false;
+  if (s == null || typeof s !== 'object') return false;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- same pattern: narrowing nested state object for field-by-field validation.
   const state = s as Record<string, unknown>;
   return (
@@ -214,14 +237,16 @@ export async function importSaves(entries: readonly SaveEntry[]): Promise<number
       const store = tx.objectStore(SAVES_STORE);
       const getReq = store.get(entry.stateHash);
       getReq.onsuccess = () => {
-        if (getReq.result) {
+        if (getReq.result != null) {
           resolve(false);
           return;
         }
         store.put(entry);
         resolve(true);
       };
-      tx.addEventListener('error', () => resolve(false));
+      tx.addEventListener('error', () => {
+        resolve(false);
+      });
     });
     if (added) imported++;
   }

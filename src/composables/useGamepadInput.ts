@@ -51,7 +51,7 @@ function resetState(): void {
 
 function pollGamepads(): void {
   const idx = connectedIndex.value;
-  if (idx === null) {
+  if (idx == null) {
     pollHandle = null;
     return;
   }
@@ -64,7 +64,7 @@ function pollGamepads(): void {
   const current = new Set<string>();
   for (let i = 0; i < gp.buttons.length; i++) {
     const button = gp.buttons[i];
-    if (button?.pressed) {
+    if (button?.pressed === true) {
       const code = `Button${i}`;
       current.add(code);
       if (!previousButtons.has(code)) {
@@ -93,13 +93,13 @@ function pollGamepads(): void {
 }
 
 function startPolling(): void {
-  if (pollHandle !== null) return;
+  if (pollHandle != null) return;
   pollHandle = requestAnimationFrame(pollGamepads);
 }
 
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Gamepad is a DOM type with mutating internals
 function attachGamepad(gamepad: Gamepad): void {
-  if (connectedIndex.value !== null) return;
+  if (connectedIndex.value != null) return;
   connectedIndex.value = gamepad.index;
   vendor.value = detectGamepadVendor(gamepad.id);
   startPolling();
@@ -110,7 +110,7 @@ function detachGamepad(index: number): void {
   connectedIndex.value = null;
   vendor.value = 'generic';
   resetState();
-  if (pollHandle !== null) {
+  if (pollHandle != null) {
     cancelAnimationFrame(pollHandle);
     pollHandle = null;
   }

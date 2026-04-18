@@ -32,7 +32,7 @@ export const useControlSettings = defineStore('controlSettings', () => {
     const normalized = value === defaults[mode] ? undefined : value;
     const current = overrides.value[actionId] ?? {};
     const next = { ...current };
-    if (normalized === undefined) {
+    if (normalized == null) {
       delete next[mode];
     } else {
       next[mode] = normalized;

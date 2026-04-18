@@ -10,11 +10,19 @@ export default defineConfig({
   categories: {
     correctness: 'error',
     suspicious: 'error',
+    pedantic: 'error',
   },
   rules: {
-    'typescript/consistent-type-imports': 'error',
-    'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+    eqeqeq: ['error', 'always', { null: 'ignore' }],
+    'max-lines-per-function': 'off',
+    'max-lines': 'off',
+    'no-inline-comments': 'off',
     'sort-imports': ['error', { ignoreCase: true, ignoreDeclarationSort: true }],
+
+    'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+    'import/max-dependencies': 'off',
+
+    'typescript/consistent-type-imports': 'error',
   },
   env: {
     builtin: true,

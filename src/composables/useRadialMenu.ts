@@ -37,7 +37,9 @@ export function useRadialMenu<Id extends string>(options: UseRadialMenuOptions<I
   const cursorY = ref(0);
   let heldId: Id | null = null;
 
-  const currentOptions = computed(() => (activeId.value ? options.getOptions(activeId.value) : []));
+  const currentOptions = computed(() =>
+    activeId.value == null ? [] : options.getOptions(activeId.value),
+  );
 
   const selectedIndex = computed(() =>
     radialSelectedIndex(cursorX.value, cursorY.value, currentOptions.value.length),
@@ -49,7 +51,7 @@ export function useRadialMenu<Id extends string>(options: UseRadialMenuOptions<I
     isPending: isHoldPending,
   } = useTimeoutFn(
     () => {
-      if (heldId === null) return;
+      if (heldId == null) return;
       activeId.value = heldId;
       cursorX.value = 0;
       cursorY.value = 0;
@@ -59,14 +61,14 @@ export function useRadialMenu<Id extends string>(options: UseRadialMenuOptions<I
   );
 
   function beginHold(id: Id): void {
-    if (isHoldPending.value || activeId.value) return;
+    if (isHoldPending.value || activeId.value != null) return;
     heldId = id;
     startHoldTimer();
   }
 
   function endHold(id: Id, shiftKey: boolean): void {
     if (heldId !== id) return;
-    const wasOpen = activeId.value !== null;
+    const wasOpen = activeId.value != null;
     if (wasOpen) {
       const idx = selectedIndex.value;
       if (idx >= 0) {
@@ -82,7 +84,7 @@ export function useRadialMenu<Id extends string>(options: UseRadialMenuOptions<I
   }
 
   function onMouseMove(e: MouseEvent): void {
-    if (activeId.value) {
+    if (activeId.value != null) {
       cursorX.value += e.movementX;
       cursorY.value += e.movementY;
     }

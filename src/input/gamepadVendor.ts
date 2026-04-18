@@ -17,9 +17,9 @@ const VENDOR_IDS: Record<string, GamepadVendor> = {
 
 export function detectGamepadVendor(id: string): GamepadVendor {
   const vendorMatch = /Vendor:\s*([0-9a-f]{4})/i.exec(id);
-  if (vendorMatch?.[1]) {
+  if (vendorMatch?.[1] != null && vendorMatch[1] !== '') {
     const vendor = VENDOR_IDS[vendorMatch[1].toLowerCase()];
-    if (vendor) return vendor;
+    if (vendor != null) return vendor;
   }
   const lower = id.toLowerCase();
   if (/playstation|dualsense|dualshock/.test(lower)) return 'playstation';
@@ -103,9 +103,9 @@ const LABELS_BY_VENDOR: Record<GamepadVendor, ButtonLabelMap> = {
 /** Display label for a button code like "Button0" under a given vendor. */
 export function displayGamepadCode(code: string, vendor: GamepadVendor): string {
   const match = /^Button(\d+)$/.exec(code);
-  if (!match?.[1]) return code;
+  if (match?.[1] == null || match[1] === '') return code;
   const index = Number(match[1]);
   const label = LABELS_BY_VENDOR[vendor][index];
-  if (label) return label;
+  if (label != null && label !== '') return label;
   return `B${index}`;
 }

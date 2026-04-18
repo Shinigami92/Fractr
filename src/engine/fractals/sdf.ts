@@ -377,10 +377,10 @@ function cantordustSDF(x: number, y: number, z: number, params: SDFParams): numb
 }
 
 function burningshipSDF(x: number, y: number, z: number, params: SDFParams): number {
+  let dr = 1;
   let zx = x,
     zy = y,
-    zz = z,
-    dr = 1;
+    zz = z;
   let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
   const { power, maxIterations, bailout } = params;
   for (let i = 0; i < maxIterations; i++) {
@@ -388,8 +388,8 @@ function burningshipSDF(x: number, y: number, z: number, params: SDFParams): num
     zx = Math.abs(zx);
     zy = Math.abs(zy);
     zz = Math.abs(zz);
-    const theta = Math.acos(zz / r),
-      phi = Math.atan2(zy, zx);
+    const phi = Math.atan2(zy, zx);
+    const theta = Math.acos(zz / r);
     const rp = r ** power;
     dr = r ** (power - 1) * power * dr + 1;
     zx = rp * Math.sin(theta * power) * Math.cos(phi * power) + x;
@@ -401,16 +401,16 @@ function burningshipSDF(x: number, y: number, z: number, params: SDFParams): num
 }
 
 function tricornSDF(x: number, y: number, z: number, params: SDFParams): number {
+  let dr = 1;
   let zx = x,
     zy = y,
-    zz = z,
-    dr = 1;
+    zz = z;
   let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
   const { power, maxIterations, bailout } = params;
   for (let i = 0; i < maxIterations; i++) {
     if (r > bailout) break;
-    const theta = Math.acos(zz / r),
-      phi = -Math.atan2(zy, zx);
+    const phi = -Math.atan2(zy, zx);
+    const theta = Math.acos(zz / r);
     const rp = r ** power;
     dr = r ** (power - 1) * power * dr + 1;
     zx = rp * Math.sin(theta * power) * Math.cos(phi * power) + x;
@@ -422,10 +422,10 @@ function tricornSDF(x: number, y: number, z: number, params: SDFParams): number 
 }
 
 function cospower2SDF(x: number, y: number, z: number, params: SDFParams): number {
+  let dr = 1;
   let zx = x,
     zy = y,
-    zz = z,
-    dr = 1;
+    zz = z;
   let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
   for (let i = 0; i < params.maxIterations; i++) {
     if (r > params.bailout) break;
@@ -444,10 +444,10 @@ function cospower2SDF(x: number, y: number, z: number, params: SDFParams): numbe
 }
 
 function kaleidoboxSDF(x: number, y: number, z: number, params: SDFParams): number {
+  let dr = 1;
   let zx = x,
     zy = y,
-    zz = z,
-    dr = 1;
+    zz = z;
   const { power: scale, maxIterations, bailout } = params;
   for (let i = 0; i < maxIterations; i++) {
     if (Math.sqrt(zx * zx + zy * zy + zz * zz) > bailout) break;
@@ -484,17 +484,17 @@ function kaleidoboxSDF(x: number, y: number, z: number, params: SDFParams): numb
 }
 
 function spudsvilleSDF(x: number, y: number, z: number, params: SDFParams): number {
+  let dr = 1;
   let zx = x,
     zy = y,
-    zz = z,
-    dr = 1;
+    zz = z;
   let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
   const { power, maxIterations, bailout } = params;
   for (let i = 0; i < maxIterations; i++) {
     if (r > bailout) break;
     if (i % 2 === 0) {
-      const theta = Math.acos(zz / r),
-        phi = Math.atan2(zy, zx);
+      const phi = Math.atan2(zy, zx);
+      const theta = Math.acos(zz / r);
       const rp = r ** power;
       dr = r ** (power - 1) * power * dr + 1;
       zx = rp * Math.sin(theta * power) * Math.cos(phi * power) + x;
@@ -521,10 +521,10 @@ function spudsvilleSDF(x: number, y: number, z: number, params: SDFParams): numb
 }
 
 function bristorbrotSDF(x: number, y: number, z: number, params: SDFParams): number {
+  let dr = 1;
   let zx = x,
     zy = y,
-    zz = z,
-    dr = 1;
+    zz = z;
   let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
   for (let i = 0; i < params.maxIterations; i++) {
     if (r > params.bailout) break;
@@ -541,10 +541,10 @@ function bristorbrotSDF(x: number, y: number, z: number, params: SDFParams): num
 }
 
 function xenodreambuieSDF(x: number, y: number, z: number, params: SDFParams): number {
+  let dr = 1;
   let zx = x,
     zy = y,
-    zz = z,
-    dr = 1;
+    zz = z;
   let r = Math.sqrt(zx * zx + zy * zy + zz * zz);
   const { power, maxIterations, bailout } = params;
   for (let i = 0; i < maxIterations; i++) {

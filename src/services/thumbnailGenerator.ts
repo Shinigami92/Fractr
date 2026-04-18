@@ -26,14 +26,22 @@ export interface ThumbnailRenderDeps {
 /** Capture the current canvas contents as a compressed WebP blob. */
 export function captureCanvasThumbnail(canvas: HTMLCanvasElement): Promise<Blob | undefined> {
   return new Promise<Blob | undefined>((resolve) => {
-    canvas.toBlob((b) => resolve(b ?? undefined), THUMBNAIL_MIME, THUMBNAIL_QUALITY);
+    canvas.toBlob(
+      (b) => {
+        resolve(b ?? undefined);
+      },
+      THUMBNAIL_MIME,
+      THUMBNAIL_QUALITY,
+    );
   });
 }
 
 /** Capture the current canvas contents as a lossless PNG blob. */
 export function captureCanvasPng(canvas: HTMLCanvasElement): Promise<Blob | null> {
   return new Promise<Blob | null>((resolve) => {
-    canvas.toBlob((b) => resolve(b), 'image/png');
+    canvas.toBlob((b) => {
+      resolve(b);
+    }, 'image/png');
   });
 }
 
@@ -89,7 +97,11 @@ export async function renderSavedStateToBlob(
   while (performance.now() - startMs < renderTimeMs) {
     renderer.updateUniforms(camera, params, 0);
     renderer.render(false);
-    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        resolve();
+      });
+    });
   }
 
   // Extra settle for GPU flush before toBlob reads the canvas

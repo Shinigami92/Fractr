@@ -38,7 +38,7 @@ export function useTouchControls(canvas: Ref<HTMLCanvasElement | null>) {
     for (const touch of e.changedTouches) {
       const isLeft = touch.clientX < screenMidX();
 
-      if (isLeft && leftId === null) {
+      if (isLeft && leftId == null) {
         leftId = touch.identifier;
         leftTouch.value = {
           active: true,
@@ -47,7 +47,7 @@ export function useTouchControls(canvas: Ref<HTMLCanvasElement | null>) {
           currentX: touch.clientX,
           currentY: touch.clientY,
         };
-      } else if (!isLeft && rightId === null) {
+      } else if (!isLeft && rightId == null) {
         rightId = touch.identifier;
         rightPrevX = touch.clientX;
         rightPrevY = touch.clientY;

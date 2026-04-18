@@ -42,7 +42,7 @@ const groups = computed<Group[]>(() => {
 });
 
 function isOverridden(id: ActionId): boolean {
-  return controls.overrides[id]?.keyboard !== undefined;
+  return controls.overrides[id]?.keyboard != null;
 }
 
 function bindingDisplay(id: ActionId): string {

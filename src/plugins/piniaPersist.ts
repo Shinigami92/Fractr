@@ -43,7 +43,7 @@ export const piniaPersistPlugin: PiniaPlugin = ({ store }) => {
 
   // Restore state from localStorage
   const saved = localStorage.getItem(key);
-  if (saved) {
+  if (saved != null && saved !== '') {
     try {
       store.$patch(JSON.parse(saved));
     } catch {

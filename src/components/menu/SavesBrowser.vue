@@ -29,7 +29,7 @@ const filteredSaves = ref<SaveEntry[]>([]);
 const regenerating = ref(false);
 
 function updateFilter(): void {
-  if (!filterFractal.value) {
+  if (filterFractal.value === '') {
     filteredSaves.value = saves.value;
   } else {
     filteredSaves.value = saves.value.filter((s) => s.state.fractalType === filterFractal.value);

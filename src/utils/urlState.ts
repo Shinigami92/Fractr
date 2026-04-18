@@ -25,11 +25,11 @@ const RENDER_MODE_SET = new Set<string>(RENDER_MODES);
 export function readStateFromURL(): SharedState | null {
   const params = new URLSearchParams(window.location.search);
   const f = params.get('f');
-  if (!f || !FRACTAL_TYPE_SET.has(f)) return null;
+  if (f == null || f === '' || !FRACTAL_TYPE_SET.has(f)) return null;
 
   const get = (key: string, fallback: number) => {
     const v = params.get(key);
-    if (v === null) return fallback;
+    if (v == null) return fallback;
     const n = Number.parseFloat(v);
     return Number.isFinite(n) ? n : fallback;
   };

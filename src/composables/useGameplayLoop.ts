@@ -127,11 +127,11 @@ export function useGameplayLoop(deps: UseGameplayLoopDeps) {
         Math.abs(touchLook.dy) > 1;
       const kb = (id: Parameters<typeof controls.getBinding>[0]): boolean => {
         const code = controls.getBinding(id, 'keyboard');
-        return code !== undefined && isPressed(code);
+        return code != null && isPressed(code);
       };
       const gp = (id: Parameters<typeof controls.getBinding>[0]): boolean => {
         const code = controls.getBinding(id, 'gamepad');
-        return code !== undefined && gamepad.pressedButtons.value.has(code);
+        return code != null && gamepad.pressedButtons.value.has(code);
       };
       const gamepadActive =
         Math.abs(lx) > GAMEPAD_ACTIVE_EPS ||

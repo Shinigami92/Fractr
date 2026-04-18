@@ -26,6 +26,7 @@ function wgslFullReload(): Plugin {
         server.ws.send({ type: 'full-reload', path: '*' });
         return [];
       }
+      // oxlint-disable-next-line unicorn/no-useless-undefined -- consistent-return requires an explicit value
       return undefined;
     },
   };

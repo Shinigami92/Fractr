@@ -189,18 +189,30 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
   // gameplay loop instead. Cycle actions quick-tap only — no hold-to-radial
   // on gamepad yet.
   const actionHandlers: Partial<Record<ActionId, () => void>> = {
-    toggleHud: () => hudSettings.toggleHud(),
-    toggleCrosshair: () => hudSettings.toggleCrosshair(),
+    toggleHud: () => {
+      hudSettings.toggleHud();
+    },
+    toggleCrosshair: () => {
+      hudSettings.toggleCrosshair();
+    },
     toggleDynamicIterations: () => {
       graphics.dynamicIterations = !graphics.dynamicIterations;
     },
     toggleAnimatedColors: () => {
       graphics.animatedColors = !graphics.animatedColors;
     },
-    increaseIterations: () => fractal.adjustIterations(1),
-    decreaseIterations: () => fractal.adjustIterations(-1),
-    increaseBailout: () => fractal.adjustBailout(1),
-    decreaseBailout: () => fractal.adjustBailout(-1),
+    increaseIterations: () => {
+      fractal.adjustIterations(1);
+    },
+    decreaseIterations: () => {
+      fractal.adjustIterations(-1);
+    },
+    increaseBailout: () => {
+      fractal.adjustBailout(1);
+    },
+    decreaseBailout: () => {
+      fractal.adjustBailout(-1);
+    },
     quickSave: () => {
       void deps.saveActions.quickSave();
     },
@@ -216,9 +228,15 @@ export function useAppShortcuts(deps: UseAppShortcutsDeps) {
       void navigator.clipboard.writeText(deps.urlState.buildCurrentShareURL());
       deps.notify('Share URL copied to clipboard');
     },
-    cycleColorMode: () => deps.radial.triggerQuickTap('color', false),
-    cycleRenderMode: () => deps.radial.triggerQuickTap('render', false),
-    cycleFractalType: () => deps.radial.triggerQuickTap('fractal', false),
+    cycleColorMode: () => {
+      deps.radial.triggerQuickTap('color', false);
+    },
+    cycleRenderMode: () => {
+      deps.radial.triggerQuickTap('render', false);
+    },
+    cycleFractalType: () => {
+      deps.radial.triggerQuickTap('fractal', false);
+    },
   };
 
   const gamepad = useGamepadInput();

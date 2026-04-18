@@ -91,6 +91,8 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
         return fractal.renderMode;
       case 'fractal':
         return fractal.fractalType;
+      case null:
+        return '';
       default:
         return '';
     }
@@ -108,7 +110,7 @@ export function useRadialMenuController(options: UseRadialMenuControllerOptions)
   /** Returns true if a hold was started. */
   function tryBeginHoldFromKey(code: string, repeat: boolean): boolean {
     const id = idForKey(code);
-    if (!id || repeat || heldKey !== null) return false;
+    if (!id || repeat || heldKey != null) return false;
     heldKey = code;
     menu.beginHold(id);
     return true;
