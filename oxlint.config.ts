@@ -39,9 +39,6 @@ export default defineConfig({
     'typescript/prefer-find': 'error',
     'typescript/prefer-for-of': 'error',
     'typescript/prefer-function-type': 'error',
-
-    // TODO @Shinigami92 2026-04-18: should be enabled later
-    'max-lines': 'off',
   },
   env: {
     builtin: true,
