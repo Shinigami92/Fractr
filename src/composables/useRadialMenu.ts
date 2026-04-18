@@ -14,7 +14,7 @@ export interface RadialOption {
 
 export interface UseRadialMenuOptions<Id extends string> {
   /** Resolve the options shown for a given menu id. */
-  getOptions: (id: Id) => readonly RadialOption[];
+  getOptions: (id: Id) => ReadonlyArray<RadialOption>;
   /** Called when the menu closes with a valid selection under the cursor. */
   onApply: (id: Id, value: string) => void;
   /** Called on a quick-tap that never triggered the menu to open. */

@@ -227,7 +227,7 @@ export function validateImport(data: unknown): SaveEntry[] {
   return valid;
 }
 
-export async function importSaves(entries: readonly SaveEntry[]): Promise<number> {
+export async function importSaves(entries: ReadonlyArray<SaveEntry>): Promise<number> {
   const db = await openDB();
 
   const results = await Promise.all(
@@ -255,7 +255,7 @@ export async function importSaves(entries: readonly SaveEntry[]): Promise<number
   return results.filter(Boolean).length;
 }
 
-export function exportSaves(entries: readonly SaveEntry[]): string {
+export function exportSaves(entries: ReadonlyArray<SaveEntry>): string {
   return JSON.stringify(entries, null, 2);
 }
 

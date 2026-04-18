@@ -15,15 +15,23 @@ export default defineConfig({
   },
   rules: {
     eqeqeq: ['error', 'always', { null: 'ignore' }],
-    'max-lines-per-function': 'off',
-    'max-lines': 'off',
     'no-inline-comments': 'off',
+    'no-warning-comments': 'off',
     'sort-imports': ['error', { ignoreCase: true, ignoreDeclarationSort: true }],
 
     'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
     'import/max-dependencies': 'off',
 
+    // category style preferences
+    'typescript/array-type': ['error', { default: 'array-simple', readonly: 'generic' }],
     'typescript/consistent-type-imports': 'error',
+    'typescript/prefer-find': 'error',
+    'typescript/prefer-for-of': 'error',
+    'typescript/prefer-function-type': 'error',
+
+    // TODO @Shinigami92 2026-04-18: should be enabled later
+    'max-lines-per-function': 'off',
+    'max-lines': 'off',
   },
   env: {
     builtin: true,

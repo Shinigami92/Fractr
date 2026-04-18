@@ -7,10 +7,9 @@ import { FRACTAL_CONFIGS, useFractalParams } from '../../stores/fractalParams';
 const appState = useAppState();
 const fractal = useFractalParams();
 
-const fractalEntries = Object.entries(FRACTAL_CONFIGS) as [
-  FractalType,
-  (typeof FRACTAL_CONFIGS)[FractalType],
-][];
+const fractalEntries = Object.entries(FRACTAL_CONFIGS) as Array<
+  [FractalType, (typeof FRACTAL_CONFIGS)[FractalType]]
+>;
 
 const imgErrors = ref(new Set<string>());
 

@@ -5,7 +5,7 @@ import type { ChildProcess } from 'node:child_process';
 import { mkdirSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const FRACTALS: {
+const FRACTALS: Array<{
   type: string;
   power: number;
   iter: number;
@@ -16,7 +16,7 @@ const FRACTALS: {
   yaw: number;
   pitch: number;
   roll?: number;
-}[] = [
+}> = [
   {
     type: 'mandelbulb',
     power: 8,

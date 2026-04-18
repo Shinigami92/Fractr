@@ -214,7 +214,7 @@ export const COLOR_MODE_OPTIONS = [
   { value: 'triplanar', label: 'Triplanar', short: 'Triplanar' },
   { value: 'normal', label: 'Normal', short: 'Normal' },
   { value: 'depth', label: 'Depth', short: 'Depth' },
-] as const satisfies readonly ModeOption[];
+] as const satisfies ReadonlyArray<ModeOption>;
 
 export type ColorMode = (typeof COLOR_MODE_OPTIONS)[number]['value'];
 export const COLOR_MODES: ColorMode[] = COLOR_MODE_OPTIONS.map((o) => o.value);
@@ -239,13 +239,13 @@ export const RENDER_MODE_OPTIONS = [
   { value: 'dof', label: 'Depth of Field', short: 'DoF' },
   { value: 'fog', label: 'Volumetric Fog', short: 'Fog' },
   { value: 'volume', label: 'Volume Rendering', short: 'Volume' },
-] as const satisfies readonly ModeOption[];
+] as const satisfies ReadonlyArray<ModeOption>;
 
 export type RenderMode = (typeof RENDER_MODE_OPTIONS)[number]['value'];
 export const RENDER_MODES: RenderMode[] = RENDER_MODE_OPTIONS.map((o) => o.value);
 
 /** Returns the next value in a cyclic list (wraps at both ends). */
-function nextInCycle<T>(list: readonly T[], current: T, reverse: boolean): T {
+function nextInCycle<T>(list: ReadonlyArray<T>, current: T, reverse: boolean): T {
   const idx = list.indexOf(current);
   const delta = reverse ? list.length - 1 : 1;
   return list[(idx + delta) % list.length]!;
