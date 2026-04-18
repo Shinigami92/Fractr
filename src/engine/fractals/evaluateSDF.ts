@@ -1,8 +1,8 @@
-import type { FractalType } from '../../stores/fractalParams';
 import { apollonianSDF } from './apollonian';
 import { bristorbrotSDF } from './bristorbrot';
 import { burningshipSDF } from './burningship';
 import { cantordustSDF } from './cantordust';
+import type { FractalType } from './configs';
 import { cospower2SDF } from './cospower2';
 import { gyroidSDF } from './gyroid';
 import { juliabulbSDF } from './juliabulb';

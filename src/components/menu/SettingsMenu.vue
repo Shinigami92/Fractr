@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useInputMode } from '../../composables/useInputMode';
+import { COLOR_MODE_OPTIONS } from '../../engine/colorModes';
+import type { FractalType } from '../../engine/fractals/configs';
+import { FRACTAL_CONFIGS } from '../../engine/fractals/configs';
+import { RENDER_MODE_OPTIONS } from '../../engine/renderModes';
 import { useAppState } from '../../stores/appState';
 import { useControlSettings } from '../../stores/controlSettings';
-import type { FractalType } from '../../stores/fractalParams';
-import {
-  COLOR_MODE_OPTIONS,
-  FRACTAL_CONFIGS,
-  RENDER_MODE_OPTIONS,
-  useFractalParams,
-} from '../../stores/fractalParams';
+import { useFractalParams } from '../../stores/fractalParams';
 import { useGraphicsSettings } from '../../stores/graphicsSettings';
 import { useHudSettings } from '../../stores/hudSettings';
 import KeybindingsEditor from './KeybindingsEditor.vue';

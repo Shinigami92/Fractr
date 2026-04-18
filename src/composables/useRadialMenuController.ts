@@ -2,20 +2,16 @@
 import { useEventListener } from '@vueuse/core';
 import type { ComputedRef, Ref } from 'vue';
 import { computed } from 'vue';
+import type { ColorMode } from '../engine/colorModes';
+import { COLOR_MODE_OPTIONS } from '../engine/colorModes';
+import type { FractalType } from '../engine/fractals/configs';
+import { FRACTAL_CONFIGS } from '../engine/fractals/configs';
+import type { RenderMode } from '../engine/renderModes';
+import { RENDER_MODE_OPTIONS } from '../engine/renderModes';
 import type { ControlSettingsStore } from '../stores/controlSettings';
 import { useControlSettings } from '../stores/controlSettings';
-import type {
-  ColorMode,
-  FractalParamsStore,
-  FractalType,
-  RenderMode,
-} from '../stores/fractalParams';
-import {
-  COLOR_MODE_OPTIONS,
-  FRACTAL_CONFIGS,
-  RENDER_MODE_OPTIONS,
-  useFractalParams,
-} from '../stores/fractalParams';
+import type { FractalParamsStore } from '../stores/fractalParams';
+import { useFractalParams } from '../stores/fractalParams';
 import type { RadialOption, UseRadialMenuReturn } from './useRadialMenu';
 import { useRadialMenu } from './useRadialMenu';
 

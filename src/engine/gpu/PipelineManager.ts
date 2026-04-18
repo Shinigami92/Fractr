@@ -51,7 +51,9 @@ import sierpinskiSrc from '../../shaders/sdf/sierpinski.wgsl?raw';
 import spudsvilleSrc from '../../shaders/sdf/spudsville.wgsl?raw';
 import tricornSrc from '../../shaders/sdf/tricorn.wgsl?raw';
 import xenodreambuieSrc from '../../shaders/sdf/xenodreambuie.wgsl?raw';
-import type { ColorMode, FractalType, RenderMode } from '../../stores/fractalParams';
+import type { ColorMode } from '../colorModes';
+import type { FractalType } from '../fractals/configs';
+import type { RenderMode } from '../renderModes';
 import type { WebGPUContext } from './WebGPUContext';
 
 const MARCHER_SOURCES: Record<RenderMode, string> = {

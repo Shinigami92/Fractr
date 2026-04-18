@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useTimeoutFn } from '@vueuse/core';
 import { onMounted, onUnmounted, reactive, ref } from 'vue';
+import type { FractalType } from '../../engine/fractals/configs';
+import { FRACTAL_CONFIGS } from '../../engine/fractals/configs';
 import type { SaveEntry } from '../../services/savesDB';
 import {
   deleteSave,
@@ -11,8 +13,6 @@ import {
   validateImport,
 } from '../../services/savesDB';
 import { useAppState } from '../../stores/appState';
-import type { FractalType } from '../../stores/fractalParams';
-import { FRACTAL_CONFIGS } from '../../stores/fractalParams';
 
 const emit = defineEmits<{
   load: [state: SaveEntry['state']];

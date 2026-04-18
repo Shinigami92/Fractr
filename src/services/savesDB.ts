@@ -1,4 +1,6 @@
-import type { ColorMode, FractalType, RenderMode } from '../stores/fractalParams';
+import type { ColorMode } from '../engine/colorModes';
+import type { FractalType } from '../engine/fractals/configs';
+import type { RenderMode } from '../engine/renderModes';
 
 export interface SavedState {
   readonly fractalType: FractalType;

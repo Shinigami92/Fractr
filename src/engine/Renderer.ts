@@ -1,9 +1,11 @@
 import blitSrc from '../shaders/blit.wgsl?raw';
-import type { ColorMode, FractalType, RenderMode } from '../stores/fractalParams';
 import type { FPSCamera } from './camera/FPSCamera';
+import type { ColorMode } from './colorModes';
+import type { FractalType } from './fractals/configs';
 import { PipelineManager } from './gpu/PipelineManager';
 import { UniformBuffer } from './gpu/UniformBuffer';
 import type { WebGPUContext } from './gpu/WebGPUContext';
+import type { RenderMode } from './renderModes';
 
 export class Renderer {
   private readonly ctx: WebGPUContext;
