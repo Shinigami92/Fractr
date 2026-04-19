@@ -45,7 +45,7 @@ function onImgError(key: string): void {
           <button
             v-for="[key, cfg] in fractalEntries"
             :key="key"
-            class="group flex cursor-pointer flex-col overflow-hidden border border-white/10 bg-white/5 transition-all duration-200 hover:border-accent-bright/40 hover:bg-accent/10"
+            class="group flex cursor-pointer flex-col overflow-hidden border border-white/10 bg-white/5 transition-all duration-200 hover:border-accent-bright/40 hover:bg-accent/10 focus-visible:border-accent-bright focus-visible:bg-accent/20 focus-visible:outline-none"
             @click="selectFractal(key)"
           >
             <div class="relative aspect-video w-full overflow-hidden bg-surface-dim">
@@ -74,7 +74,7 @@ function onImgError(key: string): void {
       </div>
 
       <button
-        class="shrink-0 cursor-pointer border border-white/10 bg-white/5 px-6 py-2 text-xs font-medium tracking-wider text-white/90 uppercase transition-all hover:border-accent-bright/40 hover:bg-accent/20"
+        class="shrink-0 cursor-pointer border border-white/10 bg-white/5 px-6 py-2 text-xs font-medium tracking-wider text-white/90 uppercase transition-all hover:border-accent-bright/40 hover:bg-accent/20 focus-visible:border-accent-bright focus-visible:bg-accent/30 focus-visible:outline-none"
         @click="onBack"
       >
         Back

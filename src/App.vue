@@ -18,6 +18,7 @@ import { useAppShortcuts } from './composables/useAppShortcuts';
 import { useGameplayLoop } from './composables/useGameplayLoop';
 import { useInput } from './composables/useInput';
 import { installInputModeDetection, useInputMode } from './composables/useInputMode';
+import { useMenuNavigation } from './composables/useMenuNavigation';
 import { useNotification } from './composables/useNotification';
 import { usePointerLock } from './composables/usePointerLock';
 import { usePreviewLoop } from './composables/usePreviewLoop';
@@ -128,6 +129,9 @@ const lifecycle = useRendererLifecycle({
 });
 const { gpuError, onCanvasReady, onResize } = lifecycle;
 applyCanvasResolution = lifecycle.applyCanvasResolution;
+
+// Gamepad-driven menu navigation (D-pad / left stick / ✕○ / L1 R1).
+useMenuNavigation({ showHelpOverlay });
 
 // Global keyboard + mouse shortcuts and pointer-lock pause behavior.
 const { onCanvasClick } = useAppShortcuts({

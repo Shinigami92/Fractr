@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { useEventListener } from '@vueuse/core';
 import { ref } from 'vue';
 import { useInputMode } from '../../composables/useInputMode';
+import { MENU_TAB_CHANGE_EVENT } from '../../composables/useMenuNavigation';
 import { COLOR_MODE_OPTIONS } from '../../engine/colorModes';
 import type { FractalType } from '../../engine/fractals/configs';
 import { FRACTAL_CONFIGS } from '../../engine/fractals/configs';
@@ -20,7 +22,17 @@ const hud = useHudSettings();
 const { isTouchActive } = useInputMode();
 
 type Tab = 'fractal' | 'graphics' | 'controls';
+const TABS: ReadonlyArray<Tab> = ['fractal', 'graphics', 'controls'];
 const activeTab = ref<Tab>('fractal');
+
+// Gamepad L1/R1 tab switching — the menu-nav composable dispatches a window
+// event with a ±1 delta; wrap around both ends like a typical game settings UI.
+useEventListener(window, MENU_TAB_CHANGE_EVENT, (e) => {
+  const delta = (e as CustomEvent<number>).detail;
+  const idx = TABS.indexOf(activeTab.value);
+  const next = (idx + delta + TABS.length) % TABS.length;
+  activeTab.value = TABS[next]!;
+});
 
 function onBack(): void {
   appState.closeSettings();
@@ -50,9 +62,9 @@ function resetAll(): void {
       <!-- Tabs -->
       <div class="flex shrink-0 justify-center gap-1">
         <button
-          v-for="tab in ['fractal', 'graphics', 'controls'] as const"
+          v-for="tab in TABS"
           :key="tab"
-          class="cursor-pointer px-4 py-2 text-xs font-medium tracking-wider uppercase transition-colors"
+          class="cursor-pointer px-4 py-2 text-xs font-medium tracking-wider uppercase transition-colors focus-visible:text-white focus-visible:outline-none"
           :class="
             activeTab === tab
               ? 'border-b-2 border-accent-bright text-white'
@@ -267,13 +279,13 @@ function resetAll(): void {
       <!-- Footer -->
       <div class="flex shrink-0 justify-between pt-2">
         <button
-          class="cursor-pointer px-4 py-2 text-xs text-white/40 transition-colors hover:text-white/70"
+          class="cursor-pointer px-4 py-2 text-xs text-white/40 transition-colors hover:text-white/70 focus-visible:text-white focus-visible:outline-none"
           @click="resetAll"
         >
           Reset Defaults
         </button>
         <button
-          class="cursor-pointer border border-white/10 bg-white/5 px-6 py-2 text-xs font-medium tracking-wider text-white/90 uppercase transition-all hover:border-accent-bright/40 hover:bg-accent/20"
+          class="cursor-pointer border border-white/10 bg-white/5 px-6 py-2 text-xs font-medium tracking-wider text-white/90 uppercase transition-all hover:border-accent-bright/40 hover:bg-accent/20 focus-visible:border-accent-bright focus-visible:bg-accent/30 focus-visible:outline-none"
           @click="onBack"
         >
           Back
