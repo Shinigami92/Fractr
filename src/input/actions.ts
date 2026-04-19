@@ -166,11 +166,17 @@ const ACTIONS_RAW = {
     label: 'Pause / resume',
     defaultBindings: { gamepad: 'Button9' },
   },
+  toggleHelp: {
+    id: 'toggleHelp',
+    category: 'UI',
+    label: 'Toggle help overlay',
+    defaultBindings: { gamepad: 'Button8' },
+  },
   toggleHud: {
     id: 'toggleHud',
     category: 'UI',
     label: 'Toggle HUD',
-    defaultBindings: { keyboard: 'F3', gamepad: 'Button8' },
+    defaultBindings: { keyboard: 'F3' },
   },
   toggleCrosshair: {
     id: 'toggleCrosshair',

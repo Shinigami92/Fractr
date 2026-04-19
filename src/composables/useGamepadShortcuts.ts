@@ -1,4 +1,5 @@
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- composable returns wrap mutable Vue Refs */
+import type { Ref } from 'vue';
 import type { ActionId } from '../input/actions';
 import { ACTION_IDS } from '../input/actions';
 import { useAppState } from '../stores/appState';
@@ -19,6 +20,7 @@ export interface UseGamepadShortcutsOptions {
   saveActions: UseSaveActionsReturn;
   urlState: UseURLStateReturn;
   notify: (text: string, duration?: number) => void;
+  showHelpOverlay: Ref<boolean>;
 }
 
 interface GamepadStores {
@@ -37,9 +39,6 @@ function buildActionHandlers(
 ): Partial<Record<ActionId, () => void>> {
   const { fractal, graphics, hudSettings, appState } = stores;
   return {
-    toggleHud: () => {
-      hudSettings.toggleHud();
-    },
     toggleCrosshair: () => {
       hudSettings.toggleCrosshair();
     },
@@ -114,6 +113,14 @@ export function useGamepadShortcuts(
     if (e.code === stores.controls.getBinding('togglePause', 'gamepad')) {
       if (stores.appState.mode === 'playing') stores.appState.pause();
       else if (stores.appState.mode === 'paused') stores.appState.resume();
+      return;
+    }
+    // toggleHelp is the gamepad equivalent of F1 — allowed during gameplay
+    // and while the overlay is already open (so it can close).
+    if (e.code === stores.controls.getBinding('toggleHelp', 'gamepad')) {
+      if (stores.appState.mode === 'playing' || options.showHelpOverlay.value) {
+        options.showHelpOverlay.value = !options.showHelpOverlay.value;
+      }
       return;
     }
     if (stores.appState.mode !== 'playing') return;

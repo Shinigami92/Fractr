@@ -4,10 +4,11 @@ import { useInputMode } from '../../composables/useInputMode';
 import type { ActionCategory } from '../../input/actions';
 import { ACTION_IDS, ACTIONS, displayKeyboardCode } from '../../input/actions';
 import { useControlSettings } from '../../stores/controlSettings';
+import GamepadHelpDiagram from './GamepadHelpDiagram.vue';
 
 const emit = defineEmits<{ close: [] }>();
 const controls = useControlSettings();
-const { isTouchActive } = useInputMode();
+const { isTouchActive, isGamepadActive } = useInputMode();
 
 interface KeyEntry {
   key: string;
@@ -109,7 +110,12 @@ const activeGroups = computed(() => (isTouchActive.value ? touchGroups : keyboar
     @touchstart.prevent
   >
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+    <div v-if="isGamepadActive" class="relative flex flex-col items-center">
+      <GamepadHelpDiagram />
+      <div class="pt-2 text-center text-xs text-white/40">Press the help button again to close</div>
+    </div>
     <div
+      v-else
       class="relative grid max-h-[90vh] max-w-5xl grid-cols-1 gap-x-8 gap-y-6 overflow-auto p-8 sm:grid-cols-2 lg:grid-cols-3"
     >
       <div v-for="group in activeGroups" :key="group.title" class="flex flex-col gap-2">

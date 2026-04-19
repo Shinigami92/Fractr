@@ -35,6 +35,12 @@ export interface UseGamepadInputReturn {
   pressedButtons: Ref<ReadonlySet<string>>;
   leftStick: Ref<StickVector>;
   rightStick: Ref<StickVector>;
+  /**
+   * True while any button is held or either stick is outside its deadzone.
+   * Edge-triggered: only flips when the aggregate activity state actually
+   * changes, so watchers don't wake every rAF poll.
+   */
+  isActive: Ref<boolean>;
   onButtonPress: (listener: ButtonListener) => void;
 }
 
@@ -43,6 +49,7 @@ const vendor = ref<GamepadVendor>('generic');
 const pressedButtons = ref<ReadonlySet<string>>(new Set());
 const leftStick = ref<StickVector>({ x: 0, y: 0 });
 const rightStick = ref<StickVector>({ x: 0, y: 0 });
+const isActive = ref(false);
 
 const buttonListeners = new Set<ButtonListener>();
 let pollHandle: number | null = null;
@@ -57,6 +64,7 @@ function resetState(): void {
   previousButtons = new Set();
   leftStick.value = { x: 0, y: 0 };
   rightStick.value = { x: 0, y: 0 };
+  if (isActive.value) isActive.value = false;
 }
 
 function pollGamepads(): void {
@@ -99,6 +107,11 @@ function pollGamepads(): void {
   leftStick.value = l;
   rightStick.value = r;
 
+  // Aggregate activity flag — flips only on edges so downstream watchers
+  // (e.g. input-mode detection) don't wake every rAF poll.
+  const active = current.size > 0 || l.x !== 0 || l.y !== 0 || r.x !== 0 || r.y !== 0;
+  if (active !== isActive.value) isActive.value = active;
+
   pollHandle = requestAnimationFrame(pollGamepads);
 }
 
@@ -128,34 +141,37 @@ function detachGamepad(index: number): void {
 
 let initialized = false;
 
+function initGlobalListeners(): void {
+  if (initialized) return;
+  initialized = true;
+  window.addEventListener(
+    'gamepadconnected',
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- DOM event
+    (e) => {
+      attachGamepad(e.gamepad);
+    },
+  );
+  window.addEventListener(
+    'gamepaddisconnected',
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- DOM event
+    (e) => {
+      detachGamepad(e.gamepad.index);
+    },
+  );
+  // On some browsers the `gamepadconnected` event only fires after the user
+  // presses a button; pick up any gamepad that was already present at load.
+  for (const gp of navigator.getGamepads()) {
+    if (gp) {
+      attachGamepad(gp);
+      break;
+    }
+  }
+}
+
 export function useGamepadInput(): UseGamepadInputReturn {
   // Register global connect/disconnect listeners once. Further
   // useGamepadInput() calls just surface the same reactive refs.
-  if (!initialized) {
-    initialized = true;
-    window.addEventListener(
-      'gamepadconnected',
-      // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- DOM event
-      (e) => {
-        attachGamepad(e.gamepad);
-      },
-    );
-    window.addEventListener(
-      'gamepaddisconnected',
-      // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- DOM event
-      (e) => {
-        detachGamepad(e.gamepad.index);
-      },
-    );
-    // On some browsers the `gamepadconnected` event only fires after the user
-    // presses a button; pick up any gamepad that was already present at load.
-    for (const gp of navigator.getGamepads()) {
-      if (gp) {
-        attachGamepad(gp);
-        break;
-      }
-    }
-  }
+  initGlobalListeners();
 
   // Scope-bound listener cleanup using VueUse pattern (onScopeDispose).
   useEventListener(window, 'blur', () => {
@@ -175,6 +191,7 @@ export function useGamepadInput(): UseGamepadInputReturn {
     pressedButtons,
     leftStick,
     rightStick,
+    isActive,
     onButtonPress,
   };
 }
