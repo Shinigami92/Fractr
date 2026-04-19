@@ -55,7 +55,10 @@ function handlePlayingKeyDown(ctx: KeyboardContext, e: KeyboardEvent): void {
   const { fractal, controls, graphics, hudSettings, appState, options } = ctx;
   const kb: (id: Parameters<typeof controls.getBinding>[0]) => string | undefined = (id) =>
     controls.getBinding(id, 'keyboard');
-  if (e.code === kb('toggleHud')) hudSettings.toggleHud();
+  if (e.code === kb('toggleHud')) {
+    e.preventDefault();
+    hudSettings.toggleHud();
+  }
   if (e.code === kb('toggleCrosshair')) hudSettings.toggleCrosshair();
   if (e.code === kb('toggleDynamicIterations')) {
     graphics.dynamicIterations = !graphics.dynamicIterations;
