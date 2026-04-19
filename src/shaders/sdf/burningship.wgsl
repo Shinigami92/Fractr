@@ -6,7 +6,18 @@ struct SDFResult {
 }
 
 fn sceneSDF(pos: vec3f) -> SDFResult {
-  // Burning Ship 3D: abs() before trigonometric transform
+  // 3D Burning Ship (triplex power with y as polar axis + abs on all outputs).
+  // Formula from https://www.reddit.com/r/fractals/comments/1na1g04/
+  //   sq_r   = length(z)
+  //   sq_xz  = length(z.xz)
+  //   r      = sq_r^power
+  //   theta  = atan2(sq_xz, y) * power      (polar from y axis)
+  //   zangle = atan2(x, z)     * power      (azimuth in xz plane)
+  //   x' = |sin(zangle)*sin(theta)*r + cx|
+  //   y' = |cos(theta)*r + cy|
+  //   z' = |sin(theta)*cos(zangle)*r + cz|
+  // Produces the Gothic-cathedral / ship-hull silhouette that defines the
+  // 3D Burning Ship family.
   var z = pos;
   var dr = 1.0;
   var r = length(z);
@@ -24,22 +35,16 @@ fn sceneSDF(pos: vec3f) -> SDFResult {
     if (r > bailout) { break; }
     iterations = i + 1u;
 
-    // Take absolute value before transform — creates the "burning" asymmetry
-    z = abs(z);
-
-    let theta = acos(z.z / r);
-    let phi = atan2(z.y, z.x);
+    let rXZ = length(vec2f(z.x, z.z));
     let rp = pow(r, power);
+    let theta = atan2(rXZ, z.y) * power;
+    let zangle = atan2(z.x, z.z) * power;
     dr = pow(r, power - 1.0) * power * dr + 1.0;
 
-    let newTheta = theta * power;
-    let newPhi = phi * power;
-
-    z = rp * vec3f(
-      sin(newTheta) * cos(newPhi),
-      sin(newTheta) * sin(newPhi),
-      cos(newTheta),
-    ) + pos;
+    let nx = abs(sin(zangle) * sin(theta) * rp + pos.x);
+    let ny = abs(cos(theta) * rp + pos.y);
+    let nz = abs(sin(theta) * cos(zangle) * rp + pos.z);
+    z = vec3f(nx, ny, nz);
 
     r = length(z);
     minDist = min(minDist, r);

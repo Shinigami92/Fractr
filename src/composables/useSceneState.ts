@@ -61,7 +61,7 @@ function resetCameraFromConfig(camera: FPSCamera, fractal: FractalParamsStore): 
   camera.position[2] = cam?.z ?? 3;
   camera.yaw = cam?.yaw ?? -Math.PI / 2;
   camera.pitch = cam?.pitch ?? 0;
-  camera.roll = 0;
+  camera.roll = cam?.roll ?? 0;
 }
 
 function snapshotSavedState(

@@ -12,6 +12,7 @@ export interface CameraStart {
   z: number;
   yaw: number;
   pitch: number;
+  roll?: number;
 }
 
 export interface FractalConfig {
@@ -48,10 +49,18 @@ const _FRACTAL_CONFIGS = {
   burningship: {
     label: 'Burning Ship 3D',
     short: 'Burn Ship',
-    power: { label: 'Power', min: 2, max: 16, step: 0.1, default: 8 },
+    power: { label: 'Power', min: 2, max: 16, step: 0.1, default: 2 },
     maxIterations: { label: 'Max Iterations', min: 4, max: 200, step: 1, default: 40 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
-    stepFactor: 0.6,
+    camera: {
+      x: -0.356759,
+      y: -2.268224,
+      z: 0.991397,
+      yaw: -1.31628,
+      pitch: 1.02412,
+      roll: 1.38656,
+    },
+    stepFactor: 0.5,
   },
   tricorn: {
     label: 'Tricorn 3D',
