@@ -68,7 +68,7 @@
     "typescript": "6.0.3",
     "unplugin-icons": "23.0.1",
     "vite": "8.0.8",
-    "vue-tsc": "3.2.6"
+    "vue-tsc": "3.2.7"
   },
   "engines": {
     "node": ">=24.0.0"
