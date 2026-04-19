@@ -31,7 +31,6 @@ interface GamepadStores {
   hudSettings: ReturnType<typeof useHudSettings>;
 }
 
-/* oxlint-disable-next-line eslint/max-lines-per-function -- flat table of per-action dispatchers is clearer as one list than split across helpers */
 function buildActionHandlers(
   stores: GamepadStores,
   options: UseGamepadShortcutsOptions,
@@ -75,15 +74,9 @@ function buildActionHandlers(
       void navigator.clipboard.writeText(options.urlState.buildCurrentShareURL());
       options.notify('Share URL copied to clipboard');
     },
-    cycleColorMode: () => {
-      options.radial.triggerQuickTap('color', false);
-    },
-    cycleRenderMode: () => {
-      options.radial.triggerQuickTap('render', false);
-    },
-    cycleFractalType: () => {
-      options.radial.triggerQuickTap('fractal', false);
-    },
+    // cycleColorMode / cycleRenderMode / cycleFractalType are handled via
+    // radial hold/release below — press starts a hold, release applies the
+    // sector under the stick (or fires a quick-tap if released early).
   };
 }
 
@@ -124,11 +117,19 @@ export function useGamepadShortcuts(
       return;
     }
     if (stores.appState.mode !== 'playing') return;
+    // Cycle buttons: start a hold timer. Release handler decides whether it
+    // was a quick-tap (released before delay) or an apply-selection.
+    if (options.radial.tryBeginHoldFromGamepad(e.code)) return;
     for (const id of ACTION_IDS) {
       if (stores.controls.getBinding(id, 'gamepad') === e.code) {
         actionHandlers[id]?.();
         break;
       }
     }
+  });
+
+  gamepad.onButtonRelease((e) => {
+    // Route through the radial controller; it no-ops for non-cycle buttons.
+    options.radial.tryEndHoldFromGamepad(e.code);
   });
 }

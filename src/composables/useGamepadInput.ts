@@ -42,6 +42,7 @@ export interface UseGamepadInputReturn {
    */
   isActive: Ref<boolean>;
   onButtonPress: (listener: ButtonListener) => void;
+  onButtonRelease: (listener: ButtonListener) => void;
 }
 
 const connectedIndex = ref<number | null>(null);
@@ -52,6 +53,7 @@ const rightStick = ref<StickVector>({ x: 0, y: 0 });
 const isActive = ref(false);
 
 const buttonListeners = new Set<ButtonListener>();
+const buttonReleaseListeners = new Set<ButtonListener>();
 let pollHandle: number | null = null;
 let previousButtons: Set<string> = new Set();
 
@@ -67,18 +69,8 @@ function resetState(): void {
   if (isActive.value) isActive.value = false;
 }
 
-function pollGamepads(): void {
-  const idx = connectedIndex.value;
-  if (idx == null) {
-    pollHandle = null;
-    return;
-  }
-  const gp = navigator.getGamepads()[idx];
-  if (!gp) {
-    pollHandle = requestAnimationFrame(pollGamepads);
-    return;
-  }
-
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Gamepad is a DOM type with mutating internals
+function pollButtonEdges(gp: Gamepad): Set<string> {
   const current = new Set<string>();
   for (let i = 0; i < gp.buttons.length; i++) {
     const button = gp.buttons[i];
@@ -92,6 +84,29 @@ function pollGamepads(): void {
       }
     }
   }
+  for (const code of previousButtons) {
+    if (!current.has(code)) {
+      for (const listener of buttonReleaseListeners) {
+        listener({ code });
+      }
+    }
+  }
+  return current;
+}
+
+function pollGamepads(): void {
+  const idx = connectedIndex.value;
+  if (idx == null) {
+    pollHandle = null;
+    return;
+  }
+  const gp = navigator.getGamepads()[idx];
+  if (!gp) {
+    pollHandle = requestAnimationFrame(pollGamepads);
+    return;
+  }
+
+  const current = pollButtonEdges(gp);
   pressedButtons.value = current;
   previousButtons = current;
 
@@ -185,6 +200,13 @@ export function useGamepadInput(): UseGamepadInputReturn {
     });
   }
 
+  function onButtonRelease(listener: ButtonListener): void {
+    buttonReleaseListeners.add(listener);
+    onScopeDispose(() => {
+      buttonReleaseListeners.delete(listener);
+    });
+  }
+
   return {
     connectedIndex,
     vendor,
@@ -193,5 +215,6 @@ export function useGamepadInput(): UseGamepadInputReturn {
     rightStick,
     isActive,
     onButtonPress,
+    onButtonRelease,
   };
 }

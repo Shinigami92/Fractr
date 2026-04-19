@@ -31,6 +31,9 @@ export interface UseRadialMenuControllerReturn {
   currentValue: ComputedRef<string>;
   tryBeginHoldFromKey: (code: string, repeat: boolean) => boolean;
   tryEndHoldFromKey: (code: string, shiftKey: boolean) => boolean;
+  tryBeginHoldFromGamepad: (code: string) => boolean;
+  tryEndHoldFromGamepad: (code: string) => boolean;
+  onGamepadStick: (sx: number, sy: number) => void;
   triggerQuickTap: (id: RadialMenuId, shiftKey: boolean) => void;
 }
 
@@ -88,6 +91,13 @@ function idForKey(controls: ControlSettingsStore, code: string): RadialMenuId | 
   return undefined;
 }
 
+function idForGamepad(controls: ControlSettingsStore, code: string): RadialMenuId | undefined {
+  if (code === controls.getBinding('cycleColorMode', 'gamepad')) return 'color';
+  if (code === controls.getBinding('cycleRenderMode', 'gamepad')) return 'render';
+  if (code === controls.getBinding('cycleFractalType', 'gamepad')) return 'fractal';
+  return undefined;
+}
+
 function currentValueFor(fractal: FractalParamsStore, activeId: RadialMenuId | null): string {
   switch (activeId) {
     case 'color':
@@ -129,6 +139,57 @@ function createRadialMenu(
   });
 }
 
+interface HoldTrackers {
+  tryBeginHoldFromKey: UseRadialMenuControllerReturn['tryBeginHoldFromKey'];
+  tryEndHoldFromKey: UseRadialMenuControllerReturn['tryEndHoldFromKey'];
+  tryBeginHoldFromGamepad: UseRadialMenuControllerReturn['tryBeginHoldFromGamepad'];
+  tryEndHoldFromGamepad: UseRadialMenuControllerReturn['tryEndHoldFromGamepad'];
+}
+
+/**
+ * Per-source hold trackers. Keyboard and gamepad can't both be holding at
+ * once in practice, but keeping the sources separate avoids a button-release
+ * on one input path accidentally cancelling a hold started on the other.
+ */
+function buildHoldTrackers(
+  controls: ControlSettingsStore,
+  menu: UseRadialMenuReturn<RadialMenuId>,
+): HoldTrackers {
+  let heldKey: string | null = null;
+  let heldGamepadCode: string | null = null;
+  return {
+    tryBeginHoldFromKey: (code, repeat) => {
+      const id = idForKey(controls, code);
+      if (!id || repeat || heldKey != null) return false;
+      heldKey = code;
+      menu.beginHold(id);
+      return true;
+    },
+    tryEndHoldFromKey: (code, shiftKey) => {
+      if (code !== heldKey) return false;
+      const id = idForKey(controls, code);
+      if (id) menu.endHold(id, shiftKey);
+      heldKey = null;
+      return true;
+    },
+    tryBeginHoldFromGamepad: (code) => {
+      const id = idForGamepad(controls, code);
+      if (!id || heldGamepadCode != null) return false;
+      heldGamepadCode = code;
+      menu.beginHold(id);
+      return true;
+    },
+    tryEndHoldFromGamepad: (code) => {
+      if (code !== heldGamepadCode) return false;
+      const id = idForGamepad(controls, code);
+      // Gamepad has no shift modifier — quick-tap always cycles forward.
+      if (id) menu.endHold(id, false);
+      heldGamepadCode = null;
+      return true;
+    },
+  };
+}
+
 /**
  * App-level wiring for the press-and-hold radial menu: maps keybindings to
  * menu ids, exposes the currently-selected value for each id, and forwards
@@ -146,7 +207,7 @@ export function useRadialMenuController(
   }
 
   const menu = createRadialMenu(fractal, options.onResetCamera, triggerQuickTap);
-  let heldKey: string | null = null;
+  const holds = buildHoldTrackers(controls, menu);
 
   useEventListener(window, 'mousemove', menu.onMouseMove);
 
@@ -157,20 +218,11 @@ export function useRadialMenuController(
     currentOptions: menu.currentOptions,
     selectedIndex: menu.selectedIndex,
     currentValue: computed(() => currentValueFor(fractal, menu.activeId.value)),
-    tryBeginHoldFromKey: (code, repeat) => {
-      const id = idForKey(controls, code);
-      if (!id || repeat || heldKey != null) return false;
-      heldKey = code;
-      menu.beginHold(id);
-      return true;
-    },
-    tryEndHoldFromKey: (code, shiftKey) => {
-      if (code !== heldKey) return false;
-      const id = idForKey(controls, code);
-      if (id) menu.endHold(id, shiftKey);
-      heldKey = null;
-      return true;
-    },
+    tryBeginHoldFromKey: holds.tryBeginHoldFromKey,
+    tryEndHoldFromKey: holds.tryEndHoldFromKey,
+    tryBeginHoldFromGamepad: holds.tryBeginHoldFromGamepad,
+    tryEndHoldFromGamepad: holds.tryEndHoldFromGamepad,
+    onGamepadStick: menu.onGamepadStick,
     triggerQuickTap,
   };
 }

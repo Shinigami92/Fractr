@@ -7,6 +7,13 @@ import { radialSelectedIndex } from '../utils/radialGeometry';
 /** Hold duration in milliseconds before a radial menu opens. */
 const RADIAL_MENU_HOLD_DELAY_MS = 200;
 
+/**
+ * Pixel magnitude applied to a fully-deflected gamepad stick when driving the
+ * radial cursor. Must exceed `RADIAL_DEAD_ZONE` so a stick at full deflection
+ * lands inside a selectable sector. Tuned for the standard 80 px ring.
+ */
+const RADIAL_GAMEPAD_CURSOR_MAGNITUDE = 80;
+
 export interface RadialOption {
   readonly value: string;
   readonly short: string;
@@ -30,6 +37,13 @@ export interface UseRadialMenuReturn<Id extends string> {
   beginHold: (id: Id) => void;
   endHold: (id: Id, shiftKey: boolean) => void;
   onMouseMove: (e: MouseEvent) => void;
+  /**
+   * Feed gamepad stick deflection into the radial cursor. Treats the stick as
+   * an absolute pointer (direction = angle, magnitude drives past the dead
+   * zone). Called each frame; no-ops if the menu isn't open or the stick is
+   * inside its deadzone (already applied upstream).
+   */
+  onGamepadStick: (sx: number, sy: number) => void;
 }
 
 /**
@@ -102,6 +116,16 @@ export function useRadialMenu<Id extends string>(
     }
   }
 
+  function onGamepadStick(sx: number, sy: number): void {
+    if (activeId.value == null) return;
+    // Skip neutral-stick frames so the last deflection sticks as the selection
+    // until the user actively points elsewhere — prevents the cursor snapping
+    // back to the dead zone while the user is still mid-hold.
+    if (sx === 0 && sy === 0) return;
+    cursorX.value = sx * RADIAL_GAMEPAD_CURSOR_MAGNITUDE;
+    cursorY.value = sy * RADIAL_GAMEPAD_CURSOR_MAGNITUDE;
+  }
+
   return {
     activeId,
     cursorX,
@@ -111,5 +135,6 @@ export function useRadialMenu<Id extends string>(
     beginHold,
     endHold,
     onMouseMove,
+    onGamepadStick,
   };
 }

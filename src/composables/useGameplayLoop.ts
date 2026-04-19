@@ -78,6 +78,12 @@ interface LoopState {
   wasMoving: boolean;
   isMovingThisFrame: boolean;
   currentIterations: Ref<number>;
+  /**
+   * Latched while the radial menu is open and held until the left stick
+   * returns to neutral. Prevents the camera from snapping off in the sector
+   * direction the instant the player releases the radial button.
+   */
+  leftStickGated: boolean;
 }
 
 /* oxlint-disable-next-line eslint/max-lines-per-function -- frame update orchestrates input sampling, movement, and uniform upload; splitting further obscures the pipeline */
@@ -95,16 +101,23 @@ function runFrameUpdate(
   const input = sampleLoopInput(options, gamepad);
   const { isPressed } = options.input;
 
+  const radialOpen = options.radial.activeId.value != null;
   applyLookRotation(
     camera,
     controls.mouseSensitivity,
-    options.radial.activeId.value != null,
+    radialOpen,
     dt,
     input.dx + input.touchLook.dx,
     input.dy + input.touchLook.dy,
     input.rx,
     input.ry,
   );
+  // Left stick drives the radial cursor while a menu is open — the right hand
+  // is busy holding the cycle button, so the left thumb is the only one free.
+  // Stick value is already deadzoned upstream; onGamepadStick no-ops on a
+  // neutral stick so the last deflection stays as the selection until the user
+  // actively moves.
+  if (radialOpen) options.radial.onGamepadStick(input.lx, input.ly);
 
   const absDist = computeAbsDistance(fractal, camera);
   const speedScale = Math.max(1e-6, Math.min(1, absDist));
@@ -132,7 +145,16 @@ function runFrameUpdate(
   options.adaptiveQuality.update(dt, fps, moving);
 
   applyKeyboardMovement(camera, speed, 1.5 * dt, kb, gp, isPressed, shifting);
-  applyAnalogMovement(camera, speed, input.touchMove, input.lx, input.ly);
+  // While the radial is open the left stick drives the cursor, not movement.
+  // After release, stay gated until the stick returns to neutral so the camera
+  // doesn't snap off in the last selection direction.
+  if (radialOpen) state.leftStickGated = true;
+  else if (state.leftStickGated && input.lx === 0 && input.ly === 0) {
+    state.leftStickGated = false;
+  }
+  const lx = state.leftStickGated ? 0 : input.lx;
+  const ly = state.leftStickGated ? 0 : input.ly;
+  applyAnalogMovement(camera, speed, input.touchMove, lx, ly);
 
   state.isMovingThisFrame = moving;
   const renderer = options.rendererRef.value;
@@ -162,7 +184,12 @@ export function useGameplayLoop(options: UseGameplayLoopOptions): UseGameplayLoo
 
   const currentIterations = ref(0);
   const sampleCount = ref(0);
-  const state: LoopState = { wasMoving: false, isMovingThisFrame: false, currentIterations };
+  const state: LoopState = {
+    wasMoving: false,
+    isMovingThisFrame: false,
+    currentIterations,
+    leftStickGated: false,
+  };
 
   const gameLoop = useGameLoop({
     update(dt) {
