@@ -51,7 +51,7 @@ const _FRACTAL_CONFIGS = {
     short: 'Burn Ship',
     power: { label: 'Power', min: 2, max: 16, step: 0.1, default: 2 },
     maxIterations: { label: 'Max Iterations', min: 4, max: 200, step: 1, default: 40 },
-    bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+    bailout: { label: 'Bailout Radius', min: 1, max: 20, step: 0.1, default: 10 },
     camera: {
       x: -0.356759,
       y: -2.268224,
