@@ -65,8 +65,8 @@ function handlePlayingKeyDown(ctx: KeyboardContext, e: KeyboardEvent): void {
   }
   if (e.code === kb('increaseIterations')) fractal.adjustIterations(1);
   if (e.code === kb('decreaseIterations')) fractal.adjustIterations(-1);
-  if (e.code === kb('increaseBailout')) fractal.adjustBailout(1);
-  if (e.code === kb('decreaseBailout')) fractal.adjustBailout(-1);
+  if (e.code === kb('increaseBailout')) fractal.adjustBailout(0.1);
+  if (e.code === kb('decreaseBailout')) fractal.adjustBailout(-0.1);
   if (e.code === kb('toggleAnimatedColors')) {
     graphics.animatedColors = !graphics.animatedColors;
   }

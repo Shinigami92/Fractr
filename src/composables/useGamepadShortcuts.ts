@@ -54,10 +54,10 @@ function buildActionHandlers(
       fractal.adjustIterations(-1);
     },
     increaseBailout: () => {
-      fractal.adjustBailout(1);
+      fractal.adjustBailout(0.1);
     },
     decreaseBailout: () => {
-      fractal.adjustBailout(-1);
+      fractal.adjustBailout(-0.1);
     },
     quickSave: () => {
       void options.saveActions.quickSave();
