@@ -59,7 +59,7 @@ const input = useInput();
 const pointerLock = usePointerLock({ canvas: canvasRef });
 const touchControls = useTouchControls({ canvas: canvasRef });
 installInputModeDetection();
-const { isTouchActive } = useInputMode();
+const { isTouchActive, isGamepadActive } = useInputMode();
 
 // Radial menu (press-and-hold cycle). `scene.resetCamera` fires when the
 // fractal type changes via this UI so the view snaps to a sensible default.
@@ -142,7 +142,7 @@ const { onCanvasClick } = useAppShortcuts({
 </script>
 
 <template>
-  <div class="h-screen w-screen">
+  <div :class="{ 'cursor-none': isGamepadActive }" class="h-screen w-screen">
     <GpuErrorScreen v-if="gpuError" :message="gpuError" />
 
     <template v-else>
