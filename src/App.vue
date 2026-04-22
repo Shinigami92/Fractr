@@ -8,7 +8,6 @@ import ShareToast from './components/hud/ShareToast.vue';
 import TouchActionButtons from './components/hud/TouchActionButtons.vue';
 import FractalSelectScreen from './components/menu/FractalSelectScreen.vue';
 import PauseMenu from './components/menu/PauseMenu.vue';
-// oxlint-disable-next-line typescript/consistent-type-imports -- used as component in template AND as type via InstanceType<typeof ...>
 import SavesBrowser from './components/menu/SavesBrowser.vue';
 import SettingsMenu from './components/menu/SettingsMenu.vue';
 import TitleScreen from './components/menu/TitleScreen.vue';
