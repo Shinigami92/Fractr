@@ -11,6 +11,7 @@ struct Uniforms {
   frameCount: u32,
   animatedColors: u32,
   stepFactor: f32,
+  originOffset: vec3f,
 }
 
 @group(0) @binding(0) var<uniform> uniforms: Uniforms;

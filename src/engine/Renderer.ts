@@ -174,6 +174,7 @@ export class Renderer {
     this.uniformBuffer.setFrameCount(this._sampleCount);
     this.uniformBuffer.setAnimatedColors(params.animatedColors);
     this.uniformBuffer.setStepFactor(params.stepFactor);
+    this.uniformBuffer.setOriginOffset(offset?.[0] ?? 0, offset?.[1] ?? 0, offset?.[2] ?? 0);
     this.uniformBuffer.upload(this.ctx.device);
   }
 

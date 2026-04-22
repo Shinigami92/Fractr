@@ -2,11 +2,15 @@ fn computeColor(result: SDFResult, ray: Ray, hitPos: vec3f, t: f32, normal: vec3
   let anim = f32(uniforms.animatedColors);
   let time = uniforms.time;
 
+  // Use unshifted world position so bands don't jump when the renderer
+  // snaps the origin for periodic SDFs (see Renderer.updateUniforms).
+  let worldHitPos = hitPos + uniforms.originOffset;
+
   // Animated: moving bands
   let offset = anim * time * 0.5;
-  let s1 = sin(hitPos.x * 8.0 + hitPos.y * 8.0 + offset);
-  let s2 = sin(hitPos.y * 8.0 + hitPos.z * 8.0 + offset);
-  let s3 = sin(hitPos.z * 8.0 + hitPos.x * 8.0 + offset);
+  let s1 = sin(worldHitPos.x * 8.0 + worldHitPos.y * 8.0 + offset);
+  let s2 = sin(worldHitPos.y * 8.0 + worldHitPos.z * 8.0 + offset);
+  let s3 = sin(worldHitPos.z * 8.0 + worldHitPos.x * 8.0 + offset);
   let band = clamp((s1 + s2 + s3) / 3.0 * 0.5 + 0.5, 0.0, 1.0);
 
   let c1 = vec3f(0.92, 0.78, 0.35);

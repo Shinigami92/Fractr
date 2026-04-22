@@ -13,10 +13,12 @@
  * offset 108: frameCount            u32      (4 bytes)
  * offset 112: animatedColors        u32      (4 bytes)
  * offset 116: stepFactor            f32      (4 bytes)
- * Total: 128 bytes (struct aligns to 16; 120 padded to 128)
+ * offset 120: _pad                           (8 bytes, to align vec3f to 16)
+ * offset 128: originOffset          vec3f    (12 bytes)
+ * Total: 144 bytes (struct aligns to 16; 140 padded to 144)
  */
 
-const BUFFER_SIZE = 128;
+const BUFFER_SIZE = 144;
 
 // Offsets in 4-byte words (Float32Array / Uint32Array indices). Keep in sync
 // with the WGSL struct documented above — each value is (byte offset) / 4.
@@ -32,6 +34,8 @@ const IDX_RESOLUTION_SCALE = 26;
 const IDX_FRAME_COUNT = 27;
 const IDX_ANIMATED_COLORS = 28;
 const IDX_STEP_FACTOR = 29;
+// indices 30..31 are padding to align the following vec3f to a 16-byte boundary
+const IDX_ORIGIN_OFFSET = 32; // vec3f occupies indices 32..34
 
 export class UniformBuffer {
   readonly buffer: GPUBuffer;
@@ -100,6 +104,12 @@ export class UniformBuffer {
 
   setStepFactor(f: number): void {
     this.floatView[IDX_STEP_FACTOR] = f;
+  }
+
+  setOriginOffset(x: number, y: number, z: number): void {
+    this.floatView[IDX_ORIGIN_OFFSET] = x;
+    this.floatView[IDX_ORIGIN_OFFSET + 1] = y;
+    this.floatView[IDX_ORIGIN_OFFSET + 2] = z;
   }
 
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- GPUDevice wraps mutable GPU handles
