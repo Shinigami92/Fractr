@@ -10,8 +10,8 @@ export function bristorbrotSDF(x: number, y: number, z: number, params: SDFParam
     if (r > params.bailout) break;
     dr = 2 * r * dr + 1;
     const nx = zx * zx - zy * zy - zz * zz;
-    const ny = 2 * zx * zy;
-    const nz = 2 * zx * zz;
+    const ny = zy * (2 * zx - zz);
+    const nz = zz * (2 * zx + zy);
     zx = nx + x;
     zy = ny + y;
     zz = nz + z;
