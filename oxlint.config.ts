@@ -17,6 +17,7 @@ export default defineConfig({
   rules: {
     eqeqeq: ['error', 'always', { null: 'ignore' }],
     'no-inline-comments': 'off',
+    'no-underscore-dangle': 'off',
     'no-warning-comments': 'off',
     'sort-imports': ['error', { ignoreCase: true, ignoreDeclarationSort: true }],
 
