@@ -98,6 +98,14 @@ const _FRACTAL_CONFIGS = {
     short: 'Bristorbrot',
     maxIterations: { label: 'Max Iterations', min: 4, max: 64, step: 1, default: 20 },
     bailout: { label: 'Bailout Radius', min: 1, max: 10, step: 0.1, default: 2 },
+    camera: {
+      x: -2.129334,
+      y: -0.646275,
+      z: 1.510229,
+      yaw: -0.78316,
+      pitch: 0.25915,
+      roll: -0.16159,
+    },
     stepFactor: 0.3,
   },
   quatjulia: {
