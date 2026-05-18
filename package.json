@@ -61,7 +61,7 @@
     "@webgpu/types": "0.1.69",
     "npm-run-all2": "8.0.4",
     "oxfmt": "0.47.0",
-    "oxlint": "1.62.0",
+    "oxlint": "1.65.0",
     "oxlint-tsgolint": "0.22.1",
     "tailwindcss": "4.2.4",
     "tsx": "4.21.0",
