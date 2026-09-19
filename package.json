@@ -52,22 +52,22 @@
     "vue": "3.5.33"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "1.2.105",
+    "@iconify-json/lucide": "1.2.133",
     "@playwright/test": "1.59.1",
     "@tailwindcss/vite": "4.2.4",
-    "@types/node": "25.6.0",
+    "@types/node": "25.9.7",
     "@vitejs/plugin-basic-ssl": "2.3.0",
     "@vitejs/plugin-vue": "6.0.6",
-    "@webgpu/types": "0.1.69",
+    "@webgpu/types": "0.1.72",
     "npm-run-all2": "8.0.4",
     "oxfmt": "0.47.0",
     "oxlint": "1.62.0",
     "oxlint-tsgolint": "0.22.1",
     "tailwindcss": "4.2.4",
-    "tsx": "4.21.0",
+    "tsx": "4.23.13",
     "typescript": "6.0.3",
     "unplugin-icons": "23.0.1",
-    "vite": "8.0.10",
+    "vite": "8.3.0",
     "vue-tsc": "3.2.7"
   },
   "engines": {
